@@ -14,7 +14,7 @@ class AbsensiController extends Controller
     public function index()
     {
         $absensis = AbsensiKaryawan::with('user')->latest()->get();
-        return view('admin.absensi.index', compact('absensis'));
+        return view('karyawan.absen', compact('absensis'));
     }
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
@@ -39,12 +39,8 @@ class AbsensiController extends Controller
         $latitude = $request->latitude;
         $longitude = $request->longitude;
 
-        // $sekolahLat = -7.3077831;
-        // $sekolahLng = 112.7256599;
-        // $sekolahLat = -7.3107911;
-        // $sekolahLng = 112.7291219;
-        $sekolahLat = -7.3138501;
-        $sekolahLng = 112.7256289;
+        $sekolahLat = -7.326132309307022;
+        $sekolahLng = 112.73316542604522;
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
         if ($jarak > 0.1) { // > 100 meter
@@ -54,7 +50,6 @@ class AbsensiController extends Controller
         $waktuSekarang = now();
         $jamCheckin = $waktuSekarang->format('H:i:s');
 
-        // Default: Hadir
         $status = 'Hadir';
 
         if ($jamCheckin > '07:00:00') {

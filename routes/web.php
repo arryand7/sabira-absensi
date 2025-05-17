@@ -7,6 +7,9 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LaporanKaryawanExport;
+// use App\Exports\LaporanKaryawanExport;
+
 
 // Halaman welcome
 Route::get('/', function () {
@@ -27,15 +30,17 @@ Route::get('/redirect-after-login', function () {
 
 // Role: Admin
 Route::middleware(['auth', 'checkRole:admin'])->group(function () {
-    Route::get('/dashboard-admin', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/dashboard-admin', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // karyawan
     Route::resource('/karyawan', KaryawanController::class);
-    Route::get('/absensi', [\App\Http\Controllers\AbsensiController::class, 'index'])->name('absensi.index');
+    // Route::get('/absensi', [\App\Http\Controllers\AbsensiController::class, 'index'])->name('absensi.index');
     Route::get('/laporan-karyawan', [LaporanController::class, 'index'])->name('laporan.karyawan');
+
+    // export
     Route::get('/laporan-karyawan/export', [LaporanController::class, 'export'])->name('laporan.karyawan.export');
+    Route::get('/laporan/karyawan/{id}/export', [LaporanController::class, 'exportDetail'])->name('laporan.karyawan.detail.export');
+
     // Route::get('/laporan-karyawan/{id}', [LaporanController::class, 'show'])->name('laporan.karyawan.show');
     Route::get('/laporan/karyawan/{id}/detail', [LaporanController::class, 'detail'])
     ->name('laporan.karyawan.detail');
@@ -64,6 +69,8 @@ Route::middleware(['auth', 'checkRole:karyawan'])->group(function () {
         return view('karyawan.dashboard');
     })->name('karyawan.dashboard');
 
+    // Route untuk AbsensiController index
+    Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
     Route::post('/absensi/checkin', [AbsensiController::class, 'checkin'])->name('absensi.checkin');
     Route::post('/absensi/checkout', [AbsensiController::class, 'checkout'])->name('absensi.checkout');
 

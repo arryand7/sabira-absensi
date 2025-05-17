@@ -3,7 +3,13 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Riwayat Absensi Saya</h2>
     </x-slot>
 
-    <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+    <div class="px-4 py-2">
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
+            <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
+        </a>
+    </div>
+
+    <div class="py-2 max-w-5xl mx-auto sm:px-6 lg:px-4">
         <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6 overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>

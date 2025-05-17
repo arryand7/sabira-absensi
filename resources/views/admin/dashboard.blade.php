@@ -5,45 +5,61 @@
         </h2>
     </x-slot>
 
-    <div class="py-10">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="flex">
+        {{-- sidebar --}}
+        <x-admin-sidenav />
+
+        <div class="w-full mt-6 sm:px-6 lg:px-8 space-y-6">
             {{-- Ringkasan Statistik --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                     <h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium">Total Karyawan</h3>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ \App\Models\Karyawan::count() }}</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ $totalKaryawan }}</p>
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                     <h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium">Absensi Hari Ini</h3>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                        {{ \App\Models\Absensi::whereDate('created_at', now()->toDateString())->count() }}
-                    </p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ $totalSudahAbsen }}</p>
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium">Perlu Dicek</h3>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+                    <h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium">Belum Absen</h3>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ $totalBelumHadir }}</p>
                 </div>
             </div>
 
-            {{-- Navigasi --}}
+
+            {{-- laporan absen --}}
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Navigasi</h3>
-                <div class="space-y-2">
-                    {{-- <a href="{{ route('karyawan.index') }}" class="block text-blue-600 hover:underline">
-                        ➤ Manajemen Data Karyawan
-                    </a> --}}
-                    <a href="{{ route('absensi.index') }}" class="block text-blue-600 hover:underline">
-                        ➤ Rekap Absensi
-                    </a>
-                    <a href="{{ route('laporan.karyawan') }}" class="block text-blue-600 hover:underline">
-                        ➤ laporan Absensi
-                    </a>
-                    <a href="{{ route('users.index') }}" class="block text-blue-600 hover:underline">
-                        ➤ Manajemen User
-                    </a>
-                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Absensi Hari Ini</h3>
+                <table class="w-full table-auto text-left text-sm text-gray-500 dark:text-gray-400">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2">Nama</th>
+                            <th class="px-4 py-2">Tanggal</th>
+                            <th class="px-4 py-2">Check In</th>
+                            <th class="px-4 py-2">Check Out</th>
+                            <th class="px-4 py-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($absensis as $absen)
+                            <tr class="border-b">
+                                <td class="px-4 py-2">{{ $absen->user->name }}</td>
+                                <td class="px-4 py-2">{{ \Carbon\Carbon::parse($absen->waktu_absen)->format('d M Y') }}</td>
+                                <td class="px-4 py-2">{{ $absen->check_in ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $absen->check_out ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $absen->status ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-gray-600 dark:text-gray-300">
+                                    Belum ada yang absen hari ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

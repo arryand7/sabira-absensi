@@ -34,10 +34,9 @@ class LaporanController extends Controller
         foreach ($users as $user) {
             // Ambil absensi user
             $absensi = $user->absensis()
-                ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
+                ->when($bulan, fn($q) => $q->whereMonth('waktu_absen', $bulan))
+                ->when($tahun, fn($q) => $q->whereYear('waktu_absen', $tahun))
                 ->get();
-
             $hadir = $absensi->whereIn('status', ['Hadir', 'Terlambat'])->count();
             $jumlahHari = $bulan && $tahun ? \Carbon\Carbon::create($tahun, $bulan)->daysInMonth : $absensi->count();
             $absen = $jumlahHari - $hadir;
@@ -52,14 +51,6 @@ class LaporanController extends Controller
         return view('admin.laporan.index', compact('laporan', 'divisis'));
     }
 
-    // public function show($id)
-    // {
-    //     $user = User::findOrFail($id);
-    //     $absensis = AbsensiKaryawan::where('user_id', $id)->orderByDesc('created_at')->get();
-
-    //     return view('admin.laporan.detail', compact('user', 'absensis'));
-    // }
-
     public function export(Request $request)
     {
         $divisi = $request->divisi;
@@ -68,6 +59,7 @@ class LaporanController extends Controller
 
         return Excel::download(new LaporanKaryawanExport($divisi, $bulan, $tahun), 'laporan-karyawan.xlsx');
     }
+
 
     public function laporanKaryawan()
     {
@@ -86,22 +78,34 @@ class LaporanController extends Controller
                 'absen' => $absen,
             ];
         });
-
-
-        return view('laporan.karyawan', compact('laporan'));
     }
 
-    public function detail($id)
+    public function detail($id, Request $request)
     {
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+
         $user = User::with('karyawan')->findOrFail($id);
-        $absensi = AbsensiKaryawan::where('user_id', $user->id)->get()->map(function ($item) {
-            $item->tanggal = \Carbon\Carbon::parse($item->waktu_absen)->format('Y-m-d');
-            return $item;
-        });
 
-
+        $absensi = AbsensiKaryawan::where('user_id', $user->id)
+            ->when($bulan, fn($q) => $q->whereMonth('waktu_absen', $bulan))
+            ->when($tahun, fn($q) => $q->whereYear('waktu_absen', $tahun))
+            ->orderByDesc('waktu_absen')
+            ->get()
+            ->map(function ($item) {
+                $item->tanggal = \Carbon\Carbon::parse($item->waktu_absen)->format('Y-m-d');
+                $item->jam = $item->check_in ?? '-';
+                return $item;
+            });
         return view('admin.laporan.karyawan-detail', compact('user', 'absensi'));
     }
 
+    public function exportDetail($id, Request $request)
+    {
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+
+        return Excel::download(new \App\Exports\DetailKaryawanExport($id, $bulan, $tahun), 'rekap-karyawan.xlsx');
+    }
 
 }

@@ -1,99 +1,30 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard Karyawan') }}
-        </h2>
-    </x-slot>
+    <div class="min-h-screen text-white">
 
-    <div class="py-6 max-w-7xl mx-auto">
-        {{-- MAP CONTAINER --}}
-        <div id="map" style="height: 400px;" class="rounded-xl shadow mb-6"></div>
-
-        {{-- INFO / FEEDBACK --}}
-        @if(session('success'))
-            <div class="p-4 bg-green-200 text-green-800 rounded mb-4">
-                {{ session('success') }}
+        <!-- Welcome Box -->
+        <div class="bg-white text-black rounded-md m-4 p-4 shadow">
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('storage/' . Auth::user()->karyawan?->foto) }}"onerror="this.onerror=null; this.src='{{ asset('images/default-photo.jpg') }}'"alt="Foto"class="w-20 h-24 object-cover rounded">
+                <div>
+                    <p class="text-md font-semibold">Welcome, {{ Auth::user()->name }}</p>
+                    <p class="text-sm text-gray-600">
+                        {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}<br>
+                        {{ \Carbon\Carbon::now()->format('H:i') }}
+                    </p>
+                </div>
             </div>
-        @endif
-        @if(session('error'))
-            <div class="p-4 bg-red-200 text-red-800 rounded mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        {{-- ABSEN FORM --}}
-        <div class="flex gap-4">
-            {{-- FORM CHECK-IN --}}
-            <form method="POST" action="{{ route('absensi.checkin') }}">
-                @csrf
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">
-                    Check-In
-                </button>
-            </form>
-
-            {{-- FORM CHECK-OUT --}}
-            <form method="POST" action="{{ route('absensi.checkout') }}" class="mt-2">
-                @csrf
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">
-                    Check-Out
-                </button>
-            </form>
-
-            <a href="{{ route('karyawan.history') }}" class="text-blue-600 hover:underline">
-                📅 Lihat Riwayat Absensi
-            </a>
-
         </div>
+
+        <!-- Menu Grid -->
+        <div class="grid grid-cols-2 gap-4 px-6 py-4 text-center text-white">
+            <a href="{{ route('absensi.index') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold">ABSEN</a>
+            <a href="{{ route('karyawan.history') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold">RIWAYAT ABSEN</a>
+            <a href="" class="dark:bg-gray-800 p-6 rounded-md font-semibold col-span-2">JADWAL</a>
+        </div>
+
+        <!-- Footer -->
+        {{-- <div class="bg-emerald-300 text-center text-xs py-2">
+            &copy; {{ now()->year }} copyright
+        </div> --}}
     </div>
-
-    {{-- Leaflet JS & CSS --}}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-
-    <script>
-        const sekolahLat = -7.3138501;
-        const sekolahLng = 112.7256289;
-
-        const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Marker Sekolah
-        const schoolMarker = L.marker([sekolahLat, sekolahLng]).addTo(map)
-            .bindPopup('Sekolah');
-
-        // Coba ambil lokasi user
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                document.getElementById('latitude').value = lat;
-                document.getElementById('longitude').value = lng;
-
-                const userMarker = L.marker([lat, lng]).addTo(map)
-                    .bindPopup('Lokasi Kamu').openPopup();
-
-                const circle = L.circle([sekolahLat, sekolahLng], {
-                    color: 'blue',
-                    fillColor: '#902A2A',
-                    fillOpacity: 0.2,
-                    radius: 100
-                }).addTo(map);
-
-                map.fitBounds([
-                    [sekolahLat, sekolahLng],
-                    [lat, lng]
-                ]);
-            }, function() {
-                alert('Gagal mendapatkan lokasi!');
-            });
-        } else {
-            alert('Browser tidak mendukung geolokasi.');
-        }
-    </script>
 </x-app-layout>

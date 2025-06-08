@@ -15,6 +15,7 @@
                 {{-- Filter --}}
 
                 <form action="{{ route('laporan.karyawan') }}" method="GET" class="mb-6 flex flex-wrap gap-4 items-end" id="filterForm">
+                    {{-- Divisi --}}
                     <div>
                         <label for="divisi" class="text-sm text-gray-700 dark:text-gray-300">Divisi</label>
                         <select name="divisi" id="divisi" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:text-white">
@@ -27,38 +28,28 @@
                         </select>
                     </div>
 
+                    {{-- Rentang Tanggal --}}
                     <div>
-                        <label for="bulan" class="text-sm text-gray-700 dark:text-gray-300">Bulan</label>
-                        <select name="bulan" id="bulan" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:text-white">
-                            @foreach(range(1, 12) as $b)
-                                <option value="{{ $b }}" {{ request('bulan') == $b ? 'selected' : '' }}>
-                                    {{ \Carbon\Carbon::create()->month($b)->locale('id')->monthName }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label for="start_date" class="text-sm text-gray-700 dark:text-gray-300">Dari Tanggal</label>
+                        <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:text-white">
                     </div>
 
                     <div>
-                        <label for="tahun" class="text-sm text-gray-700 dark:text-gray-300">Tahun</label>
-                        <select name="tahun" id="tahun" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:text-white">
-                            @for($y = 2023; $y <= now()->year + 1; $y++)
-                                <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                            @endfor
-                        </select>
+                        <label for="end_date" class="text-sm text-gray-700 dark:text-gray-300">Sampai Tanggal</label>
+                        <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:text-white">
                     </div>
 
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                            Filter
-                        </button>
-
-                        <a href="{{ route('laporan.karyawan.export', ['divisi' => request('divisi'), 'bulan' => request('bulan'), 'tahun' => request('tahun')]) }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filter</button>
+                        <a href="{{ route('laporan.karyawan.export', [
+                            'divisi' => request('divisi'),
+                            'start_date' => request('start_date'),
+                            'end_date' => request('end_date'),
+                        ]) }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                             Download Excel
                         </a>
                     </div>
-
                 </form>
-
                 {{-- Table --}}
                 <table class="w-full table-auto text-left text-sm text-gray-500 dark:text-gray-400">
                     <thead class="bg-gray-100 dark:bg-gray-700">

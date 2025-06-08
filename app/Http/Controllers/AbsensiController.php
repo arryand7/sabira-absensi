@@ -7,14 +7,20 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Absensi;
 use App\Models\AbsensiKaryawan;
 use Carbon\Carbon;
+use App\Models\AbsensiLokasi;
 
 
 class AbsensiController extends Controller
 {
     public function index()
     {
+        $lokasi = AbsensiLokasi::latest()->first();
+
         $absensis = AbsensiKaryawan::with('user')->latest()->get();
-        return view('karyawan.absen', compact('absensis'));
+        return view('karyawan.absen', [
+            'absensis' => $absensis,
+            'lokasi' => $lokasi,
+        ]);
     }
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
@@ -36,53 +42,91 @@ class AbsensiController extends Controller
     {
         $user = Auth::user();
 
+        // Cek apakah sudah check-in hari ini
+        $alreadyCheckedIn = AbsensiKaryawan::where('user_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->exists();
+
+        if ($alreadyCheckedIn) {
+            return back()->with("error", "Anda sudah melakukan Check-In hari ini.");
+        }
+
+
         $latitude = $request->latitude;
         $longitude = $request->longitude;
 
-        $sekolahLat = -7.326132309307022;
-        $sekolahLng = 112.73316542604522;
+        $lokasi = AbsensiLokasi::first();
+        $sekolahLat = $lokasi->latitude ?? -7.310823820752337;
+        $sekolahLng = $lokasi->longitude ?? 112.72923730812086;
+
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
-        if ($jarak > 0.1) { // > 100 meter
+        if ($jarak > 0.1) {
             return back()->with("error", "Gagal Check-In: Lokasi terlalu jauh dari sekolah.");
         }
 
-        $waktuSekarang = now();
-        $jamCheckin = $waktuSekarang->format('H:i:s');
+        $now = now();
+        $jamSekarang = $now->format('H:i:s');
 
         $status = 'Hadir';
 
-        if ($jamCheckin > '07:00:00') {
-            $status = 'Terlambat';
+        if ($user->role === 'karyawan') {
+            if ($jamSekarang >= '07:31:00' && $jamSekarang <= '16:00:00') {
+                $status = 'Terlambat';
+            } elseif ($jamSekarang > '16:00:00') {
+                return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+            }
+        } elseif ($user->role === 'guru') {
+            $jenisGuru = optional($user->guru)->jenis;
+
+            if ($jenisGuru === 'akademik') {
+                if ($jamSekarang >= '07:31:00' && $jamSekarang <= '16:00:00') {
+                    $status = 'Terlambat';
+                } elseif ($jamSekarang > '16:00:00') {
+                    return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+                }
+            } elseif ($jenisGuru === 'muadalah') {
+                if ($jamSekarang >= '15:31:00' && $jamSekarang <= '20:30:00') {
+                    $status = 'Terlambat';
+                } elseif ($jamSekarang < '15:30:00') {
+                    $status = 'Hadir';
+                } elseif ($jamSekarang > '20:30:00') {
+                    return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+                }
+            } else {
+                return back()->with("error", "Jenis guru tidak dikenali.");
+            }
+        } else {
+            return back()->with("error", "Role tidak dikenali.");
         }
 
         AbsensiKaryawan::create([
             'user_id' => $user->id,
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'waktu_absen' => $waktuSekarang,
-            'check_in' => $jamCheckin,
+            'waktu_absen' => $now,
+            'check_in' => $jamSekarang,
             'status' => $status,
         ]);
 
-        return back()->with('success', 'Berhasil Check-In!');
+        return back()->with('success', "Check-In berhasil. Status: $status");
     }
+
 
     public function checkout(Request $request)
     {
         $user = Auth::user();
 
-        // Cari absensi hari ini
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())
             ->first();
 
         if (!$absensi) {
-            return back()->with('error', 'Belum Check-In hari ini!');
+            return back()->with('error', 'Gagal Check-Out: Anda belum melakukan Check-In hari ini.');
         }
 
         if ($absensi->check_out) {
-            return back()->with('error', 'Sudah Check-Out sebelumnya!');
+            return back()->with('error', 'Anda sudah melakukan Check-Out sebelumnya.');
         }
 
         $absensi->update([
@@ -92,10 +136,21 @@ class AbsensiController extends Controller
         return back()->with('success', 'Berhasil Check-Out!');
     }
 
-    public function history()
+
+    public function history(Request $request)
     {
         $user = Auth::user();
-        $absensis = AbsensiKaryawan::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+
+        $query = AbsensiKaryawan::where('user_id', $user->id);
+
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($request->start_date)->startOfDay(),
+                Carbon::parse($request->end_date)->endOfDay()
+            ]);
+        }
+
+        $absensis = $query->orderBy('created_at', 'desc')->get();
 
         return view('karyawan.history', compact('absensis'));
     }

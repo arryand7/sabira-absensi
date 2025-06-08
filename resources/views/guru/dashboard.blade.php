@@ -1,17 +1,40 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+    <div class="min-h-screen text-white">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
+        <!-- Welcome Box -->
+        <div class="bg-white text-black rounded-md m-4 p-4 shadow">
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('storage/' . Auth::user()->karyawan?->foto) }}"onerror="this.onerror=null; this.src='{{ asset('images/default-photo.jpg') }}'"alt="Foto"class="w-20 h-24 object-cover rounded">
+                <div>
+                    <p class="text-md font-semibold">Welcome, {{ Auth::user()->name }}</p>
+                    <p class="text-sm text-gray-600">
+                        {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}<br>
+                        {{ \Carbon\Carbon::now()->format('H:i') }}
+                    </p>
                 </div>
             </div>
         </div>
+
+
+        <!-- Menu Grid -->
+        <div class="grid grid-cols-2 gap-4 px-6 py-4 text-center text-white">
+            <a href="{{ route('absensi.index') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold hover:bg-gray-700 transition">
+                ABSEN
+            </a>
+
+            <a href="{{ route('karyawan.history') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold hover:bg-gray-700 transition">
+                RIWAYAT ABSEN
+            </a>
+
+            <a href="{{ route('guru.schedule') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold col-span-2 hover:bg-gray-700 transition">
+                JADWAL
+            </a>
+        </div>
+
+
+        <!-- Footer -->
+        {{-- <div class="bg-emerald-300 text-center text-xs py-2">
+            &copy; {{ now()->year }} copyright
+        </div> --}}
     </div>
 </x-app-layout>

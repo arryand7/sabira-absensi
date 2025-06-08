@@ -33,11 +33,10 @@
                                     class="px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
                                         Edit
                                     </a>
-                                    <form method="POST" action="{{ route('users.destroy', $user->id) }}">
+                                    <form method="POST" action="{{ route('users.destroy', $user->id) }}" class="delete-form">
                                         @csrf
                                         @method('DELETE')
-                                        <button onclick="return confirm('Yakin mau hapus user ini?')"
-                                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
+                                        <button type="button" class="delete-button px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
                                             Delete
                                         </button>
                                     </form>
@@ -49,17 +48,27 @@
             </div>
 
             {{-- SweetAlert Success Notification --}}
-            @if (session('success'))
-                <script>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: '{{ session('success') }}',
-                        timer: 2000,
-                        showConfirmButton: false
+            <script>
+                document.querySelectorAll('.delete-button').forEach(button => {
+                    button.addEventListener('click', function() {
+                        Swal.fire({
+                            title: 'Yakin mau hapus user ini?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Ya, hapus!',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Submit form terdekat
+                                this.closest('form').submit();
+                            }
+                        });
                     });
-                </script>
-            @endif
+                });
+            </script>
         </div>
     </div>
 </x-app-layout>
+

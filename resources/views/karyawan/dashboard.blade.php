@@ -17,14 +17,23 @@
 
         <!-- Menu Grid -->
         <div class="grid grid-cols-2 gap-4 px-6 py-4 text-center text-white">
-            <a href="{{ route('absensi.index') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold">ABSEN</a>
-            <a href="{{ route('karyawan.history') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold">RIWAYAT ABSEN</a>
-            <a href="" class="dark:bg-gray-800 p-6 rounded-md font-semibold col-span-2">JADWAL</a>
+                <a href="{{ route('absensi.index') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold hover:bg-gray-700 transition">
+                    ABSEN
+                </a>
+
+            <a href="{{ route('karyawan.history') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold hover:bg-gray-700 transition">
+                RIWAYAT ABSEN
+            </a>
+            @if (Auth::user()->role === 'guru')
+                <a href="{{ route('guru.schedule') }}" class="dark:bg-gray-800 p-6 rounded-md font-semibold col-span-2 hover:bg-gray-700 transition">
+                    JADWAL
+                </a>
+            @else
+                <div class="dark:bg-gray-700 p-6 rounded-md font-semibold opacity-50 cursor-not-allowed" title="Hanya untuk Guru">
+                    JADWAL
+                </div>
+            @endif
         </div>
 
-        <!-- Footer -->
-        {{-- <div class="bg-emerald-300 text-center text-xs py-2">
-            &copy; {{ now()->year }} copyright
-        </div> --}}
     </div>
 </x-app-layout>

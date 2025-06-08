@@ -70,8 +70,9 @@
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
     <script>
-        const sekolahLat = -7.326132309307022;
-        const sekolahLng = 112.73316542604522;
+        const sekolahLat = {{ $lokasi->latitude ?? '-7.310823820752337' }};
+        const sekolahLng = {{ $lokasi->longitude ?? '112.72923730812086' }};
+;
 
         const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
 

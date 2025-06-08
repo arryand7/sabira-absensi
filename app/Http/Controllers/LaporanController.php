@@ -14,13 +14,11 @@ class LaporanController extends Controller
     public function index(Request $request)
     {
         $divisi = $request->divisi;
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
 
-        // Ambil semua divisi untuk dropdown
         $divisis = \App\Models\Divisi::all();
 
-        // Ambil user yang punya karyawan dan relasi divisi
         $users = \App\Models\User::with(['karyawan.divisi'])
             ->when($divisi, function ($q) use ($divisi) {
                 $q->whereHas('karyawan.divisi', function ($q2) use ($divisi) {
@@ -32,34 +30,37 @@ class LaporanController extends Controller
         $laporan = [];
 
         foreach ($users as $user) {
-            // Ambil absensi user
             $absensi = $user->absensis()
-                ->when($bulan, fn($q) => $q->whereMonth('waktu_absen', $bulan))
-                ->when($tahun, fn($q) => $q->whereYear('waktu_absen', $tahun))
+                ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
+                    $q->whereBetween('waktu_absen', [
+                        Carbon::parse($start_date)->startOfDay(),
+                        Carbon::parse($end_date)->endOfDay()
+                    ]);
+                })
                 ->get();
+
             $hadir = $absensi->whereIn('status', ['Hadir', 'Terlambat'])->count();
-            $jumlahHari = $bulan && $tahun ? \Carbon\Carbon::create($tahun, $bulan)->daysInMonth : $absensi->count();
-            $absen = $jumlahHari - $hadir;
+            $absen = $absensi->where('status', 'Tidak Hadir')->count();
 
             $laporan[] = [
                 'user' => $user,
                 'hadir' => $hadir,
-                'absen' => max(0, $absen),
+                'absen' => $absen,
             ];
         }
 
         return view('admin.laporan.index', compact('laporan', 'divisis'));
     }
 
+
     public function export(Request $request)
     {
         $divisi = $request->divisi;
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
 
-        return Excel::download(new LaporanKaryawanExport($divisi, $bulan, $tahun), 'laporan-karyawan.xlsx');
+        return Excel::download(new LaporanKaryawanExport($divisi, $start_date, $end_date), 'laporan-karyawan.xlsx');
     }
-
 
     public function laporanKaryawan()
     {

@@ -52,4 +52,10 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\AbsensiKaryawan::class, 'user_id');
     }
 
+    public function guru()
+    {
+        return $this->hasOne(Guru::class);
+    }
+
+
 }

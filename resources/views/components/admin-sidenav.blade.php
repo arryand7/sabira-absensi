@@ -27,6 +27,31 @@
                 <i class="bi bi-people-fill text-lg mr-2"></i> Manajemen User
             </a>
 
+            <a href="{{ route('admin.schedules.index') }}"
+               class="block px-4 py-2 rounded-md flex items-center {{ request()->routeIs('admin.schedules.index') ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <i class="bi bi-calendar-event-fill text-lg mr-2"></i> Jadwal Guru
+            </a>
+
+            <a href="{{ route('admin.students.index') }}"
+               class="block px-4 py-2 rounded-md flex items-center {{ request()->routeIs('admin.students.index') ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <i class="bi bi-person-lines-fill text-lg mr-2"></i> Management Murid
+            </a>
+
+            <a href="{{ route('admin.class-groups.index') }}"
+               class="block px-4 py-2 rounded-md flex items-center {{ request()->routeIs('admin.class-groups.index') ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <i class="bi bi-building-fill text-lg mr-2"></i> Management Kelas
+            </a>
+
+            <a href="{{ route('admin.lokasi.edit') }}"
+               class="block px-4 py-2 rounded-md flex items-center {{ request()->routeIs('admin.lokasi.edit') ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <i class="bi bi-geo-alt text-lg mr-2"></i> Lokasi
+            </a>
+
+            <a href="{{ route('subjects.index') }}"
+               class="block px-4 py-2 rounded-md flex items-center {{ request()->routeIs('admin.lokasi.edit') ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <i class="bi bi-book text-lg mr-2"></i> Manajemen Mata Pelajaran
+            </a>
+
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"

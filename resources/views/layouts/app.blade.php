@@ -12,11 +12,14 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
         <div class="min-h-screen dark:bg-gray-900" style="background-color:#dcecf8">
             @include('layouts.navigation')
@@ -35,5 +38,19 @@
                 {{ $slot }}
             </main>
         </div>
+            @stack('scripts')
+
+            @if(session('success') || session('error'))
+                <script>
+                    Swal.fire({
+                        icon: '{{ session('success') ? 'success' : 'error' }}',
+                        title: '{{ session('success') ? 'Berhasil' : 'Gagal' }}',
+                        text: '{{ session('success') ?? session('error') }}',
+                        timer: 2500,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    });
+                </script>
+            @endif
     </body>
 </html>

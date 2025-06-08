@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Karyawan;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Divisi;
+use App\Models\Guru;
 
 
 class UserController extends Controller
@@ -26,15 +27,14 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users',
             'role' => 'required|in:admin,karyawan,guru',
             'password' => 'required|min:6',
             'nama_lengkap' => 'nullable|string|max:255',
-            'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
+            'divisi_id' => in_array($request->role, ['karyawan', 'guru']) ? 'required|exists:divisis,id' : 'nullable',
+            'jenis_guru' => $request->role === 'guru' ? 'required|in:akademik,muadalah,asrama' : 'nullable',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -44,11 +44,12 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
-        if ($user->role === 'karyawan') {
+        if (in_array($user->role, ['karyawan', 'guru'])) {
             $fotoPath = null;
+
             if ($request->hasFile('foto')) {
                 $fotoPath = $request->file('foto')->store('foto_karyawan', 'public');
             }
@@ -61,35 +62,59 @@ class UserController extends Controller
                 'no_hp' => $request->no_hp,
                 'foto' => $fotoPath,
             ]);
+
+            if ($user->role === 'guru') {
+                Guru::create([
+                    'user_id' => $user->id,
+                    'jenis' => $request->jenis_guru,
+                ]);
+            }
         }
 
         return redirect()->route('users.index')->with('success', 'User berhasil dibuat!');
     }
 
-    public function edit(User $user)
+
+
+    public function edit($id)
     {
-        $divisis = Divisi::all(); // Tambahkan untuk keperluan dropdown divisi
+        $user = User::with(['karyawan', 'guru'])->findOrFail($id);
+        $divisis = Divisi::all();
         return view('admin.users.edit', compact('user', 'divisis'));
     }
 
 
-    public function update(Request $request, User $user)
+
+    public function update(Request $request, $id)
     {
+        $user = User::with('karyawan', 'guru')->findOrFail($id);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:admin,karyawan,guru',
             'password' => 'nullable|min:6',
-
-            // validasi tambahan jika role karyawan
             'nama_lengkap' => 'nullable|string|max:255',
-            'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
+            'divisi_id' => 'nullable|exists:divisis,id',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'nullable|image|max:2048',
+            'jenis' => 'nullable|in:akademik,muadalah,asrama',
         ]);
 
-        // Update data user
+        // Validasi konsistensi divisi dan role
+        $divisi = Divisi::find($request->divisi_id);
+        if ($request->role === 'guru') {
+            if (!$divisi || strtolower($divisi->nama) !== 'guru') {
+                return back()->withErrors(['divisi_id' => 'Divisi harus divisi Guru untuk role Guru'])->withInput();
+            }
+        } elseif ($request->role === 'karyawan') {
+            if ($divisi && strtolower($divisi->nama) === 'guru') {
+                return back()->withErrors(['divisi_id' => 'Divisi Guru tidak bisa untuk role Karyawan'])->withInput();
+            }
+        }
+
+        // Update user
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
@@ -97,34 +122,48 @@ class UserController extends Controller
             'password' => $request->password ? Hash::make($request->password) : $user->password,
         ]);
 
-        // Handle karyawan data
-        if ($request->role === 'karyawan') {
-            $karyawanData = [
+        if (in_array($request->role, ['karyawan', 'guru'])) {
+            $dataKaryawan = [
                 'nama_lengkap' => $request->nama_lengkap,
                 'divisi_id' => $request->divisi_id,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,
+                'jenis' => $request->role === 'guru' ? $request->jenis : null,
             ];
 
-            // handle upload foto jika ada
             if ($request->hasFile('foto')) {
-                // Hapus foto lama kalau ada
                 if ($user->karyawan && $user->karyawan->foto) {
-                    Storage::disk('public')->delete($user->karyawan->foto);
+                    Storage::delete('public/foto/' . $user->karyawan->foto);
                 }
-
-                $karyawanData['foto'] = $request->file('foto')->store('foto_karyawan', 'public');
+                $dataKaryawan['foto'] = $request->file('foto')->store('foto', 'public');
             }
 
             if ($user->karyawan) {
-                $user->karyawan->update($karyawanData);
+                $user->karyawan->update($dataKaryawan);
             } else {
-                $karyawanData['user_id'] = $user->id;
-                Karyawan::create($karyawanData);
+                $dataKaryawan['user_id'] = $user->id;
+                Karyawan::create($dataKaryawan);
             }
+
+            if ($request->role === 'guru') {
+                if ($user->guru) {
+                    $user->guru->update(['jenis' => $request->jenis]);
+                } else {
+                    Guru::create(['user_id' => $user->id, 'jenis' => $request->jenis]);
+                }
+            } else {
+                // Kalau bukan guru, hapus record guru kalau ada
+                if ($user->guru) {
+                    $user->guru->delete();
+                }
+            }
+        } else {
+            // Kalau role admin, hapus karyawan dan guru jika ada
+            if ($user->karyawan) $user->karyawan->delete();
+            if ($user->guru) $user->guru->delete();
         }
 
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui!');
+        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui');
     }
 
     public function destroy(User $user)

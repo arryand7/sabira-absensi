@@ -15,9 +15,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::with(['karyawan.divisi', 'guru'])->get();
         return view('admin.users.index', compact('users'));
     }
+
 
     public function create()
     {
@@ -30,11 +31,12 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users',
-            'role' => 'required|in:admin,karyawan,guru',
+            'role' => 'required|in:admin,karyawan,guru,organisasi',
             'password' => 'required|min:6',
             'nama_lengkap' => 'nullable|string|max:255',
-            'divisi_id' => in_array($request->role, ['karyawan', 'guru']) ? 'required|exists:divisis,id' : 'nullable',
-            'jenis_guru' => $request->role === 'guru' ? 'required|in:akademik,muadalah,asrama' : 'nullable',
+            'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
+            'jenis_guru' => $request->role === 'guru' ? 'required|array' : 'nullable',
+            'jenis_guru.*' => 'in:akademik,muadalah',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -45,7 +47,9 @@ class UserController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'password' => Hash::make($request->password),
+            'status' => 'aktif',
         ]);
+
 
         if (in_array($user->role, ['karyawan', 'guru'])) {
             $fotoPath = null;
@@ -92,83 +96,77 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,karyawan,guru',
+            'role' => 'required|in:admin,karyawan,guru,organisasi',
             'password' => 'nullable|min:6',
             'nama_lengkap' => 'nullable|string|max:255',
-            'divisi_id' => 'nullable|exists:divisis,id',
+            'jenis_guru' => $request->role === 'guru' ? 'required|array' : 'nullable',
+            'jenis_guru.*' => 'in:akademik,muadalah',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
-            'foto' => 'nullable|image|max:2048',
-            'jenis' => 'nullable|in:akademik,muadalah,asrama',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'jenis' => $request->role === 'guru' ? 'required|in:akademik,muadalah' : 'nullable',
+            'status' => 'nullable|in:aktif,nonaktif',
         ]);
 
-        // Validasi konsistensi divisi dan role
-        $divisi = Divisi::find($request->divisi_id);
-        if ($request->role === 'guru') {
-            if (!$divisi || strtolower($divisi->nama) !== 'guru') {
-                return back()->withErrors(['divisi_id' => 'Divisi harus divisi Guru untuk role Guru'])->withInput();
-            }
-        } elseif ($request->role === 'karyawan') {
-            if ($divisi && strtolower($divisi->nama) === 'guru') {
-                return back()->withErrors(['divisi_id' => 'Divisi Guru tidak bisa untuk role Karyawan'])->withInput();
-            }
-        }
-
-        // Update user
+        // Update user basic data
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
+            'password' => $request->filled('password') ? Hash::make($request->password) : $user->password,
+            'status' => $request->status === 'aktif' ? 'aktif' : 'nonaktif',
         ]);
 
         if (in_array($request->role, ['karyawan', 'guru'])) {
-            $dataKaryawan = [
-                'nama_lengkap' => $request->nama_lengkap,
-                'divisi_id' => $request->divisi_id,
-                'alamat' => $request->alamat,
-                'no_hp' => $request->no_hp,
-                'jenis' => $request->role === 'guru' ? $request->jenis : null,
-            ];
+            $fotoPath = $user->karyawan->foto ?? null;
 
             if ($request->hasFile('foto')) {
-                if ($user->karyawan && $user->karyawan->foto) {
-                    Storage::delete('public/foto/' . $user->karyawan->foto);
+                if ($fotoPath && Storage::exists('public/' . $fotoPath)) {
+                    Storage::delete('public/' . $fotoPath);
                 }
-                $dataKaryawan['foto'] = $request->file('foto')->store('foto', 'public');
+                $fotoPath = $request->file('foto')->store('foto_karyawan', 'public');
             }
 
-            if ($user->karyawan) {
-                $user->karyawan->update($dataKaryawan);
-            } else {
-                $dataKaryawan['user_id'] = $user->id;
-                Karyawan::create($dataKaryawan);
-            }
+            $divisiId = $request->role === 'karyawan' ? $request->divisi_id : null;
+
+            $user->karyawan()->updateOrCreate(['user_id' => $user->id], [
+                'nama_lengkap' => $request->nama_lengkap,
+                'divisi_id' => $divisiId,
+                'alamat' => $request->alamat,
+                'no_hp' => $request->no_hp,
+                'foto' => $fotoPath,
+            ]);
 
             if ($request->role === 'guru') {
-                if ($user->guru) {
-                    $user->guru->update(['jenis' => $request->jenis]);
-                } else {
-                    Guru::create(['user_id' => $user->id, 'jenis' => $request->jenis]);
-                }
+                $user->guru()->updateOrCreate(['user_id' => $user->id], ['jenis' => $request->jenis]);
             } else {
-                // Kalau bukan guru, hapus record guru kalau ada
-                if ($user->guru) {
-                    $user->guru->delete();
-                }
+                $user->guru()->delete();
             }
         } else {
-            // Kalau role admin, hapus karyawan dan guru jika ada
-            if ($user->karyawan) $user->karyawan->delete();
-            if ($user->guru) $user->guru->delete();
+            $user->karyawan()->delete();
+            $user->guru()->delete();
         }
 
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui');
+
+        // Auto logout if user deactivates self
+        if ($user->id == auth()->id() && $user->status !== 'aktif') {
+            auth()->logout();
+            return redirect()->route('login')->withErrors(['email' => 'Akun Anda telah dinonaktifkan.']);
+        }
+
+        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }
+
+
 
     public function destroy(User $user)
     {
         $user->delete();
+
+        if ($user->karyawan && $user->karyawan->foto) {
+            Storage::delete('public/' . $user->karyawan->foto);
+        }
+
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus!');
     }
 }

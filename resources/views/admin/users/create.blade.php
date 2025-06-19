@@ -1,70 +1,73 @@
 <x-app-layout>
-    <div class="flex">
+    <x-slot name="sidebar">
         <x-admin-sidenav />
+    </x-slot>
 
+    <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
-                <a href="{{ route('users.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
+                <a href="{{ route('users.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
                     <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
                 </a>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
-                <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Create User</h1>
+            <div class="bg-[#8D9382] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
+                <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Create User</h1>
 
                 <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
                     {{-- USER --}}
                     <div>
-                        <label class="block text-gray-800 dark:text-gray-200">Nama</label>
-                        <input type="text" name="name" class="w-full rounded border-gray-300 @error('name') border-red-500 @enderror"
+                        <label class="block text-[#1C1E17]">Nama</label>
+                        <input type="text" name="name" class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('name') border-red-500 @enderror"
                             value="{{ old('name') }}" required>
                         @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-gray-800 dark:text-gray-200">Email</label>
-                        <input type="email" name="email" class="w-full rounded border-gray-300 @error('email') border-red-500 @enderror"
+                        <label class="block text-[#1C1E17]">Email</label>
+                        <input type="email" name="email" class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('email') border-red-500 @enderror"
                             value="{{ old('email') }}" required>
                         @error('email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-gray-800 dark:text-gray-200">Role</label>
+                        <label class="block text-[#1C1E17]">Role</label>
                         <select name="role" id="roleSelect"
-                            class="w-full rounded border-gray-300 @error('role') border-red-500 @enderror" required>
+                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('role') border-red-500 @enderror" required>
                             <option value="">-- Pilih Role --</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                             <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru</option>
+                            <option value="organisasi" {{ old('role') == 'organisasi' ? 'selected' : '' }}>Organisasi</option> <!-- Tambahan -->
                         </select>
                         @error('role') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-gray-800 dark:text-gray-200">Password</label>
+                        <label class="block text-[#1C1E17]">Password</label>
                         <input type="password" name="password"
-                            class="w-full rounded border-gray-300 @error('password') border-red-500 @enderror" required>
+                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('password') border-red-500 @enderror" required>
                         @error('password') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- FORM KARYAWAN --}}
                     <div id="karyawanFields" style="display: none;" class="border-t pt-4 space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Data Karyawan</h3>
+                        <h3 class="text-lg font-semibold text-[#1C1E17]">Data Karyawan</h3>
 
                         <div>
-                            <label class="block text-gray-800 dark:text-gray-200">Nama Lengkap</label>
+                            <label class="block text-[#1C1E17]">Nama Lengkap</label>
                             <input type="text" name="nama_lengkap"
-                                class="w-full rounded border-gray-300 @error('nama_lengkap') border-red-500 @enderror"
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('nama_lengkap') border-red-500 @enderror"
                                 value="{{ old('nama_lengkap') }}">
                             @error('nama_lengkap') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <div>
-                            <label class="block text-gray-800 dark:text-gray-200">Divisi</label>
+                        <div id="divisiField">
+                            <label class="block text-[#1C1E17]">Divisi</label>
                             <select name="divisi_id"
-                                class="w-full rounded border-gray-300 @error('divisi_id') border-red-500 @enderror">
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('divisi_id') border-red-500 @enderror">
                                 <option value="">-- Pilih Divisi --</option>
                                 @foreach($divisis as $divisi)
                                     <option value="{{ $divisi->id }}" data-nama="{{ strtolower($divisi->nama) }}"
@@ -77,42 +80,50 @@
                         </div>
 
                         <div>
-                            <label class="block text-gray-800 dark:text-gray-200">Alamat</label>
+                            <label class="block text-[#1C1E17]">Alamat</label>
                             <textarea name="alamat"
-                                class="w-full rounded border-gray-300 @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
                             @error('alamat') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-gray-800 dark:text-gray-200">No HP</label>
+                            <label class="block text-[#1C1E17]">No HP</label>
                             <input type="text" name="no_hp"
-                                class="w-full rounded border-gray-300 @error('no_hp') border-red-500 @enderror"
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('no_hp') border-red-500 @enderror"
                                 value="{{ old('no_hp') }}">
                             @error('no_hp') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-gray-800 dark:text-gray-200">Foto</label>
+                            <label class="block text-[#1C1E17]">Foto</label>
                             <input type="file" name="foto"
-                                class="w-full rounded border-gray-300 @error('foto') border-red-500 @enderror">
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('foto') border-red-500 @enderror">
                             @error('foto') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         {{-- Tambahan jika role == guru --}}
                         <div id="guruFields" style="display: none;">
-                            <label class="block text-gray-800 dark:text-gray-200">Jenis Guru</label>
-                            <select name="jenis_guru" class="w-full rounded border-gray-300 @error('jenis_guru') border-red-500 @enderror">
-                                <option value="">-- Pilih Jenis Guru --</option>
-                                <option value="akademik" {{ old('jenis_guru') == 'akademik' ? 'selected' : '' }}>Akademik</option>
-                                <option value="muadalah" {{ old('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
-                                <option value="asrama" {{ old('jenis_guru') == 'asrama' ? 'selected' : '' }}>Asrama</option>
-                            </select>
-                            @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                            <label class="block text-[#1C1E17]">Jenis Guru</label>
+                            <div class="space-y-2">
+                                <label class="block text-[#1C1E17]">Jenis Guru</label>
+                                <div class="flex items-center space-x-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="jenis_guru[]" value="akademik"
+                                            {{ is_array(old('jenis_guru')) && in_array('akademik', old('jenis_guru')) ? 'checked' : '' }}>
+                                        <span>Akademik</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="jenis_guru[]" value="muadalah"
+                                            {{ is_array(old('jenis_guru')) && in_array('muadalah', old('jenis_guru')) ? 'checked' : '' }}>
+                                        <span>Muadalah</span>
+                                    </label>
+                                </div>
+                                @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
-
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        Simpan
+                    <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                        <i class="bi bi-save mr-1"></i> Simpan
                     </button>
                 </form>
             </div>
@@ -123,68 +134,52 @@
         const nameInput = document.querySelector('input[name="name"]');
         const namaLengkapInput = document.querySelector('input[name="nama_lengkap"]');
         const roleSelect = document.getElementById('roleSelect');
+        const karyawanFields = document.getElementById('karyawanFields');
+        const guruFields = document.getElementById('guruFields');
+        const divisiField = document.getElementById('divisiField');
 
         function toggleKaryawanFields() {
-            const showFields = ['karyawan', 'guru'].includes(roleSelect.value);
-            karyawanFields.style.display = showFields ? 'block' : 'none';
+            const isKaryawan = roleSelect.value === 'karyawan';
+            const isGuru = roleSelect.value === 'guru';
+            const showFields = isKaryawan || isGuru;
 
-            // Field yang wajib diisi saat karyawan/guru
-            const requiredFields = ['nama_lengkap', 'divisi_id'];
+            karyawanFields.style.display = showFields ? 'block' : 'none';
+            guruFields.style.display = isGuru ? 'block' : 'none';
+            divisiField.style.display = isGuru ? 'none' : 'block'; // <-- hide divisi if guru
 
             const inputs = karyawanFields.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
-                // Jika input name ada di requiredFields dan role karyawan/guru, wajib diisi
-                if (showFields && requiredFields.includes(input.name)) {
-                    input.required = true;
-                } else {
-                    input.required = false;
+                if (showFields && input.name !== 'divisi_id') {
+                    input.required = ['nama_lengkap'].includes(input.name);
+                }
+                if (input.name === 'divisi_id') {
+                    input.required = isKaryawan;
                 }
             });
 
-            guruFields.style.display = roleSelect.value === 'guru' ? 'block' : 'none';
-
-            if (roleSelect.value === 'guru') {
-                const divisiSelect = document.querySelector('select[name="divisi_id"]');
-                const options = divisiSelect.options;
-                for (let i = 0; i < options.length; i++) {
-                    if (options[i].dataset.nama === 'guru') {
-                        divisiSelect.value = options[i].value;
-                        break;
-                    }
-                }
+            // Auto-fill nama_lengkap from name
+            if (showFields && !namaLengkapInput.value) {
+                namaLengkapInput.value = nameInput.value;
             }
         }
 
-
-        // Auto-copy name ke nama_lengkap kalau role karyawan atau guru
         nameInput.addEventListener('input', () => {
             if (['karyawan', 'guru'].includes(roleSelect.value)) {
-                // Copy hanya jika nama_lengkap kosong
                 if (!namaLengkapInput.value) {
                     namaLengkapInput.value = nameInput.value;
                 }
             }
         });
 
-        // Kalau user ganti role, kosongkan nama_lengkap supaya nggak kebingungan
         roleSelect.addEventListener('change', () => {
             toggleKaryawanFields();
             if (!['karyawan', 'guru'].includes(roleSelect.value)) {
                 namaLengkapInput.value = '';
-            } else {
-                // kalau role karyawan/guru, dan nama_lengkap kosong, isi dengan name
-                if (!namaLengkapInput.value) {
-                    namaLengkapInput.value = nameInput.value;
-                }
             }
         });
 
         window.addEventListener('DOMContentLoaded', () => {
             toggleKaryawanFields();
-            if (['karyawan', 'guru'].includes(roleSelect.value) && !namaLengkapInput.value) {
-                namaLengkapInput.value = nameInput.value;
-            }
         });
-
     </script>
 </x-app-layout>

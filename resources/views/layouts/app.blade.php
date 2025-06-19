@@ -1,56 +1,101 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <!-- Meta & Resource -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert & DataTables -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 
+    <!-- Vite & Livewire -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+</head>
+<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
+    <!-- Navbar Atas (Selalu di atas) -->
+    <div class="fixed top-0 left-0 right-0 z-40">
+        @include('layouts.navigation') {{-- navbar atas --}}
+    </div>
 
+    <!-- Layout utama -->
+    <div class="min-h-screen flex pt-16">
+        {{-- Sidebar --}}
+        @isset($sidebar)
+            <aside class="w-64 bg-white bg-[#5c644c] shadow-md hidden md:block">
+                {{ $sidebar }}
+            </aside>
+        @endisset
 
-        <div class="min-h-screen dark:bg-gray-900" style="background-color:#dcecf8">
-            @include('layouts.navigation')
+        {{-- Main content (navbar + page) --}}
+        <div class="flex-1 flex flex-col bg-[#D6D8D2]"> <!-- Ubah bg konten utama di sini -->
+            {{-- @include('layouts.navigation') --}}
 
-            <!-- Page Heading -->
-            {{-- @if (isset($header))
+            @if (isset($header))
                 <header class="bg-white dark:bg-gray-800 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
-            @endif --}}
+            @endif
 
-            <!-- Page Content -->
-            <main>
+            <main class="flex-1 px-4 py-6">
                 {{ $slot }}
             </main>
         </div>
-            @stack('scripts')
+    </div>
 
-            @if(session('success') || session('error'))
-                <script>
-                    Swal.fire({
-                        icon: '{{ session('success') ? 'success' : 'error' }}',
-                        title: '{{ session('success') ? 'Berhasil' : 'Gagal' }}',
-                        text: '{{ session('success') ?? session('error') }}',
-                        timer: 2500,
-                        timerProgressBar: true,
-                        showConfirmButton: false,
-                    });
-                </script>
-            @endif
-    </body>
+
+    <!-- Scripts -->
+    @stack('scripts')
+    @livewireScripts
+
+    <script>
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Yakin ingin menghapus?',
+                    text: "Data yang dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+    {{-- Notifikasi SweetAlert --}}
+    @if(session('success') || session('error'))
+        <script>
+            Swal.fire({
+                icon: '{{ session('success') ? 'success' : 'error' }}',
+                title: '{{ session('success') ? 'Berhasil' : 'Gagal' }}',
+                text: '{{ session('success') ?? session('error') }}',
+                timer: 2500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+            });
+        </script>
+    @endif
+</body>
 </html>

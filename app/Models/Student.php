@@ -9,9 +9,12 @@ class Student extends Model
 {
     protected $guarded = [];
 
+    // Student.php
     public function classGroups()
     {
-        return $this->belongsToMany(ClassGroup::class);
+        return $this->belongsToMany(ClassGroup::class)
+            ->withPivot('academic_year_id')
+            ->withTimestamps();
     }
 
     public function attendances()
@@ -29,4 +32,8 @@ class Student extends Model
         return $this->classGroups->firstWhere('jenis_kelas', 'muadalah');
     }
 
+    public function absensiAsrama()
+    {
+        return $this->hasMany(AbsensiAsrama::class);
+    }
 }

@@ -1,17 +1,17 @@
 <x-app-layout>
-    <div class="flex">
-        <x-admin-sidenav />
+    <x-slot name="sidebar">
+            <x-admin-sidenav />
+        </x-slot>
+    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        {{-- <x-admin-sidenav /> --}}
 
-        <main class="flex-1 p-8 max-w-full overflow-x-auto">
-            {{-- <h1 class="text-3xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Manajemen Murid</h1> --}}
-
+        <main class="flex-1 max-w-full overflow-x-auto">
             <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
                 <a href="{{ route('admin.students.create') }}"
                     class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
                     + Tambah Murid
                 </a>
 
-                <!-- Import Excel -->
                 <form action="{{ route('admin.students.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-3">
                     @csrf
                     <input type="file" name="file" required
@@ -21,12 +21,21 @@
                         Import Excel
                     </button>
                 </form>
+
+                <form id="bulk-delete-form" action="{{ route('admin.students.bulk-delete') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="student_ids_json" id="student_ids_json" />
+
+                    <button type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition mb-4"
+                        onclick="return confirm('Yakin ingin menghapus murid terpilih?')">
+                        Hapus Murid Terpilih
+                    </button>
+                </form>
             </div>
 
-            <!-- Filter -->
             <form method="GET" action="{{ route('admin.students.index') }}"
                 class="flex flex-wrap gap-6 mb-8 items-end max-w-full">
-
                 <div class="flex flex-col">
                     <label for="kelas_akademik" class="text-sm font-medium mb-1 text-gray-900">Kelas Akademik</label>
                     <select id="kelas_akademik" name="kelas_akademik"
@@ -72,11 +81,14 @@
                 </div>
             </form>
 
-
-            <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6 overflow-x-auto max-h-[600px]">
-                <table class="w-full table-auto text-left text-sm text-gray-500 dark:text-gray-400">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+            <!-- Table -->
+            <div class="bg-white shadow rounded-xl p-6 overflow-x-auto">
+                <table id="studentTable" class="stripe hover w-full text-sm text-left text-gray-800">
+                    <thead class="bg-blue-100 text-blue-800 uppercase text-xs font-semibold">
                         <tr>
+                            <th class="px-4 py-2">
+                                <input type="checkbox" id="select-all" />
+                            </th>
                             <th class="px-4 py-2">Nama</th>
                             <th class="px-4 py-2">NIS</th>
                             <th class="px-4 py-2">Kelas Akademik</th>
@@ -85,17 +97,16 @@
                             <th class="px-4 py-2 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-blue-50">
                         @foreach ($students as $student)
-                            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <tr class="border-b hover:bg-sky-50 dark:border-gray-700 dark:hover:bg-gray-700 transition">
+                                <td class="px-4 py-2">
+                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="student-checkbox" />
+                                </td>
                                 <td class="px-4 py-2">{{ $student->nama_lengkap }}</td>
                                 <td class="px-4 py-2">{{ $student->nis }}</td>
-                                <td class="px-4 py-2">
-                                    {{ $student->classGroups->firstWhere('jenis_kelas', 'akademik')?->nama_kelas ?? '-' }}
-                                </td>
-                                <td class="px-4 py-2">
-                                    {{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}
-                                </td>
+                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'akademik')?->nama_kelas ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}</td>
                                 <td class="px-4 py-2">{{ $student->jenis_kelamin }}</td>
                                 <td class="px-4 py-2 space-x-2 text-center">
                                     <a href="{{ route('admin.students.edit', $student->id) }}"
@@ -105,7 +116,8 @@
                                     <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" class="inline delete-form">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
                                             Hapus
                                         </button>
                                     </form>
@@ -126,11 +138,49 @@
         </main>
     </div>
 
+    <!-- DataTables CDN -->
+
     <script>
+        $(document).ready(function () {
+            $('#studentTable').DataTable({
+                responsive: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ entri",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "→",
+                        previous: "←"
+                    },
+                    emptyTable: "Belum ada data murid."
+                }
+            });
+        });
+
+        document.getElementById('select-all').addEventListener('click', function () {
+            document.querySelectorAll('.student-checkbox').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+
+        document.getElementById('bulk-delete-form').addEventListener('submit', function (e) {
+            const selectedIds = Array.from(document.querySelectorAll('.student-checkbox'))
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                e.preventDefault();
+                alert('Pilih minimal satu murid terlebih dahulu.');
+            } else {
+                document.getElementById('student_ids_json').value = JSON.stringify(selectedIds);
+            }
+        });
+
         document.querySelectorAll('.delete-form').forEach(form => {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-
                 Swal.fire({
                     title: 'Yakin ingin menghapus?',
                     text: "Data yang dihapus tidak bisa dikembalikan!",

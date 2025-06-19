@@ -141,19 +141,18 @@ class AbsensiController extends Controller
     {
         $user = Auth::user();
 
-        $query = AbsensiKaryawan::where('user_id', $user->id);
+        // Ambil bulan & tahun dari request atau default sekarang
+        $bulan = $request->input('bulan', now()->month);
+        $tahun = $request->input('tahun', now()->year);
 
-        if ($request->start_date && $request->end_date) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($request->start_date)->startOfDay(),
-                Carbon::parse($request->end_date)->endOfDay()
-            ]);
-        }
+        // Query absensi sesuai bulan dan tahun
+        $query = AbsensiKaryawan::where('user_id', $user->id)
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun);
 
         $absensis = $query->orderBy('created_at', 'desc')->get();
 
-        return view('karyawan.history', compact('absensis'));
+        return view('karyawan.history', compact('absensis', 'bulan', 'tahun'));
     }
-
 
 }

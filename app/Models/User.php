@@ -15,7 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // tambahin ini juga kalau belum ada
+        'role',
+        'status',
     ];
 
     protected $hidden = [
@@ -56,6 +57,12 @@ class User extends Authenticatable
     {
         return $this->hasOne(Guru::class);
     }
+
+    public function isAktif()
+    {
+        return $this->status === 'aktif';
+    }
+
 
 
 }

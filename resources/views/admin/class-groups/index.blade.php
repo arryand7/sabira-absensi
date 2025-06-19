@@ -1,47 +1,59 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Manajemen Kelas</h2>
+    <h2 class="font-semibold text-xl text-[#292D22]">
+        {{ __('Manajemen Kelas') }}
+    </h2>
+
+    <x-slot name="sidebar">
+        <x-admin-sidenav />
     </x-slot>
 
-    <div class="flex">
-        <x-admin-sidenav />
-
-        <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+            <div class="mb-4">
                 <a href="{{ route('admin.class-groups.create') }}"
-                   class="mb-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    + Tambah Kelas
+                   class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow">
+                    <i class="bi bi-plus-circle-fill"></i> Tambah Kelas
                 </a>
+            </div>
+            <div class="mb-4">
+                <a href="{{ route('admin.class-groups.duplicate-form') }}"
+                    class="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded shadow">
+                        <i class="bi bi-files"></i> Duplikat Kelas
+                    </a>
+            </div>
 
-                <table class="w-full table-auto text-left text-sm text-gray-500 dark:text-gray-400">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+            <div class="overflow-x-auto">
+                <table id="kelasTable" class="w-full text-sm text-left text-[#373C2E]">
+                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
                         <tr>
-                            <th class="px-4 py-2">Nama Kelas</th>
-                            <th class="px-4 py-2">Jenis Kelas</th>
-                            <th class="px-4 py-2">Tahun Ajaran</th>
-                            <th class="px-4 py-2">Wali Kelas</th>
-                            <th class="px-4 py-2">Aksi</th>
+                            <th class="px-4 py-3">Nama Kelas</th>
+                            <th class="px-4 py-3">Jenis Kelas</th>
+                            <th class="px-4 py-3">Tahun Ajaran</th>
+                            <th class="px-4 py-3">Wali Kelas</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-[#D6D8D2]">
                         @forelse ($classGroups as $group)
-                            <tr class="border-b">
-                                <td class="px-4 py-2">{{ $group->nama_kelas }}</td>
-                                <td class="px-4 py-2 capitalize">{{ $group->jenis_kelas }}</td>
-                                <td class="px-4 py-2">{{ $group->tahun_ajaran }}</td>
-                                <td class="px-4 py-2">
+                            <tr class="hover:bg-[#BEC1B7] transition">
+                                <td class="px-4 py-3">{{ $group->nama_kelas }}</td>
+                                <td class="px-4 py-3 capitalize">{{ $group->jenis_kelas }}</td>
+                                <td class="px-4 py-3">{{ $group->academicYear->name }}</td>
+                                <td class="px-4 py-3">
                                     {{ $group->waliKelas?->user?->name ?? '-' }}
                                 </td>
-                                <td class="px-4 py-2 flex items-center gap-2">
+                                <td class="px-4 py-3 text-center space-x-1">
                                     <a href="{{ route('admin.class-groups.edit', $group->id) }}"
-                                    class="px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                        Edit
+                                       class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 shadow">
+                                        <i class="bi bi-pencil-fill"></i> Edit
                                     </a>
-                                    <form action="{{ route('admin.class-groups.destroy', $group->id) }}" method="POST" class="delete-form inline">
+                                    <form action="{{ route('admin.class-groups.destroy', $group->id) }}"
+                                          method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                                            Hapus
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 shadow">
+                                            <i class="bi bi-trash-fill"></i> Hapus
                                         </button>
                                     </form>
                                 </td>
@@ -52,14 +64,16 @@
                             </tr>
                         @endforelse
                     </tbody>
-
                 </table>
             </div>
+        </div>
+    </div>
 
-            <script>
+    @push('scripts')
+        <script>
             document.querySelectorAll('.delete-form').forEach(form => {
                 form.addEventListener('submit', function (e) {
-                    e.preventDefault(); // cegah submit langsung
+                    e.preventDefault();
 
                     Swal.fire({
                         title: 'Yakin ingin menghapus?',
@@ -77,7 +91,26 @@
                     });
                 });
             });
-            </script>
-        </div>
-    </div>
+
+            // Optional: aktifkan DataTables jika ingin
+            $('#kelasTable').DataTable({
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ entri",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    zeroRecords: "Tidak ditemukan data yang sesuai",
+                },
+                responsive: true,
+                pageLength: 10,
+                ordering: true,
+                order: [[0, 'asc']],
+            });
+        </script>
+    @endpush
 </x-app-layout>

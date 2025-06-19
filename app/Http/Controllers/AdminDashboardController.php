@@ -11,22 +11,26 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        // Data absensi hari ini
         $absensis = AbsensiKaryawan::with('user')
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'aktif');
+            })
             ->whereDate('waktu_absen', now()->toDateString())
             ->orderByDesc('waktu_absen')
             ->get();
 
-        // Total karyawan
-        $totalKaryawan = Karyawan::count();
+        $totalKaryawan = Karyawan::whereHas('user', function ($query) {
+            $query->where('status', 'aktif');
+        })->count();
 
-        // Karyawan yang sudah absen hari ini (distinct user_id)
         $sudahAbsenUserIds = AbsensiKaryawan::whereDate('waktu_absen', now()->toDateString())
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'aktif');
+            })
             ->distinct('user_id')
             ->pluck('user_id');
-        $totalSudahAbsen = $sudahAbsenUserIds->count();
 
-        // Karyawan yang belum absen
+        $totalSudahAbsen = $sudahAbsenUserIds->count();
         $totalBelumHadir = $totalKaryawan - $totalSudahAbsen;
 
         return view('admin.dashboard', compact(
@@ -36,4 +40,5 @@ class AdminDashboardController extends Controller
             'totalBelumHadir'
         ));
     }
+
 }

@@ -41,8 +41,8 @@ class DetailKaryawanExport implements FromCollection
 
         foreach ($absensi as $a) {
             $data->push([
-                Carbon::parse($a->check_in)->format('Y-m-d'),
-                Carbon::parse($a->check_in)->format('H:i:s'),
+                $a->waktu_absen ? Carbon::parse($a->waktu_absen)->format('Y-m-d') : '-',
+                $a->check_in ? Carbon::parse($a->check_in)->format('H:i:s') : '-',
                 ucfirst($a->status),
             ]);
         }

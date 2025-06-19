@@ -1,90 +1,90 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Daftar Mata Pelajaran') }}
-        </h2>
+    <h2 class="font-semibold text-xl text-[#292D22] leading-tight">
+        {{ __('Daftar Mata Pelajaran') }}
+    </h2>
+
+    <x-slot name="sidebar">
+        <x-admin-sidenav />
     </x-slot>
 
-    <div class="flex">
-        <x-admin-sidenav />
+    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
 
-        <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+            {{-- Tombol Tambah --}}
+            <div class="mb-4">
+                <a href="{{ route('subjects.create') }}"
+                   class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow">
+                    <i class="bi bi-plus-circle-fill"></i> Tambah Mapel
+                </a>
+            </div>
 
-                <div class="mb-4">
-                    <a href="{{ route('subjects.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        Tambah Mapel
-                    </a>
-                </div>
-
-                <table class="w-full table-auto text-left text-sm text-gray-500 dark:text-gray-400">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+            {{-- Tabel Mapel --}}
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto text-left text-sm text-[#373C2E]">
+                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
                         <tr>
-                            <th class="px-4 py-2">Nama</th>
-                            <th class="px-4 py-2">Kode</th>
-                            <th class="px-4 py-2">Jenis</th>
-                            <th class="px-4 py-2">Aksi</th>
+                            <th class="px-4 py-3">Nama</th>
+                            <th class="px-4 py-3">Kode</th>
+                            <th class="px-4 py-3">Jenis</th>
+                            <th class="px-4 py-3">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($subjects as $subject)
-                            <tr class="border-b dark:border-gray-700">
+                    <tbody class="divide-y divide-[#D6D8D2]">
+                        @forelse($subjects as $subject)
+                            <tr class="hover:bg-[#BEC1B7] transition">
                                 <td class="px-4 py-2">{{ $subject->nama_mapel }}</td>
                                 <td class="px-4 py-2">{{ $subject->kode_mapel }}</td>
                                 <td class="px-4 py-2 capitalize">{{ $subject->jenis_mapel }}</td>
                                 <td class="px-4 py-2 space-x-2">
-                                    <a href="{{ route('subjects.edit', $subject) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
-                                        Edit
+                                    <a href="{{ route('subjects.edit', $subject) }}"
+                                       class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 shadow">
+                                        <i class="bi bi-pencil-fill"></i> Edit
                                     </a>
                                     <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                                            Hapus
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 shadow">
+                                            <i class="bi bi-trash-fill"></i> Hapus
                                         </button>
                                     </form>
                                 </td>
                             </tr>
-                        @endforeach
-
-                        @if($subjects->isEmpty())
+                        @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
-                                    Belum ada data mapel.
-                                </td>
+                                <td colspan="4" class="px-4 py-4 text-center text-gray-500">Belum ada data mapel.</td>
                             </tr>
-                        @endif
+                        @endforelse
                     </tbody>
                 </table>
-
             </div>
         </div>
     </div>
 
+    {{-- Script SweetAlert --}}
     <script>
-    document.querySelectorAll('.delete-form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault(); // cegah submit langsung
-
-            Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Yakin ingin menghapus?',
+                    text: "Data yang dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         });
-    });
     </script>
 
-
+    {{-- SweetAlert Session --}}
     @if (session('success'))
     <script>
         Swal.fire({

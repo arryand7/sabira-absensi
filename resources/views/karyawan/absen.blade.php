@@ -1,13 +1,8 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard Karyawan') }}
-        </h2>
-    </x-slot>
 
-    <div class="px-4 py-2">
+    <div class="px-2 py-2">
         <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
-            <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
+            <i class="bi bi-arrow-left-circle me-1 text-lg"></i> Kembali
         </a>
     </div>
 
@@ -19,29 +14,27 @@
         <!-- Location Info Box -->
         <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 shadow-sm mb-6">
             <div class="mb-3">
-                <label class="text-sm font-semibold text-emerald-800 block">DAY</label>
-                <div class="border p-2 rounded text-sm text-gray-700">{{ now()->translatedFormat('l, d F Y') }}</div>
+                <label class="text-sm font-semibold text-emerald-800 block">Hari</label>
+                <div class="border p-2 rounded text-base font-medium text-gray-700">{{ now()->translatedFormat('l, d F Y') }}</div>
             </div>
             <div>
-                <label class="text-sm font-semibold text-emerald-800 block">TIME</label>
-                <div class="border p-2 rounded text-sm text-gray-700">
-                    {{ now()->format('H:i') }}
-                </div>
+                <label class="text-sm font-semibold text-emerald-800 block">Jam</label>
+                <div class="border p-2 rounded text-base font-medium text-gray-700">{{ now()->format('H:i') }}</div>
             </div>
         </div>
 
-        <!-- Feedback Messages -->
+        {{-- <!-- Feedback Messages -->
         @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 text-green-800 rounded">
-                {{ session('success') }}
+            <div class="mb-4 p-4 bg-green-100 text-green-800 rounded shadow-sm">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 text-red-800 rounded">
-                {{ session('error') }}
+            <div class="mb-4 p-4 bg-red-100 text-red-800 rounded shadow-sm">
+                <i class="bi bi-x-circle-fill me-2"></i>{{ session('error') }}
             </div>
-        @endif
+        @endif --}}
 
         <!-- Form Buttons -->
         <div class="grid grid-cols-2 gap-4 mb-4 text-center">
@@ -51,7 +44,7 @@
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
                 <button type="submit" class="w-full py-3 bg-green-600 text-white rounded-md font-semibold">
-                    Check-in
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Check-in
                 </button>
             </form>
 
@@ -59,7 +52,7 @@
             <form method="POST" action="{{ route('absensi.checkout') }}">
                 @csrf
                 <button type="submit" class="w-full py-3 bg-red-600 text-white rounded-md font-semibold">
-                    Check-out
+                    <i class="bi bi-box-arrow-right me-2"></i>Check-out
                 </button>
             </form>
         </div>
@@ -72,7 +65,6 @@
     <script>
         const sekolahLat = {{ $lokasi->latitude ?? '-7.310823820752337' }};
         const sekolahLng = {{ $lokasi->longitude ?? '112.72923730812086' }};
-;
 
         const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
 
@@ -80,8 +72,7 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        const schoolMarker = L.marker([sekolahLat, sekolahLng]).addTo(map)
-            .bindPopup('Lokasi Sekolah');
+        const schoolMarker = L.marker([sekolahLat, sekolahLng]).addTo(map).bindPopup('Lokasi Sekolah');
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
@@ -104,7 +95,7 @@
                     [sekolahLat, sekolahLng],
                     [lat, lng]
                 ]);
-            }, function(error) {
+            }, function() {
                 alert('Gagal mendapatkan lokasi! Pastikan izin lokasi aktif.');
             }, {
                 enableHighAccuracy: true,

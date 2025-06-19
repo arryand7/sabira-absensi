@@ -14,71 +14,79 @@ class LaporanController extends Controller
     public function index(Request $request)
     {
         $divisi = $request->divisi;
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-
+        $start_date = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $end_date = $request->end_date ?? Carbon::now()->endOfMonth()->format('Y-m-d');
+        $jenisGuru = $request->jenis_guru;
         $divisis = \App\Models\Divisi::all();
 
-        $users = \App\Models\User::with(['karyawan.divisi'])
+        $users = User::with(['karyawan.divisi', 'guru'])
+            ->where('status', 'aktif')
+            ->whereHas('karyawan')
             ->when($divisi, function ($q) use ($divisi) {
                 $q->whereHas('karyawan.divisi', function ($q2) use ($divisi) {
                     $q2->where('nama', $divisi);
                 });
             })
+            ->when($jenisGuru, function ($q) use ($jenisGuru) {
+                $q->whereHas('guru', function ($q2) use ($jenisGuru) {
+                    $q2->where('jenis', $jenisGuru);
+                });
+            })
             ->get();
 
-        $laporan = [];
+        $laporanKaryawan = [];
+        $laporanGuru = [
+            'akademik' => [],
+            'muadalah' => [],
+        ];
 
         foreach ($users as $user) {
             $absensi = $user->absensis()
-                ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-                    $q->whereBetween('waktu_absen', [
-                        Carbon::parse($start_date)->startOfDay(),
-                        Carbon::parse($end_date)->endOfDay()
-                    ]);
-                })
+                ->whereBetween('waktu_absen', [
+                    Carbon::parse($start_date)->startOfDay(),
+                    Carbon::parse($end_date)->endOfDay()
+                ])
                 ->get();
 
             $hadir = $absensi->whereIn('status', ['Hadir', 'Terlambat'])->count();
             $absen = $absensi->where('status', 'Tidak Hadir')->count();
 
-            $laporan[] = [
+            $item = [
                 'user' => $user,
                 'hadir' => $hadir,
                 'absen' => $absen,
             ];
+
+            if ($user->guru) {
+                $jenis = $user->guru->jenis;
+                $laporanGuru[$jenis][] = $item;
+            } else {
+                $laporanKaryawan[] = $item;
+            }
         }
 
-        return view('admin.laporan.index', compact('laporan', 'divisis'));
+        return view('admin.laporan.index', compact('laporanKaryawan', 'laporanGuru', 'divisis'));
     }
-
 
     public function export(Request $request)
     {
         $divisi = $request->divisi;
+        $jenisGuru = $request->jenis_guru;
         $start_date = $request->start_date;
         $end_date = $request->end_date;
 
-        return Excel::download(new LaporanKaryawanExport($divisi, $start_date, $end_date), 'laporan-karyawan.xlsx');
-    }
+        $label = 'semua';
+        if ($divisi) $label = $divisi;
+        if ($jenisGuru) $label = $jenisGuru;
 
-    public function laporanKaryawan()
-    {
-        $laporan = User::with('karyawan')
-        ->where('role', 'karyawan')
-        ->get()
-        ->map(function ($user) {
-            $absensi = AbsensiKaryawan::where('user_id', $user->id)->get();
-            $hadir = $absensi->where('status', 'hadir')->count();
-            $absen = $absensi->where('status', 'absen')->count();
+        $filename = 'absensi_' . str_replace(' ', '_', strtolower($label)) . '_' . $start_date . '_sampai_' . $end_date . '.xlsx';
 
-            return [
-                'user' => $user,
-                'karyawan' => $user->karyawan, // pastikan ini gak null
-                'hadir' => $hadir,
-                'absen' => $absen,
-            ];
-        });
+        return Excel::download(new LaporanKaryawanExport(
+            $divisi,
+            $jenisGuru,
+            $start_date,
+            $end_date
+        ), $filename);
     }
 
     public function detail($id, Request $request)
@@ -98,6 +106,7 @@ class LaporanController extends Controller
                 $item->jam = $item->check_in ?? '-';
                 return $item;
             });
+
         return view('admin.laporan.karyawan-detail', compact('user', 'absensi'));
     }
 
@@ -108,5 +117,4 @@ class LaporanController extends Controller
 
         return Excel::download(new \App\Exports\DetailKaryawanExport($id, $bulan, $tahun), 'rekap-karyawan.xlsx');
     }
-
 }

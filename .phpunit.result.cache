@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Tests\\Feature\\AbsensiControllerTest::test_checkin_berhasil":8,"Tests\\Feature\\AbsensiControllerTest::test_checkin_gagal_sudah_checkin":8,"Tests\\Feature\\AbsensiControllerTest::test_checkin_gagal_karena_lokasi_tidak_sesuai":8},"times":[]}

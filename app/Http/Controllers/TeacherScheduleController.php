@@ -9,26 +9,37 @@ use App\Models\Attendance;
 use Illuminate\Support\Facades\DB;
 use App\Models\ClassGroup;
 
+
 class TeacherScheduleController extends Controller
 {
     public function index()
     {
-        $schedules = Schedule::with('classGroup')
+        $tahunAktif = \App\Models\AcademicYear::where('is_active', true)->first();
+
+        $schedules = Schedule::with(['classGroup', 'subject'])
             ->where('user_id', Auth::id())
+            ->where('academic_year_id', $tahunAktif?->id)
+            ->orderBy('hari')
+            ->orderBy('jam_mulai')
             ->get();
 
         return view('guru.schedule.index', compact('schedules'));
     }
 
-    public function absen($classGroupId)
+
+    public function absen(Schedule $schedule)
     {
-        $classGroup = ClassGroup::with('students')->findOrFail($classGroupId);
-        $schedule = Schedule::where('class_group_id', $classGroupId)
-                            ->where('user_id', Auth::id())
-                            ->firstOrFail();
+        // Cek apakah jadwal ini milik guru yang sedang login
+        if ($schedule->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses ke jadwal ini.');
+        }
+
+        // Ambil data kelas dan siswanya
+        $classGroup = ClassGroup::with('students')->findOrFail($schedule->class_group_id);
 
         return view('guru.schedule.absen', compact('classGroup', 'schedule'));
     }
+
 
     public function submitAbsen(Request $request, $classGroupId)
     {
@@ -41,10 +52,24 @@ class TeacherScheduleController extends Controller
 
         $scheduleId = $request->input('schedule_id');
         $tanggal = now()->toDateString();
-        $jamMulai = $request->input('jam_mulai');   // Dari hidden input
-        $jamSelesai = $request->input('jam_selesai'); // Dari hidden input
+        $jamMulai = $request->input('jam_mulai');
+        $jamSelesai = $request->input('jam_selesai');
         $materi = $request->input('materi');
         $pertemuan = $request->input('pertemuan');
+
+        $schedule = Schedule::with('subject')->findOrFail($request->schedule_id);
+
+        $duplicatePertemuan = Attendance::whereHas('schedule', function ($query) use ($schedule) {
+                $query->where('subject_id', $schedule->subject_id)
+                    ->where('class_group_id', $schedule->class_group_id);
+            })
+            ->where('pertemuan', $request->pertemuan)
+            ->exists();
+
+        if ($duplicatePertemuan) {
+            return back()->with('error', 'Pertemuan ke-' . $request->pertemuan . ' untuk mata pelajaran dan kelas ini sudah pernah diisi.');
+        }
+
 
         DB::beginTransaction();
         try {
@@ -66,8 +91,8 @@ class TeacherScheduleController extends Controller
             return redirect()->route('guru.schedule')->with('success', 'Absen berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
-
             return back()->with('error', 'Terjadi kesalahan saat menyimpan absensi.');
         }
     }
+
 }

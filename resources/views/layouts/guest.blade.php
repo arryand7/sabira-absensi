@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,7 +20,7 @@
 
         <!-- Left Image (Only on desktop) -->
         <div class="hidden sm:flex sm:w-1/2 h-screen items-center justify-center">
-            <img src="{{ asset('images/gambar.png') }}" alt="Login Image" class="w-3/4 max-w-xs object-contain">
+            <img src="{{ asset('images/gambar.png') }}" alt="Login Image" class="w-4/5 max-w-md object-contain">
         </div>
 
         <!-- Right Form -->

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('nama_kelas');
             $table->enum('jenis_kelas', ['akademik', 'muadalah']);
-            $table->string('tahun_ajaran');
             $table->timestamps();
        });
     }

@@ -24,4 +24,9 @@ class ClassGroup extends Model
         return $this->belongsTo(Guru::class, 'wali_kelas_id');
     }
 
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
 }

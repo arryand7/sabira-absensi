@@ -50,7 +50,17 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        // ✅ Tambahkan cek status user
+        if (Auth::user()->status !== 'aktif') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda tidak aktif.',
+            ]);
+        }
     }
+
 
     /**
      * Ensure the login request is not rate limited.

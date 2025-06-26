@@ -9,10 +9,10 @@ class AbsensiLokasiFactory extends Factory
 {
     protected $model = AbsensiLokasi::class;
 
-    public function definition()
+    public function definition(): array
     {
         return [
-            'latitude' => -7.31,
+            'latitude' => -7.3,
             'longitude' => 112.72,
         ];
     }

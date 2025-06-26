@@ -50,7 +50,7 @@
                             class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm focus:ring focus:ring-orange-200 @error('jenis_mapel') border-red-500 @enderror"
                             required>
                             <option value="">-- Pilih Jenis --</option>
-                            <option value="akademik" {{ old('jenis_mapel') == 'akademik' ? 'selected' : '' }}>Akademik</option>
+                            <option value="formal" {{ old('jenis_mapel') == 'formal' ? 'selected' : '' }}>Formal</option>
                             <option value="muadalah" {{ old('jenis_mapel') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
                         </select>
                         @error('jenis_mapel') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror

@@ -26,21 +26,21 @@ class StudentController extends Controller
         }
 
         $students = $query->get()->filter(function ($student) use ($request) {
-            $akademikClass = true;
+            $formalClass = true;
             $muadalahClass = true;
 
-            if ($request->filled('kelas_akademik')) {
-                $akademikClass = $student->classGroups->firstWhere('jenis_kelas', 'akademik')?->id == $request->kelas_akademik;
+            if ($request->filled('kelas_formal')) {
+                $formalClass = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id == $request->kelas_formal;
             }
 
             if ($request->filled('kelas_muadalah')) {
                 $muadalahClass = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id == $request->kelas_muadalah;
             }
 
-            return $akademikClass && $muadalahClass;
+            return $formalClass && $muadalahClass;
         });
 
-        $academicClasses = ClassGroup::where('jenis_kelas', 'akademik')
+        $academicClasses = ClassGroup::where('jenis_kelas', 'formal')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
@@ -55,7 +55,7 @@ class StudentController extends Controller
     {
         $activeYearIds = AcademicYear::where('is_active', true)->pluck('id');
 
-        $academicClasses = ClassGroup::where('jenis_kelas', 'akademik')
+        $academicClasses = ClassGroup::where('jenis_kelas', 'formal')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
@@ -73,14 +73,14 @@ class StudentController extends Controller
             'nama_lengkap'    => 'required',
             'nis'             => 'required|unique:students,nis',
             'jenis_kelamin'   => 'required|in:L,P',
-            'kelas_akademik'  => 'nullable|exists:class_groups,id',
+            'kelas_formal'  => 'nullable|exists:class_groups,id',
             'kelas_muadalah'  => 'nullable|exists:class_groups,id',
         ]);
 
         $student = Student::create($request->only(['nama_lengkap', 'nis', 'jenis_kelamin']));
 
-        if ($request->kelas_akademik) {
-            $classGroup = ClassGroup::find($request->kelas_akademik);
+        if ($request->kelas_formal) {
+            $classGroup = ClassGroup::find($request->kelas_formal);
             $student->classGroups()->attach($classGroup->id, [
                 'academic_year_id' => $classGroup->academic_year_id,
             ]);
@@ -102,7 +102,7 @@ class StudentController extends Controller
 
         $activeYearIds = AcademicYear::where('is_active', true)->pluck('id');
 
-        $academicClasses = ClassGroup::where('jenis_kelas', 'akademik')
+        $academicClasses = ClassGroup::where('jenis_kelas', 'formal')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
@@ -110,11 +110,11 @@ class StudentController extends Controller
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
-        $kelasAkademikId = $student->classGroups->firstWhere('jenis_kelas', 'akademik')?->id;
+        $kelasFormalId = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id;
         $kelasMuadalahId = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id;
 
         return view('admin.students.edit', compact(
-            'student', 'academicClasses', 'muadalahClasses', 'kelasAkademikId', 'kelasMuadalahId'
+            'student', 'academicClasses', 'muadalahClasses', 'kelasFormalId', 'kelasMuadalahId'
         ));
     }
 
@@ -125,7 +125,7 @@ class StudentController extends Controller
             'nama_lengkap'    => 'required',
             'nis'             => 'required|unique:students,nis,' . $id,
             'jenis_kelamin'   => 'required|in:L,P',
-            'kelas_akademik'  => 'nullable|exists:class_groups,id',
+            'kelas_formal'  => 'nullable|exists:class_groups,id',
             'kelas_muadalah'  => 'nullable|exists:class_groups,id',
         ]);
 
@@ -134,8 +134,8 @@ class StudentController extends Controller
 
         $syncData = [];
 
-        if ($request->kelas_akademik) {
-            $classGroup = ClassGroup::find($request->kelas_akademik);
+        if ($request->kelas_formal) {
+            $classGroup = ClassGroup::find($request->kelas_formal);
             $syncData[$classGroup->id] = ['academic_year_id' => $classGroup->academic_year_id];
         }
 

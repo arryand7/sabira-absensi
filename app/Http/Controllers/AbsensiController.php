@@ -40,6 +40,7 @@ class AbsensiController extends Controller
 
     public function checkin(Request $request)
     {
+
         $user = Auth::user();
 
         // Cek apakah sudah check-in hari ini
@@ -61,7 +62,7 @@ class AbsensiController extends Controller
 
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
-        if ($jarak > 0.1) {
+        if ($jarak > 0.2) {
             return back()->with("error", "Gagal Check-In: Lokasi terlalu jauh dari sekolah.");
         }
 
@@ -79,7 +80,7 @@ class AbsensiController extends Controller
         } elseif ($user->role === 'guru') {
             $jenisGuru = optional($user->guru)->jenis;
 
-            if ($jenisGuru === 'akademik') {
+            if ($jenisGuru === 'formal') {
                 if ($jamSekarang >= '07:31:00' && $jamSekarang <= '16:00:00') {
                     $status = 'Terlambat';
                 } elseif ($jamSekarang > '16:00:00') {
@@ -115,6 +116,7 @@ class AbsensiController extends Controller
 
     public function checkout(Request $request)
     {
+
         $user = Auth::user();
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)

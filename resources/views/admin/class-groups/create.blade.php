@@ -46,7 +46,7 @@
                             class="w-full rounded border-gray-300 p-2 bg-[#EEF3E9] text-[#1C1E17] @error('jenis_kelas') border-red-500 @enderror"
                             required>
                             <option value="">Pilih Jenis</option>
-                            <option value="akademik" {{ old('jenis_kelas') == 'akademik' ? 'selected' : '' }}>Akademik</option>
+                            <option value="formal" {{ old('jenis_kelas') == 'formal' ? 'selected' : '' }}>Formal</option>
                             <option value="muadalah" {{ old('jenis_kelas') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
                         </select>
                         @error('jenis_kelas')

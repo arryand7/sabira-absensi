@@ -9,11 +9,34 @@
 
     <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
         <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
-            @if (session('success'))
-                <div class="mb-4 px-4 py-2 bg-green-100 text-green-700 rounded shadow">
-                    {{ session('success') }}
+            @if (session('success') || session('errors_import'))
+                <div class="mb-4 space-y-2">
+                    @if (session('success'))
+                        <div class="mb-4 px-4 py-2 bg-green-100 text-green-700 rounded shadow space-y-1">
+                            @foreach (session('success') as $msg)
+                                <div>{{ $msg }}</div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if (session('errors_import'))
+                        <div class="bg-red-100 text-red-800 px-4 py-3 rounded shadow">
+                            <strong>Gagal:</strong>
+                            <ul class="list-disc ml-5 text-sm">
+                                @foreach (session('errors_import') as $msg)
+                                    <li>{{ $msg }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                 </div>
             @endif
+
+            <form action="{{ route('admin.schedules.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" name="file" required class="form-input" />
+                <button type="submit" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Import</button>
+            </form>
 
             <div class="overflow-x-auto">
                 <table id="guruTable" class="w-full text-sm text-left text-#373C2E">

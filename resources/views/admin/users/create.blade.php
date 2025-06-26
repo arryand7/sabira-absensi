@@ -104,24 +104,16 @@
                         {{-- Tambahan jika role == guru --}}
                         <div id="guruFields" style="display: none;">
                             <label class="block text-[#1C1E17]">Jenis Guru</label>
-                            <div class="space-y-2">
-                                <label class="block text-[#1C1E17]">Jenis Guru</label>
-                                <div class="flex items-center space-x-4">
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="jenis_guru[]" value="akademik"
-                                            {{ is_array(old('jenis_guru')) && in_array('akademik', old('jenis_guru')) ? 'checked' : '' }}>
-                                        <span>Akademik</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="jenis_guru[]" value="muadalah"
-                                            {{ is_array(old('jenis_guru')) && in_array('muadalah', old('jenis_guru')) ? 'checked' : '' }}>
-                                        <span>Muadalah</span>
-                                    </label>
-                                </div>
-                                @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                            </div>
+                            <select name="jenis_guru"
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('jenis_guru') border-red-500 @enderror">
+                                <option value="">-- Pilih Jenis Guru --</option>
+                                <option value="formal" {{ old('jenis_guru') == 'formal' ? 'selected' : '' }}>Formal</option>
+                                <option value="muadalah" {{ old('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
+                            </select>
+                            @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
+
                     <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
                         <i class="bi bi-save mr-1"></i> Simpan
                     </button>

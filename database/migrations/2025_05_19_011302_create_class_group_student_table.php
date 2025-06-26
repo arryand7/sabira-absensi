@@ -12,14 +12,18 @@ class CreateClassGroupStudentTable extends Migration
             $table->id();
             $table->foreignId('class_group_id')->constrained()->onDelete('cascade');
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
+            $table->foreignId('academic_year_id')
+                ->constrained('academic_years');
             $table->timestamps();
-
             $table->unique(['class_group_id', 'student_id']); // Optional: biar kombinasi ini unik
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('class_group_student');
+        Schema::table('class_group_student', function (Blueprint $table) {
+            $table->dropForeign(['academic_year_id']);
+            $table->dropColumn('academic_year_id');
+        });
     }
 }

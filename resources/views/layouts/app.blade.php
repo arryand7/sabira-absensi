@@ -85,7 +85,9 @@
     </script>
 
     {{-- Notifikasi SweetAlert --}}
-    @if(session('success') || session('error'))
+    @if((session('success') || session('error'))
+        && !request()->routeIs('admin.schedules.index')
+        && !request()->routeIs('promotion.*'))
         <script>
             Swal.fire({
                 icon: '{{ session('success') ? 'success' : 'error' }}',

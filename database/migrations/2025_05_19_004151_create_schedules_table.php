@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('hari', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad']);
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            $table->foreignId('academic_year_id')->constrained();
             $table->timestamps();
         });
     }
@@ -28,6 +29,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('schedules');
+        Schema::table('schedules', function (Blueprint $table) {
+            $table->dropForeign(['academic_year_id']);
+            $table->dropColumn('academic_year_id');
+        });
     }
 };

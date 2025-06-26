@@ -6,18 +6,18 @@
     <div class="p-4">
         <main class="mt-6 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- AKADEMIK --}}
+                {{-- FORMAL --}}
                 <div class="bg-[#EEF3E9] p-6 shadow-md rounded-2xl">
-                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Akademik</h3>
+                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Formal</h3>
                     <form method="GET" action="{{ route('laporan.murid.mapel') }}" class="space-y-4">
-                        <input type="hidden" name="jenis" value="akademik">
+                        <input type="hidden" name="jenis" value="formal">
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Kelas</label>
                             <select name="kelas" class="w-full rounded-md border-gray-300 shadow-sm">
                                 <option value="">Pilih Kelas</option>
-                                @foreach($kelasAkademik as $kelas)
-                                    <option value="{{ $kelas }}" {{ request('kelas') == $kelas && request('jenis') == 'akademik' ? 'selected' : '' }}>
+                                @foreach($kelasFormal as $kelas)
+                                    <option value="{{ $kelas }}" {{ request('kelas') == $kelas && request('jenis') == 'formal' ? 'selected' : '' }}>
                                         {{ $kelas }}
                                     </option>
                                 @endforeach
@@ -28,8 +28,8 @@
                             <label class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
                             <select name="mapel" class="w-full rounded-md border-gray-300 shadow-sm">
                                 <option value="">Pilih Mapel</option>
-                                @foreach($mapelAkademik as $mapel)
-                                    <option value="{{ $mapel }}" {{ request('mapel') == $mapel && request('jenis') == 'akademik' ? 'selected' : '' }}>
+                                @foreach($mapelFormal as $mapel)
+                                    <option value="{{ $mapel }}" {{ request('mapel') == $mapel && request('jenis') == 'formal' ? 'selected' : '' }}>
                                         {{ $mapel }}
                                     </option>
                                 @endforeach
@@ -55,10 +55,14 @@
                                 <i class="bi bi-eye-fill"></i> Preview
                             </button>
 
-                            @if(request('jenis') == 'akademik' && request('kelas') && request('mapel'))
+                            @if(request('jenis') == 'formal' && request('kelas') && request('mapel'))
                                <a href="{{ route('laporan.murid.mapel.download', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
                                    class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+                                </a>
+                                <a href="{{ route('laporan.murid.mapel.excel', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
+                                class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+                                    <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                                 </a>
                             @endif
                         </div>
@@ -117,6 +121,10 @@
                                 <a href="{{ route('laporan.murid.mapel.download', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
                                    class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+                                </a>
+                                <a href="{{ route('laporan.murid.mapel.excel', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
+                                class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+                                    <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                                 </a>
                             @endif
                         </div>

@@ -36,7 +36,7 @@ class LaporanController extends Controller
 
         $laporanKaryawan = [];
         $laporanGuru = [
-            'akademik' => [],
+            'formal' => [],
             'muadalah' => [],
         ];
 

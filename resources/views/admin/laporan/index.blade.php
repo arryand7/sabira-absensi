@@ -28,7 +28,7 @@
                     <label for="jenis_guru" class="block text-sm font-medium text-gray-700">Jenis Guru</label>
                     <select name="jenis_guru" id="jenis_guru" class="w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-orange-200">
                         <option value="">Semua</option>
-                        <option value="akademik" {{ request('jenis_guru') == 'akademik' ? 'selected' : '' }}>Akademik</option>
+                        <option value="formal" {{ request('jenis_guru') == 'formal' ? 'selected' : '' }}>Formal</option>
                         <option value="muadalah" {{ request('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
                     </select>
                 </div>

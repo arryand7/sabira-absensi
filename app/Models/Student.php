@@ -22,9 +22,9 @@ class Student extends Model
         return $this->hasMany(Attendance::class);
     }
 
-    public function akademikClass()
+    public function formalClass()
     {
-        return $this->classGroups->firstWhere('jenis_kelas', 'akademik');
+        return $this->classGroups->firstWhere('jenis_kelas', 'formal');
     }
 
     public function muadalahClass()

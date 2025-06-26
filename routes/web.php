@@ -69,8 +69,7 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
     Route::get('/admin/muid/{student}/download', [LaporanMuridController::class, 'download'])->name('laporan.murid.download');
     Route::get('/admin/laporan/murid/mapel', [LaporanMuridController::class, 'laporanMapel'])->name('laporan.murid.mapel');
     Route::get('/admin/laporan/murid/mapel/download', [LaporanMuridController::class, 'downloadMapel'])->name('laporan.murid.mapel.download');
-
-
+    Route::get('/laporan/murid/mapel/excel', [LaporanMuridController::class, 'exportExcel'])->name('laporan.murid.mapel.excel');
 
     // user
     // Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -91,6 +90,8 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
         Route::put('/{schedule}', [AdminScheduleController::class, 'update'])->name('update'); // Update data
         Route::delete('/{schedule}', [AdminScheduleController::class, 'destroy'])->name('destroy'); // Hapus
         Route::get('/guru/{id}', [AdminScheduleController::class, 'showByTeacher'])->name('show-by-teacher');
+        Route::post('/import', [AdminScheduleController::class, 'import'])->name('import');
+
     });
 
     Route::get('/admin/students', [StudentController::class, 'index'])->name('admin.students.index');
@@ -126,6 +127,11 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
 
     Route::get('/promote', [StudentPromotionController::class, 'index'])->name('promotion.index');
     Route::post('/promote', [StudentPromotionController::class, 'promote'])->name('promotion.promote');
+    Route::get('/promotion', [StudentPromotionController::class, 'index'])->name('promotion.index');
+    Route::post('/promotion/add', [StudentPromotionController::class, 'add'])->name('promotion.add');
+    Route::post('/promotion/remove', [StudentPromotionController::class, 'remove'])->name('promotion.remove');
+
+
 
     Route::resource('/divisis', \App\Http\Controllers\DivisiController::class);
 

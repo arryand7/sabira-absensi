@@ -14,8 +14,14 @@ return new class extends Migration
         Schema::create('class_groups', function (Blueprint $table) {
             $table->id();
             $table->string('nama_kelas');
-            $table->enum('jenis_kelas', ['akademik', 'muadalah']);
+            $table->enum('jenis_kelas', ['formal', 'muadalah']);
+            $table->foreignId('academic_year_id')
+                ->constrained('academic_years');
             $table->timestamps();
+            $table->foreignId('wali_kelas_id')
+                ->nullable()
+                ->constrained('gurus')
+                ->onDelete('set null');
        });
     }
 
@@ -24,6 +30,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('class_groups');
+        Schema::table('class_groups', function (Blueprint $table) {
+            $table->dropForeign(['academic_year_id']);
+            $table->dropColumn('academic_year_id');
+            $table->dropForeign(['wali_kelas_id']);
+            $table->dropColumn('wali_kelas_id');
+        });
     }
 };

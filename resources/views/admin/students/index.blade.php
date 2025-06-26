@@ -37,12 +37,12 @@
             <form method="GET" action="{{ route('admin.students.index') }}"
                 class="flex flex-wrap gap-6 mb-8 items-end max-w-full">
                 <div class="flex flex-col">
-                    <label for="kelas_akademik" class="text-sm font-medium mb-1 text-gray-900">Kelas Akademik</label>
-                    <select id="kelas_akademik" name="kelas_akademik"
+                    <label for="kelas_formal" class="text-sm font-medium mb-1 text-gray-900">Kelas Formal</label>
+                    <select id="kelas_formal" name="kelas_formal"
                         class="border border-gray-300 rounded px-3 py-2 w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
                         <option value="">Semua</option>
                         @foreach ($academicClasses as $class)
-                            <option value="{{ $class->id }}" {{ request('kelas_akademik') == $class->id ? 'selected' : '' }}>
+                            <option value="{{ $class->id }}" {{ request('kelas_formal') == $class->id ? 'selected' : '' }}>
                                 {{ $class->nama_kelas }}
                             </option>
                         @endforeach
@@ -91,7 +91,7 @@
                             </th>
                             <th class="px-4 py-2">Nama</th>
                             <th class="px-4 py-2">NIS</th>
-                            <th class="px-4 py-2">Kelas Akademik</th>
+                            <th class="px-4 py-2">Kelas Formal</th>
                             <th class="px-4 py-2">Kelas Muadalah</th>
                             <th class="px-4 py-2">Jenis Kelamin</th>
                             <th class="px-4 py-2 text-center">Aksi</th>
@@ -105,7 +105,7 @@
                                 </td>
                                 <td class="px-4 py-2">{{ $student->nama_lengkap }}</td>
                                 <td class="px-4 py-2">{{ $student->nis }}</td>
-                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'akademik')?->nama_kelas ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'formal')?->nama_kelas ?? '-' }}</td>
                                 <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}</td>
                                 <td class="px-4 py-2">{{ $student->jenis_kelamin }}</td>
                                 <td class="px-4 py-2 space-x-2 text-center">
@@ -157,30 +157,30 @@
                     emptyTable: "Belum ada data murid."
                 }
             });
-        });
 
-        document.getElementById('select-all').addEventListener('click', function () {
-            document.querySelectorAll('.student-checkbox').forEach(cb => {
-                cb.checked = this.checked;
+            // Centang semua checkbox
+            $('#select-all').on('click', function () {
+                $('.student-checkbox').prop('checked', this.checked);
             });
-        });
 
-        document.getElementById('bulk-delete-form').addEventListener('submit', function (e) {
-            const selectedIds = Array.from(document.querySelectorAll('.student-checkbox'))
-                .filter(cb => cb.checked)
-                .map(cb => cb.value);
+            // Submit bulk delete
+            $('#bulk-delete-form').on('submit', function (e) {
+                const selectedIds = $('.student-checkbox:checked').map(function () {
+                    return this.value;
+                }).get();
 
-            if (selectedIds.length === 0) {
+                if (selectedIds.length === 0) {
+                    e.preventDefault();
+                    alert('Pilih minimal satu murid terlebih dahulu.');
+                } else {
+                    $('#student_ids_json').val(JSON.stringify(selectedIds));
+                }
+            });
+
+            // Konfirmasi sebelum hapus individual
+            $('.delete-form').on('submit', function (e) {
                 e.preventDefault();
-                alert('Pilih minimal satu murid terlebih dahulu.');
-            } else {
-                document.getElementById('student_ids_json').value = JSON.stringify(selectedIds);
-            }
-        });
-
-        document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
+                const form = this;
                 Swal.fire({
                     title: 'Yakin ingin menghapus?',
                     text: "Data yang dihapus tidak bisa dikembalikan!",
@@ -197,6 +197,7 @@
                 });
             });
         });
+
     </script>
 
     @if($errors->any())

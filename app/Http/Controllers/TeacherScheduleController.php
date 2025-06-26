@@ -29,17 +29,19 @@ class TeacherScheduleController extends Controller
 
     public function absen(Schedule $schedule)
     {
-        // Cek apakah jadwal ini milik guru yang sedang login
+
         if ($schedule->user_id !== Auth::id()) {
             abort(403, 'Anda tidak memiliki akses ke jadwal ini.');
         }
 
-        // Ambil data kelas dan siswanya
-        $classGroup = ClassGroup::with('students')->findOrFail($schedule->class_group_id);
+        $tahunAktif = \App\Models\AcademicYear::where('is_active', true)->first();
+
+        $classGroup = ClassGroup::with(['students' => function ($q) use ($tahunAktif) {
+            $q->wherePivot('academic_year_id', $tahunAktif->id);
+        }])->findOrFail($schedule->class_group_id);
 
         return view('guru.schedule.absen', compact('classGroup', 'schedule'));
     }
-
 
     public function submitAbsen(Request $request, $classGroupId)
     {

@@ -88,7 +88,7 @@
                     color: 'blue',
                     fillColor: '#902A2A',
                     fillOpacity: 0.2,
-                    radius: 100
+                    radius: 200
                 }).addTo(map);
 
                 map.fitBounds([

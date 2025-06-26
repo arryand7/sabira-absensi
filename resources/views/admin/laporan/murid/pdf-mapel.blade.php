@@ -21,6 +21,8 @@
     <p><strong>Mata Pelajaran:</strong> {{ $mapel ?? 'Semua' }}</p>
     <p><strong>Tahun Ajaran:</strong> {{ $tahun }}</p>
     <p><strong>Kelas:</strong> <span class="{{ str_contains($kelas, 'ا') ? 'arabic' : '' }}">{{ $kelas ?? 'Semua' }}</span></p>
+    <p><strong>Total Pertemuan:</strong> {{ $totalPertemuan }} pertemuan</p>
+
 
     <table>
         <thead>

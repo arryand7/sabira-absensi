@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_mapel');
             $table->string('kode_mapel');
-            $table->enum('jenis_mapel', ['akademik', 'muadalah']);
+            $table->enum('jenis_mapel', ['formal', 'muadalah']);
             $table->timestamps();
         });
     }

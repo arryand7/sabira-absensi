@@ -9,6 +9,8 @@ use App\Models\ClassGroup;
 use App\Models\Subject;
 use App\Models\Schedule;
 use App\Models\AcademicYear;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MapelExport;
 
 use PDF;
 
@@ -133,13 +135,13 @@ class LaporanMuridController extends Controller
             });
         }
 
-        $kelasAkademik = ClassGroup::where('jenis_kelas', 'akademik')
+        $kelasFormal = ClassGroup::where('jenis_kelas', 'formal')
             ->pluck('nama_kelas')->unique()->sort()->values();
 
         $kelasMuadalah = ClassGroup::where('jenis_kelas', 'muadalah')
             ->pluck('nama_kelas')->unique()->sort()->values();
 
-        $mapelAkademik = Subject::where('jenis_mapel', 'akademik')
+        $mapelFormal = Subject::where('jenis_mapel', 'formal')
             ->whereHas('schedules')
             ->pluck('nama_mapel')->unique()->sort()->values();
 
@@ -149,9 +151,9 @@ class LaporanMuridController extends Controller
 
         return view('admin.laporan.murid.mapel', compact(
             'rekapMapel',
-            'kelasAkademik',
+            'kelasFormal',
             'kelasMuadalah',
-            'mapelAkademik',
+            'mapelFormal',
             'mapelMuadalah',
             'academicYears',
             'tahunAktif'
@@ -175,6 +177,10 @@ class LaporanMuridController extends Controller
                 $q->where('id', $request->tahun_ajaran)
             )
             ->get();
+
+        $totalPertemuan = $absensi
+            ->unique(fn($item) => $item->schedule_id . '-' . $item->pertemuan)
+            ->count();
 
         $rekapMapel = $absensi->groupBy('student_id')->map(function ($items) {
             $first = $items->first();
@@ -201,8 +207,52 @@ class LaporanMuridController extends Controller
             'kelas' => $kelasLabel,
             'mapel' => $request->mapel,
             'tahun' => $tahun,
+            'totalPertemuan' => $totalPertemuan,
         ]);
 
         return $pdf->stream("laporan_mapel_{$request->kelas}_{$request->mapel}.pdf");
     }
+
+    public function exportExcel(Request $request)
+    {
+        $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
+            ->whereHas('schedule.subject', fn($q) =>
+                $q->where('jenis_mapel', $request->jenis)
+                    ->where('nama_mapel', $request->mapel)
+            )
+            ->whereHas('schedule.classGroup', fn($q) =>
+                $q->where('nama_kelas', $request->kelas)
+                    ->where('jenis_kelas', $request->jenis)
+            )
+            ->whereHas('schedule.academicYear', fn($q) =>
+                $q->where('id', $request->tahun_ajaran)
+            )
+            ->get();
+
+        $totalPertemuan = $absensi
+            ->unique(fn($item) => $item->schedule_id . '-' . $item->pertemuan)
+            ->count();
+
+        $rekapMapel = $absensi->groupBy('student_id')->map(function ($items) {
+            $first = $items->first();
+            return [
+                'nama' => $first->student->nama_lengkap ?? '-',
+                'nis' => $first->student->nis ?? '-',
+                'H' => $items->where('status', 'hadir')->count(),
+                'I' => $items->where('status', 'izin')->count(),
+                'S' => $items->where('status', 'sakit')->count(),
+                'A' => $items->where('status', 'alpa')->count(),
+            ];
+        });
+
+        $kelas = $request->kelas ?? 'Semua';
+        $mapel = $request->mapel ?? 'Semua';
+        $tahun = \App\Models\AcademicYear::find($request->tahun_ajaran)?->name ?? 'Tanpa Tahun';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RekapMapelExport($rekapMapel, $kelas, $mapel, $tahun, $totalPertemuan),
+            'rekap-absensi.xlsx'
+        );
+    }
+
 }

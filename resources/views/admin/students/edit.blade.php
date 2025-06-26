@@ -61,18 +61,18 @@
                     </div>
 
                     <div>
-                        <label for="kelas_akademik" class="block font-medium mb-1">Kelas Akademik</label>
-                        <select name="kelas_akademik" id="kelas_akademik"
+                        <label for="kelas_formal" class="block font-medium mb-1">Kelas Formal</label>
+                        <select name="kelas_formal" id="kelas_formal"
                             class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9] text-[#1C1E17]
-                                   @error('kelas_akademik') border-red-500 @enderror">
+                                   @error('kelas_formal') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($academicClasses as $class)
-                                <option value="{{ $class->id }}" {{ old('kelas_akademik', $kelasAkademikId) == $class->id ? 'selected' : '' }}>
+                                <option value="{{ $class->id }}" {{ old('kelas_formal', $kelasFormalId) == $class->id ? 'selected' : '' }}>
                                     {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
                                 </option>
                             @endforeach
                         </select>
-                        @error('kelas_akademik')
+                        @error('kelas_formal')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>

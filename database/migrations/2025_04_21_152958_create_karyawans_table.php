@@ -14,14 +14,15 @@ return new class extends Migration
         Schema::create('karyawan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('divisi_id')->nullable();
             $table->string('nama_lengkap');
-            $table->string('divisi');
             $table->string('alamat')->nullable();
             $table->string('no_hp')->nullable();
             $table->string('foto')->nullable();
             $table->timestamps();
-        });
 
+            $table->foreign('divisi_id')->references('id')->on('divisis')->onDelete('set null');
+        });
     }
 
     /**
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('karyawans');
+        Schema::dropIfExists('karyawan'); // <- ini sudah benar
     }
 };

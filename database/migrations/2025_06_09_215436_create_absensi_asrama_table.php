@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('jadwal_kegiatan_asrama_id')->constrained('jadwal_kegiatan_asrama')->onDelete('cascade');
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['hadir', 'izin', 'alpa']);
+            $table->enum('status', ['hadir', 'alpa']);
             $table->timestamps();
         });
     }

@@ -32,15 +32,15 @@ class StudentsImport implements ToModel, WithHeadingRow
             $errors[] = "Tahun ajaran aktif tidak ditemukan.";
         }
 
-        $akademik = null;
-        if (!empty($row['kelas_akademik'])) {
-            $akademik = ClassGroup::where('nama_kelas', trim($row['kelas_akademik']))
-                ->where('jenis_kelas', 'akademik')
+        $formal = null;
+        if (!empty($row['kelas_formal'])) {
+            $formal = ClassGroup::where('nama_kelas', trim($row['kelas_formal']))
+                ->where('jenis_kelas', 'formal')
                 ->where('academic_year_id', $activeYearId)
                 ->first();
 
-            if (!$akademik) {
-                $errors[] = "Kelas akademik '{$row['kelas_akademik']}' tidak ditemukan untuk tahun ajaran aktif.";
+            if (!$formal) {
+                $errors[] = "Kelas formal '{$row['kelas_formal']}' tidak ditemukan untuk tahun ajaran aktif.";
             }
         }
 
@@ -69,8 +69,8 @@ class StudentsImport implements ToModel, WithHeadingRow
         ]);
         $student->save();
 
-        if ($akademik) {
-            $student->classGroups()->attach($akademik->id, [
+        if ($formal) {
+            $student->classGroups()->attach($formal->id, [
                 'academic_year_id' => $activeYearId,
             ]);
         }

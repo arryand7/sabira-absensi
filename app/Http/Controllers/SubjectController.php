@@ -23,7 +23,7 @@ class SubjectController extends Controller
         $request->validate([
             'nama_mapel' => 'required',
             'kode_mapel' => 'required',
-            'jenis_mapel' => 'required|in:akademik,muadalah',
+            'jenis_mapel' => 'required|in:formal,muadalah',
         ]);
 
         Subject::create($request->all());
@@ -41,7 +41,7 @@ class SubjectController extends Controller
         $request->validate([
             'nama_mapel' => 'required',
             'kode_mapel' => 'required',
-            'jenis_mapel' => 'required|in:akademik,muadalah',
+            'jenis_mapel' => 'required|in:formal,muadalah',
         ]);
 
         $subject->update($request->all());

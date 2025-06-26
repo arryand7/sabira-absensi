@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('karyawan', function (Blueprint $table) {
-            $table->unsignedBigInteger('divisi_id')->nullable()->after('user_id');
-            $table->foreign('divisi_id')->references('id')->on('divisis')->onDelete('set null');
+        Schema::create('gurus', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('jenis', ['formal', 'muadalah']);
+            $table->timestamps();
         });
-}
-
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('karyawans', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('gurus');
     }
 };

@@ -34,7 +34,7 @@ class ClassGroupController extends Controller
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'jenis_kelas' => 'required|in:akademik,muadalah',
+            'jenis_kelas' => 'required|in:formal,muadalah',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
         ]);
@@ -55,7 +55,7 @@ class ClassGroupController extends Controller
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'jenis_kelas' => 'required|in:akademik,muadalah',
+            'jenis_kelas' => 'required|in:formal,muadalah',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
         ]);

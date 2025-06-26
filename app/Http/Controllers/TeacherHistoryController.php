@@ -12,12 +12,23 @@ class TeacherHistoryController extends Controller
     {
         $user = Auth::user();
 
+        // Ambil tahun ajaran aktif
+        $activeYear = \App\Models\AcademicYear::where('is_active', true)->first();
+
+        // Handle jika tidak ada tahun ajaran aktif
+        if (!$activeYear) {
+            return back()->withErrors(['Tahun ajaran aktif tidak ditemukan.']);
+        }
+
         $query = Attendance::with(['schedule.subject', 'schedule.classGroup'])
-            ->whereHas('schedule', fn($q) => $q->where('user_id', $user->id))
+            ->whereHas('schedule', function ($q) use ($user, $activeYear) {
+                $q->where('user_id', $user->id)
+                ->where('academic_year_id', $activeYear->id); // Filter tahun ajaran
+            })
             ->select('schedule_id', 'pertemuan', 'tanggal', 'materi')
             ->groupBy('schedule_id', 'pertemuan', 'tanggal', 'materi');
 
-        // Filter berdasarkan request
+        // Filter berdasarkan request (kelas / mapel)
         if ($request->filled('kelas')) {
             $query->whereHas('schedule.classGroup', function ($q) use ($request) {
                 $q->where('nama_kelas', $request->kelas);
@@ -32,27 +43,25 @@ class TeacherHistoryController extends Controller
 
         $attendances = $query->orderBy('tanggal', 'desc')->get();
 
-        // Hanya ambil mapel & kelas sesuai jenis guru
-        $mapelList = \App\Models\Subject::where('jenis_mapel', $user->guru?->jenis)
-        ->orderBy('nama_mapel')
-        ->pluck('nama_mapel')
-        ->unique();
-
+        // List kelas & mapel hanya dari jadwal di tahun ajaran aktif
         $kelasList = \App\Models\Schedule::where('user_id', $user->id)
-        ->whereHas('classGroup', function ($q) use ($user) {
-            $q->where('jenis_kelas', $user->guru?->jenis);
-        })
-        ->with('classGroup')
-        ->get()
-        ->pluck('classGroup.nama_kelas')
-        ->unique()
-        ->sort();
+            ->where('academic_year_id', $activeYear->id)
+            ->with('classGroup')
+            ->get()
+            ->pluck('classGroup.nama_kelas')
+            ->unique()
+            ->sort();
 
+        $mapelList = \App\Models\Schedule::where('user_id', $user->id)
+            ->where('academic_year_id', $activeYear->id)
+            ->with('subject')
+            ->get()
+            ->pluck('subject.nama_mapel')
+            ->unique()
+            ->sort();
 
         return view('guru.history.index', compact('attendances', 'kelasList', 'mapelList'));
     }
-
-
 
     public function detail($scheduleId, $pertemuan)
     {

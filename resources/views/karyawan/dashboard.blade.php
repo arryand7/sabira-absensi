@@ -28,20 +28,20 @@
             <a href="{{ route('karyawan.history') }}"
                class="bg-[#F7F7F6] hover:bg-[#EFF0ED] transition p-4 rounded-md shadow flex flex-col items-center justify-center gap-2">
                 <i class="bi bi-clock-history text-2xl text-[#5C644C]"></i>
-                <span class="text-[#373C2E]">RIWAYAT</span>
+                <span class="text-[#373C2E]">RIWAYAT ABSENSI</span>
             </a>
 
             @if (Auth::user()->role === 'guru')
                 <a href="{{ route('guru.schedule') }}"
                    class="bg-[#F7F7F6] hover:bg-[#EFF0ED] transition p-4 rounded-md shadow flex flex-col items-center justify-center gap-2">
                     <i class="bi bi-calendar-week text-2xl text-[#5C644C]"></i>
-                    <span class="text-[#373C2E]">JADWAL</span>
+                    <span class="text-[#373C2E]">JADWAL MENGAJAR</span>
                 </a>
 
                 <a href="{{ route('guru.history.index') }}"
                    class="bg-[#F7F7F6] hover:bg-[#EFF0ED] transition p-4 rounded-md shadow flex flex-col items-center justify-center gap-2">
                     <i class="bi bi-journal-text text-2xl text-[#5C644C]"></i>
-                    <span class="text-[#373C2E]">MENGAJAR</span>
+                    <span class="text-[#373C2E]">RIWAYAT MENGAJAR</span>
                 </a>
             @else
                 <div class="bg-[#EFF0ED] text-[#8D9382] p-4 rounded-md shadow flex flex-col items-center justify-center gap-2 cursor-not-allowed" title="Hanya untuk Guru">

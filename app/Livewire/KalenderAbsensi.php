@@ -30,9 +30,9 @@ class KalenderAbsensi extends Component
         $daysInMonth = $startOfMonth->diffInDays($endOfMonth) + 1;
 
         $absens = AbsensiKaryawan::where('user_id', $user->id)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->whereBetween('waktu_absen', [$startOfMonth, $endOfMonth])
             ->get()
-            ->keyBy(fn($a) => Carbon::parse($a->created_at)->toDateString());
+            ->keyBy(fn($a) => Carbon::parse($a->waktu_absen)->toDateString());
 
         $absensiMap = [];
 
@@ -40,11 +40,24 @@ class KalenderAbsensi extends Component
             $tanggal = $startOfMonth->copy()->addDays($i)->toDateString();
 
             if ($tanggal > $today) {
-                $absensiMap[$tanggal] = '-';
+                $absensiMap[$tanggal] = [
+                    'status' => '-',
+                    'check_in' => null,
+                    'check_out' => null,
+                ];
             } elseif ($absens->has($tanggal)) {
-                $absensiMap[$tanggal] = $absens[$tanggal]->status;
+                $absen = $absens[$tanggal];
+                $absensiMap[$tanggal] = [
+                    'status' => $absen->status,
+                    'check_in' => $absen->check_in,
+                    'check_out' => $absen->check_out,
+                ];
             } else {
-                $absensiMap[$tanggal] = 'Tidak Hadir';
+                $absensiMap[$tanggal] = [
+                    'status' => 'Tidak Hadir',
+                    'check_in' => null,
+                    'check_out' => null,
+                ];
             }
         }
 

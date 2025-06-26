@@ -2,7 +2,7 @@
     <x-slot name="sidebar">
         <x-admin-sidenav />
     </x-slot>
-    
+
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
@@ -56,7 +56,7 @@
                             class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm @error('jenis_mapel') border-red-500 @enderror"
                             required>
                             <option value="">-- Pilih Jenis --</option>
-                            <option value="akademik" {{ old('jenis_mapel', $subject->jenis_mapel) == 'akademik' ? 'selected' : '' }}>Akademik</option>
+                            <option value="formal" {{ old('jenis_mapel', $subject->jenis_mapel) == 'formal' ? 'selected' : '' }}>Formal</option>
                             <option value="muadalah" {{ old('jenis_mapel', $subject->jenis_mapel) == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
                         </select>
                         @error('jenis_mapel')

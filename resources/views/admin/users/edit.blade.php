@@ -90,7 +90,7 @@
                             <label class="block text-[#1C1E17]">Jenis Guru</label>
                             <select name="jenis" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('jenis') border-red-500 @enderror">
                                 <option value="">-- Pilih Jenis Guru --</option>
-                                <option value="akademik" {{ old('jenis', optional($user->guru)->jenis) == 'akademik' ? 'selected' : '' }}>Akademik</option>
+                                <option value="formal" {{ old('jenis', optional($user->guru)->jenis) == 'formal' ? 'selected' : '' }}>Formal</option>
                                 <option value="muadalah" {{ old('jenis', optional($user->guru)->jenis) == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
                             </select>
                             @error('jenis') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror

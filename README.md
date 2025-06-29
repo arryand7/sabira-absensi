@@ -1,4 +1,4 @@
-# 🚀 Setup Project Laravel (Langkah Lengkap Sekali Jalan)
+# 🚀 Setup Project Laravel
 
 Setelah melakukan `git pull`, jalankan semua perintah berikut secara berurutan:
 

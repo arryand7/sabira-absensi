@@ -1,15 +1,20 @@
-<x-app-layout>
+<x-user-layout>
     <div class="text-center mt-4">
         <h2 class="text-2xl font-semibold text-[#292D22]">Daftar Kegiatan Asrama</h2>
     </div>
 
     <div class="py-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {{-- Tombol tambah kegiatan --}}
-        <div class="mb-6">
+
+        <div class="flex items-center justify-between mb-2">
             <button onclick="document.getElementById('formKegiatan').classList.toggle('hidden')"
                 class="inline-flex items-center px-4 py-2 bg-[#5C644C] text-white text-sm font-medium rounded-lg shadow hover:bg-[#4B543F] transition">
                 <i class="bi bi-plus-lg mr-2"></i> Tambah Kegiatan
             </button>
+            <a href="{{ route('asrama.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#5C644C] hover:bg-[#535A44] text-white rounded-md text-sm shadow transition">
+                <i class="bi bi-arrow-left-circle"></i> Kembali
+            </a>
         </div>
 
         {{-- Form input kegiatan --}}
@@ -83,6 +88,15 @@
                                     class="inline-flex items-center bg-[#8B8E7C] hover:bg-[#757867] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow transition">
                                     <i class="bi bi-clock-history mr-1"></i> History
                                 </a>
+                                <form action="{{ route('asrama.kegiatan.delete', $k->id) }}" method="POST" class="inline-block"
+                                    onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow transition">
+                                        <i class="bi bi-trash-fill mr-1"></i> Hapus
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach
@@ -112,4 +126,4 @@
             });
         });
     </script>
-</x-app-layout>
+</x-user-layout>

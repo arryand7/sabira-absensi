@@ -33,11 +33,19 @@ class AdminDashboardController extends Controller
         $totalSudahAbsen = $sudahAbsenUserIds->count();
         $totalBelumHadir = $totalKaryawan - $totalSudahAbsen;
 
+        $karyawanBelumAbsen = Karyawan::whereHas('user', function ($query) {
+            $query->where('status', 'aktif');
+        })
+        ->whereNotIn('user_id', $sudahAbsenUserIds)
+        ->with('user')
+        ->get();
+
         return view('admin.dashboard', compact(
             'absensis',
             'totalKaryawan',
             'totalSudahAbsen',
-            'totalBelumHadir'
+            'totalBelumHadir',
+            'karyawanBelumAbsen'
         ));
     }
 

@@ -1,6 +1,15 @@
-<x-app-layout>
+<x-user-layout>
     <div class="py-6 max-w-4xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 text-[#292D22]">Detail Absensi Siswa</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-[#292D22]">
+                Detail Kehadiran Murid
+            </h2>
+
+            <a href="{{ route('guru.history.index') }}"
+            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+                ← Kembali
+            </a>
+        </div>
 
         @if ($absensi->isNotEmpty())
             <div class="bg-[#EFF0ED] border border-[#D6D8D2] rounded-lg p-4 mb-6 text-sm text-[#1C1E17] space-y-2">
@@ -55,4 +64,4 @@
             </table>
         </div>
     </div>
-</x-app-layout>
+</x-user-layout>

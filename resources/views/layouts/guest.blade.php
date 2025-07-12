@@ -15,7 +15,7 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased" style="background-color:#dcecf8">
+<body class="font-sans antialiased" style="background-color:#D6D8D2">
     <div class="min-h-screen flex flex-col justify-center sm:flex-row items-center">
 
         <!-- Left Image (Only on desktop) -->
@@ -25,7 +25,7 @@
 
         <!-- Right Form -->
         <div class="w-full sm:w-1/2 flex justify-center items-center p-6">
-            <div class="w-full max-w-md shadow-md rounded-lg p-6">
+            <div class="w-full max-w-md bg-white border border-gray-300 shadow-lg rounded-2xl p-6">
                 <!-- Logo di atas form -->
                 <div class="flex justify-center mb-4">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 object-contain">

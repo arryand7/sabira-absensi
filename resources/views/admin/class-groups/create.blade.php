@@ -5,13 +5,6 @@
 
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="mb-4">
-                <a href="{{ route('admin.class-groups.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
-                    <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
-                    Kembali
-                </a>
-            </div>
-
             <div class="bg-[#8D9382] shadow rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
                 <h1 class="text-2xl font-bold mb-4">Tambah Kelas</h1>
 
@@ -90,11 +83,15 @@
                     </div>
 
                     {{-- Tombol Simpan --}}
-                    <div class="pt-2">
+                    <div class="flex gap-4 mt-6">
                         <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center gap-1">
+                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
                             <i class="bi bi-save"></i> Simpan
                         </button>
+                        <a href="{{ route('admin.class-groups.index') }}"
+                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center">
+                            <i class="bi bi-x-circle"></i> Batal
+                        </a>
                     </div>
                 </form>
             </div>

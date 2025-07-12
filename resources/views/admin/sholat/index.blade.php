@@ -12,7 +12,7 @@
             <form method="POST" action="{{ route('admin.sholat.store') }}" class="mb-4 flex gap-2">
                 @csrf
                 <input type="text" name="nama" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200" placeholder="Nama sholat (contoh: Subuh)" required>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow">
+                <button type="submit" class="bg-[#8D9382] text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow">
                     <i class="bi bi-plus-circle-fill"></i> Tambah
                 </button>
             </form>

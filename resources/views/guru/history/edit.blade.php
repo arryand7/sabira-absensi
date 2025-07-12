@@ -1,6 +1,15 @@
-<x-app-layout>
+<x-user-layout>
     <div class="py-6 max-w-5xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 text-[#292D22]">Edit Absensi</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-[#292D22]">
+                Edit Kehadiran Murid
+            </h2>
+
+            <a href="{{ route('guru.history.index') }}"
+            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+                ← Kembali
+            </a>
+        </div>
 
         @if ($errors->any())
             <div class="mb-4 p-4 bg-red-100 border border-red-200 text-red-700 rounded-lg">
@@ -77,4 +86,4 @@
             </div>
         </form>
     </div>
-</x-app-layout>
+</x-user-layout>

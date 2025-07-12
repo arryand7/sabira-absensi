@@ -15,13 +15,15 @@ class AbsensiController extends Controller
     public function index()
     {
         $lokasi = AbsensiLokasi::latest()->first();
-
         $absensis = AbsensiKaryawan::with('user')->latest()->get();
+
         return view('karyawan.absen', [
             'absensis' => $absensis,
             'lokasi' => $lokasi,
         ]);
     }
+
+
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
     {
@@ -43,7 +45,6 @@ class AbsensiController extends Controller
 
         $user = Auth::user();
 
-        // Cek apakah sudah check-in hari ini
         $alreadyCheckedIn = AbsensiKaryawan::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())
             ->exists();
@@ -143,16 +144,15 @@ class AbsensiController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil bulan & tahun dari request atau default sekarang
         $bulan = $request->input('bulan', now()->month);
         $tahun = $request->input('tahun', now()->year);
 
-        // Query absensi sesuai bulan dan tahun
         $query = AbsensiKaryawan::where('user_id', $user->id)
             ->whereMonth('created_at', $bulan)
             ->whereYear('created_at', $tahun);
 
         $absensis = $query->orderBy('created_at', 'desc')->get();
+
 
         return view('karyawan.history', compact('absensis', 'bulan', 'tahun'));
     }

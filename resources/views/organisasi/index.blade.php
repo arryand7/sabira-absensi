@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-user-layout>
     <div class="min-h-screen bg-[#F7F7F6] text-[#1C1E17] p-6">
         <h1 class="text-2xl font-bold mb-6 text-[#292D22]">Absensi Asrama</h1>
 
@@ -37,4 +37,4 @@
 
     {{-- Bootstrap Icons CDN (jika belum include di layout utama) --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</x-app-layout>
+</x-user-layout>

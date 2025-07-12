@@ -28,7 +28,6 @@
         </div>
 
         <!-- Navigation -->
-        <!-- Navigation -->
         <nav class="px-4 py-4 space-y-1 text-sm font-medium">
 
             <!-- Dashboard -->

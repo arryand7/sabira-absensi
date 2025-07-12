@@ -12,38 +12,54 @@
     <!-- Fonts & Icons -->
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     <!-- SweetAlert & DataTables -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 
+    <style>
+        /* Batasi semua elemen dalam Leaflet map agar tidak menindih navbar atau elemen lain */
+        .leaflet-container,
+        .leaflet-pane,
+        .leaflet-tile,
+        .leaflet-marker-icon,
+        .leaflet-popup,
+        .leaflet-shadow-pane,
+        .leaflet-overlay-pane,
+        .leaflet-marker-pane,
+        .leaflet-popup-pane,
+        .leaflet-control {
+            z-index: 0 !important;
+        }
+
+        /* Pastikan navbar atau elemen lain tetap bisa berada di atas */
+        nav,
+        .fixed,
+        .sticky,
+        .z-40,
+        .z-50 {
+            z-index: 50 !important;
+            position: relative;
+        }
+    </style>
+
     <!-- Vite & Livewire -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
+<body class="font-sans antialiased">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
     <!-- Navbar Atas (Selalu di atas) -->
     <div class="fixed top-0 left-0 right-0 z-40">
-        @include('layouts.navigation') {{-- navbar atas --}}
+        @include('layouts.user-navigation') {{-- navbar atas --}}
     </div>
 
     <!-- Layout utama -->
     <div class="min-h-screen flex pt-16">
-        {{-- Sidebar --}}
-        @isset($sidebar)
-            <aside class="w-64 bg-white bg-[#5c644c] shadow-md hidden md:block">
-                {{ $sidebar }}
-            </aside>
-        @endisset
-
         {{-- Main content (navbar + page) --}}
-        <div class="flex-1 flex flex-col bg-[#D6D8D2]">
-            {{-- @include('layouts.navigation') --}}
-
+        <div class="flex-1 flex flex-col bg-[#D6D8D2]"> <!-- Ubah bg konten utama di sini -->
             @if (isset($header))
                 <header class="bg-white dark:bg-gray-800 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -52,7 +68,7 @@
                 </header>
             @endif
 
-            <main class="flex-1 px-4 py-6 ">
+            <main class="flex-1 px-4 py-6">
                 {{ $slot }}
             </main>
         </div>

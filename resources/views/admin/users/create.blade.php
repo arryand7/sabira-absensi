@@ -6,9 +6,10 @@
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
-                <a href="{{ route('users.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
-                    <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
-                </a>
+                <button onclick="window.history.back();"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md shadow flex items-center gap-2">
+                    <i class="bi bi-arrow-left-circle-fill"></i> Kembali
+                </button>
             </div>
 
             <div class="bg-[#8D9382] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
@@ -17,7 +18,6 @@
                 <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
-                    {{-- USER --}}
                     <div>
                         <label class="block text-[#1C1E17]">Nama</label>
                         <input type="text" name="name" class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('name') border-red-500 @enderror"
@@ -40,7 +40,7 @@
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                             <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru</option>
-                            <option value="organisasi" {{ old('role') == 'organisasi' ? 'selected' : '' }}>Organisasi</option> <!-- Tambahan -->
+                            <option value="organisasi" {{ old('role') == 'organisasi' ? 'selected' : '' }}>Organisasi</option>
                         </select>
                         @error('role') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -62,6 +62,18 @@
                                 class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('nama_lengkap') border-red-500 @enderror"
                                 value="{{ old('nama_lengkap') }}">
                             @error('nama_lengkap') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- jenis_guru DI PINDAHKAN KE BAWAH --}}
+                        <div id="guruFields" style="display: none;">
+                            <label class="block text-[#1C1E17]">Jenis Guru</label>
+                            <select name="jenis_guru"
+                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('jenis_guru') border-red-500 @enderror">
+                                <option value="">-- Pilih Jenis Guru --</option>
+                                <option value="formal" {{ old('jenis_guru') == 'formal' ? 'selected' : '' }}>Formal</option>
+                                <option value="muadalah" {{ old('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
+                            </select>
+                            @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div id="divisiField">
@@ -101,17 +113,7 @@
                             @error('foto') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- Tambahan jika role == guru --}}
-                        <div id="guruFields" style="display: none;">
-                            <label class="block text-[#1C1E17]">Jenis Guru</label>
-                            <select name="jenis_guru"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('jenis_guru') border-red-500 @enderror">
-                                <option value="">-- Pilih Jenis Guru --</option>
-                                <option value="formal" {{ old('jenis_guru') == 'formal' ? 'selected' : '' }}>Formal</option>
-                                <option value="muadalah" {{ old('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
-                            </select>
-                            @error('jenis_guru') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
+
                     </div>
 
                     <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
@@ -129,6 +131,7 @@
         const karyawanFields = document.getElementById('karyawanFields');
         const guruFields = document.getElementById('guruFields');
         const divisiField = document.getElementById('divisiField');
+        const passwordInput = document.querySelector('input[name="password"]');
 
         function toggleKaryawanFields() {
             const isKaryawan = roleSelect.value === 'karyawan';
@@ -137,7 +140,7 @@
 
             karyawanFields.style.display = showFields ? 'block' : 'none';
             guruFields.style.display = isGuru ? 'block' : 'none';
-            divisiField.style.display = isGuru ? 'none' : 'block'; // <-- hide divisi if guru
+            divisiField.style.display = isGuru ? 'none' : 'block';
 
             const inputs = karyawanFields.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
@@ -149,7 +152,6 @@
                 }
             });
 
-            // Auto-fill nama_lengkap from name
             if (showFields && !namaLengkapInput.value) {
                 namaLengkapInput.value = nameInput.value;
             }
@@ -170,8 +172,18 @@
             }
         });
 
+        // SIMPAN SEMENTARA PASSWORD
+        passwordInput.addEventListener('input', () => {
+            sessionStorage.setItem('tempPassword', passwordInput.value);
+        });
+
         window.addEventListener('DOMContentLoaded', () => {
             toggleKaryawanFields();
+            const tempPassword = sessionStorage.getItem('tempPassword');
+            if (tempPassword) {
+                passwordInput.value = tempPassword;
+                sessionStorage.removeItem('tempPassword');
+            }
         });
     </script>
 </x-app-layout>

@@ -19,8 +19,12 @@ class ClassGroupController extends Controller
             })
             ->get();
 
-        return view('admin.class-groups.index', compact('classGroups'));
+        // Tambahkan ini:
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
+        return view('admin.class-groups.index', compact('classGroups', 'academicYears'));
     }
+
 
 
     public function create()

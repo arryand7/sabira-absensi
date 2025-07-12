@@ -4,6 +4,12 @@
     </x-slot>
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+            <div class="mb-4">
+                <button onclick="window.history.back();"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md shadow flex items-center gap-2">
+                    <i class="bi bi-arrow-left-circle-fill"></i> Kembali
+                </button>
+            </div>
             <div class="bg-[#8D9382] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Edit User</h1>
 

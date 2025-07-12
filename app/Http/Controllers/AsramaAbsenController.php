@@ -14,7 +14,7 @@ class AsramaAbsenController extends Controller
 {
     public function index()
     {
-        return view('organisasi.index'); // halaman pilihan sholat / kegiatan
+        return view('organisasi.index');
     }
 
     public function pilihSholat()
@@ -96,7 +96,7 @@ class AsramaAbsenController extends Controller
         return view('organisasi.sholat.form', compact('jenis', 'tanggal', 'students', 'search', 'jadwal', 'absensiHariIni'));
     }
 
-    public function searchStudent(Request $request, $jenis)
+    public function searchStudent($namaKegiatan, Request $request)
     {
         $keyword = $request->query('keyword');
 
@@ -104,15 +104,42 @@ class AsramaAbsenController extends Controller
             return response()->json([]);
         }
 
-        $students = Student::where('nis', 'like', "%$keyword%")
-                    ->orWhere('nama_lengkap', 'like', "%$keyword%")
-                    ->orderBy('nama_lengkap')
-                    ->limit(5)
-                    ->get(['id', 'nis', 'nama_lengkap']);
+        // Temukan jadwal berdasarkan nama kegiatan dan tanggal hari ini
+        $jadwal = JadwalKegiatanAsrama::whereHas('kegiatanAsrama', function ($query) use ($namaKegiatan) {
+            $query->where('nama', 'like', $namaKegiatan);
+        })
+        ->whereDate('tanggal', now()->toDateString())
+        ->first();
 
-        return response()->json($students);
+        if (!$jadwal) {
+            return response()->json([]);
+        }
+
+        $id = $jadwal->id;
+
+        $students = Student::where(function ($query) use ($keyword) {
+                            $query->where('nis', 'like', "%$keyword%")
+                                ->orWhere('nama_lengkap', 'like', "%$keyword%");
+                        })
+                        ->orderBy('nama_lengkap')
+                        ->limit(5)
+                        ->get(['id', 'nis', 'nama_lengkap']);
+
+        $studentsWithStatus = $students->map(function ($student) use ($id) {
+            $absen = AbsensiAsrama::where('student_id', $student->id)
+                ->where('jadwal_kegiatan_asrama_id', $id)
+                ->first();
+
+            return [
+                'id' => $student->id,
+                'nis' => $student->nis,
+                'nama_lengkap' => $student->nama_lengkap,
+                'status' => $absen->status ?? 'alpa',
+            ];
+        });
+
+        return response()->json($studentsWithStatus);
     }
-
 
     public function submitAbsenSholat(Request $request, $jenis)
     {
@@ -199,7 +226,7 @@ class AsramaAbsenController extends Controller
 
         return view('organisasi.sholat.history', compact('bulan', 'tahun', 'students', 'tanggal', 'sholatList', 'data'));
     }
-    
+
 //kegiatannnn
     public function listKegiatan()
     {
@@ -272,13 +299,29 @@ class AsramaAbsenController extends Controller
             return response()->json([]);
         }
 
-        $students = Student::where('nis', 'like', "%$keyword%")
-                    ->orWhere('nama_lengkap', 'like', "%$keyword%")
-                    ->orderBy('nama_lengkap')
-                    ->limit(5)
-                    ->get(['id', 'nis', 'nama_lengkap']);
+        $students = Student::where(function ($query) use ($keyword) {
+                            $query->where('nis', 'like', "%$keyword%")
+                                ->orWhere('nama_lengkap', 'like', "%$keyword%");
+                        })
+                        ->orderBy('nama_lengkap')
+                        ->limit(5)
+                        ->get(['id', 'nis', 'nama_lengkap']);
 
-        return response()->json($students);
+        // Ambil status absensi
+        $studentsWithStatus = $students->map(function ($student) use ($id) {
+            $absen = AbsensiAsrama::where('student_id', $student->id)
+                ->where('jadwal_kegiatan_asrama_id', $id)
+                ->first();
+
+            return [
+                'id' => $student->id,
+                'nis' => $student->nis,
+                'nama_lengkap' => $student->nama_lengkap,
+                'status' => $absen->status ?? 'alpa',
+            ];
+        });
+
+        return response()->json($studentsWithStatus);
     }
 
     public function submitAbsenKegiatan(Request $request, $id)
@@ -314,6 +357,25 @@ class AsramaAbsenController extends Controller
 
         return view('organisasi.kegiatan.history', compact('kegiatan', 'absensi'));
     }
+
+    public function deleteKegiatan($id)
+    {
+        $jadwal = JadwalKegiatanAsrama::findOrFail($id);
+
+        // Hapus semua absensi terkait terlebih dahulu
+        AbsensiAsrama::where('jadwal_kegiatan_asrama_id', $jadwal->id)->delete();
+
+        // Hapus kegiatan utama
+        $kegiatan = $jadwal->kegiatanAsrama;
+        $jadwal->delete();
+
+        // Jika tidak ada jadwal lain yang pakai kegiatan ini, hapus juga kegiatannya
+        if ($kegiatan && $kegiatan->jadwal()->count() === 0) {
+            $kegiatan->delete();
+        }
+        return redirect()->route('asrama.kegiatan')->with('success', 'Kegiatan berhasil dihapus.');
+    }
+
 
 
 

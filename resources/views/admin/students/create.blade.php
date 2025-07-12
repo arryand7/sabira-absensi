@@ -56,7 +56,7 @@
                             <option value="">Tidak Ada</option>
                             @foreach($academicClasses as $class)
                                 <option value="{{ $class->id }}" {{ old('kelas_formal') == $class->id ? 'selected' : '' }}>
-                                    {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
+                                    {{ $class->nama_kelas }}
                                 </option>
                             @endforeach
                         </select>
@@ -73,7 +73,7 @@
                             <option value="">Tidak Ada</option>
                             @foreach($muadalahClasses as $class)
                                 <option value="{{ $class->id }}" {{ old('kelas_muadalah') == $class->id ? 'selected' : '' }}>
-                                    {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
+                                    {{ $class->nama_kelas }}
                                 </option>
                             @endforeach
                         </select>

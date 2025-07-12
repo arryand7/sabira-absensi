@@ -1,9 +1,14 @@
-<x-app-layout>
-        <h2 class="font-semibold text-xl text-[#292D22]">
-            Rekap Absensi Sholat
-        </h2>
+<x-user-layout>
 
     <div class="py-4 max-w-5xl mx-auto sm:px-6 lg:px-4">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-[#292D22]">History Absen Sholat</h1>
+
+            <a href="{{ route('asrama.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#5C644C] hover:bg-[#535A44] text-white rounded-md text-sm shadow transition">
+                <i class="bi bi-arrow-left-circle"></i> Kembali
+            </a>
+        </div>
         <div class="bg-[#EFF0ED] shadow rounded-xl p-6 overflow-x-auto border border-[#D6D8D2]">
             <!-- Filter Bulan dan Tahun -->
             <form method="GET" action="{{ route('asrama.sholat.history') }}" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -43,4 +48,4 @@
             <livewire:rekap-sholat :bulan="$bulan" :tahun="$tahun" />
         </div>
     </div>
-</x-app-layout>
+</x-user-layout>

@@ -173,6 +173,8 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
 
         Route::get('/sholat/history', [AsramaAbsenController::class, 'historySholat'])->name('asrama.sholat.history');
         Route::get('/kegiatan/{id}/history', [AsramaAbsenController::class, 'historyKegiatan'])->name('asrama.kegiatan.history');
+
+        Route::delete('/asrama/kegiatan/{id}', [AsramaAbsenController::class, 'deleteKegiatan'])->name('asrama.kegiatan.delete');
     });
 
 // Role: Karyawan

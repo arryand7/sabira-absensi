@@ -3,7 +3,7 @@
         <x-admin-sidenav />
     </x-slot>
 
-    <div class="container mx-auto mt-8 max-w-3xl">
+    <div class="bg-[#8D9382] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
         <h2 class="text-2xl font-bold text-[#292D22] mb-6">Edit Tahun Ajaran</h2>
 
         @if ($errors->any())
@@ -16,7 +16,7 @@
             </div>
         @endif
 
-        <form action="{{ route('academic-years.update', $academicYear->id) }}" method="POST" class="space-y-4 bg-white p-6 rounded-xl shadow">
+        <form action="{{ route('academic-years.update', $academicYear->id) }}" method="POST" class="space-y-4">
             @csrf
             @method('PUT')
 
@@ -45,10 +45,20 @@
                 <label for="is_active" class="text-gray-700">Jadikan Tahun Ajaran Aktif</label>
             </div>
 
-            <div class="flex justify-end">
+            {{-- <div class="flex justify-end">
                 <a href="{{ route('academic-years.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded shadow">Batal</a>
                 <button type="submit" class="ml-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow">Simpan Perubahan</button>
-            </div>
+            </div> --}}
+            <div class="flex gap-4 mt-6">
+                        <button type="submit"
+                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                            <i class="bi bi-save"></i> Simpan Perubahan
+                        </button>
+                        <a href="{{ route('academic-years.index') }}"
+                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center">
+                            <i class="bi bi-x-circle"></i> Batal
+                        </a>
+                    </div>
         </form>
     </div>
 </x-app-layout>

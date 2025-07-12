@@ -1,8 +1,16 @@
-<x-app-layout>
+<x-user-layout>
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-bold text-[#292D22] mb-6">
-            Absensi Kegiatan: {{ $kegiatan->kegiatanAsrama->nama }}
-        </h1>
+
+        <div class="flex items-center justify-between mb-2">
+            <h1 class="text-2xl font-bold text-[#292D22]">
+                Absensi Kegiatan: {{ $kegiatan->kegiatanAsrama->nama }}
+            </h1>
+            <a href="{{ route('asrama.kegiatan') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#5C644C] hover:bg-[#535A44] text-white rounded-md text-sm shadow transition">
+                <i class="bi bi-arrow-left-circle"></i> Kembali
+            </a>
+        </div>
+
 
         <form id="absenForm" method="POST" action="{{ route('asrama.kegiatan.absen.submit', ['id' => $kegiatan->id]) }}" class="space-y-6 bg-[#EFF0ED] p-6 rounded-xl shadow-md border border-[#D6D8D2]" autocomplete="off">
             @csrf
@@ -55,6 +63,7 @@
         const absensiList = document.getElementById('absensiList');
 
         let currentFocus = -1;
+        let localStatusMap = {}; // untuk menyimpan perubahan status lokal
 
         function clearActive(items) {
             items.forEach(item => item.classList.remove('bg-[#D9DCD1]'));
@@ -75,20 +84,18 @@
             const studentDiv = statusLabel.closest('.flex');
 
             if (inputStatus.value === 'hadir') {
-                // Ubah ke alpa
                 inputStatus.value = 'alpa';
                 statusLabel.textContent = '(alpa)';
                 statusLabel.classList.remove('text-green-600');
                 statusLabel.classList.add('text-red-600');
+                localStatusMap[studentId] = 'alpa';
             } else {
-                // Ubah ke hadir
                 inputStatus.value = 'hadir';
                 statusLabel.textContent = '(hadir)';
                 statusLabel.classList.remove('text-red-600');
                 statusLabel.classList.add('text-green-600');
-
-                // Pindah ke atas list agar yang hadir diurutkan
                 absensiList.prepend(studentDiv);
+                localStatusMap[studentId] = 'hadir';
             }
         }
 
@@ -114,10 +121,16 @@
                         resultsDiv.innerHTML = '';
                         if (data.length > 0) {
                             data.forEach(student => {
+                                const currentStatus = localStatusMap[student.id] ?? student.status;
+                                const statusColor = currentStatus === 'hadir' ? 'text-green-600' : 'text-red-600';
                                 const div = document.createElement('div');
                                 div.classList.add('student', 'px-4', 'py-2', 'hover:bg-[#E3E4DF]', 'cursor-pointer');
                                 div.setAttribute('data-id', student.id);
-                                div.textContent = student.nis + ' - ' + student.nama_lengkap;
+                                div.innerHTML = `
+                                    ${student.nis} - ${student.nama_lengkap} -
+                                    <span class="${statusColor} font-semibold">(${currentStatus})</span>
+                                `;
+
                                 resultsDiv.appendChild(div);
                             });
                             resultsDiv.classList.remove('hidden');
@@ -153,14 +166,13 @@
             }
         });
 
-        // Klik label status ubah ke hadir
+        // Klik label status langsung ubah
         document.querySelectorAll('[id^="statusLabel_"]').forEach(function(label) {
             label.addEventListener('click', function () {
                 const studentId = this.id.replace('statusLabel_', '');
                 toggleStatus(studentId);
             });
         });
-
     });
     </script>
-</x-app-layout>
+</x-user-layout>

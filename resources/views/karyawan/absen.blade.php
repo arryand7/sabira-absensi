@@ -1,14 +1,13 @@
-<x-app-layout>
-
-    <div class="px-2 py-2">
-        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
-            <i class="bi bi-arrow-left-circle me-1 text-lg"></i> Kembali
-        </a>
-    </div>
-
+<x-user-layout>
+    {{-- @section('pageTitle', $pageTitle ?? 'Absen Karyawan') --}}
     <div class="py-2 px-2 md:px-6 max-w-4xl mx-auto">
-
         <!-- Map -->
+        <div class="mb-4">
+            <a href="{{ route('dashboard') }}"
+               class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+                ← Kembali
+            </a>
+        </div>
         <div id="map" class="h-64 md:h-96 rounded-xl shadow mb-6"></div>
 
         <!-- Location Info Box -->
@@ -22,19 +21,6 @@
                 <div class="border p-2 rounded text-base font-medium text-gray-700">{{ now()->format('H:i') }}</div>
             </div>
         </div>
-
-        {{-- <!-- Feedback Messages -->
-        @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 text-green-800 rounded shadow-sm">
-                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 text-red-800 rounded shadow-sm">
-                <i class="bi bi-x-circle-fill me-2"></i>{{ session('error') }}
-            </div>
-        @endif --}}
 
         <!-- Form Buttons -->
         <div class="grid grid-cols-2 gap-4 mb-4 text-center">
@@ -106,4 +92,4 @@
             alert('Browser tidak mendukung geolokasi.');
         }
     </script>
-</x-app-layout>
+</x-user-layout>

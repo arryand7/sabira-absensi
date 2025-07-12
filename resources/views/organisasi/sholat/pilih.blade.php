@@ -1,6 +1,14 @@
-<x-app-layout>
+<x-user-layout>
     <div class="min-h-screen bg-[#F7F7F6] text-[#1C1E17] p-6">
-        <h1 class="text-2xl font-bold mb-6 text-[#292D22]">Pilih Jenis Sholat</h1>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-[#292D22]">Pilih Jenis Sholat</h1>
+
+            <a href="{{ route('asrama.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#5C644C] hover:bg-[#535A44] text-white rounded-md text-sm shadow transition">
+                <i class="bi bi-arrow-left-circle"></i> Kembali
+            </a>
+        </div>
+
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
             {{-- @if($sudahAbsen)
@@ -39,4 +47,4 @@
 
     {{-- Bootstrap Icons CDN (jika belum ada di layout utama) --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</x-app-layout>
+</x-user-layout>

@@ -5,12 +5,6 @@
 
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="mb-4">
-                <a href="{{ route('subjects.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
-                    <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
-                    Kembali
-                </a>
-            </div>
 
             <div class="bg-[#8D9382] shadow-md rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Edit Mata Pelajaran</h1>

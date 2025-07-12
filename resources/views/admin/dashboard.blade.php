@@ -23,52 +23,131 @@
         </div>
 
         {{-- Laporan Absensi Hari Ini --}}
-        <div class="bg-[#EEF3E9] p-6 rounded-2xl shadow-md border border-[#D6D8D2]">
-            <h3 class="text-lg font-semibold text-[#292D22] mb-4">Absensi Hari Ini</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {{-- Tabel: Absensi Hari Ini --}}
+            <div class="lg:col-span-2 bg-[#EEF3E9] p-6 rounded-2xl shadow-md border border-[#D6D8D2]">
+                <h3 class="text-lg font-semibold text-[#292D22] mb-4">Absensi Hari Ini</h3>
 
-            <div class="overflow-x-auto rounded-xl">
-                <table class="min-w-full text-sm text-[#292D22]">
-                    <thead class="bg-[#8D9382] text-white text-left text-xs font-semibold uppercase">
-                        <tr>
-                            <th class="px-4 py-3">Nama</th>
-                            <th class="px-4 py-3">Tanggal</th>
-                            <th class="px-4 py-3">Check In</th>
-                            <th class="px-4 py-3">Check Out</th>
-                            <th class="px-4 py-3">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-[#D6D8D2]">
-                        @forelse ($absensis as $absen)
-                            <tr class="hover:bg-[#BEC1B7] transition">
-                                <td class="px-4 py-3">{{ $absen->user->name }}</td>
-                                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($absen->waktu_absen)->format('d M Y') }}</td>
-                                <td class="px-4 py-3">{{ $absen->check_in ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $absen->check_out ?? '-' }}</td>
-                                <td class="px-4 py-3">
-                                    @php
-                                        $statusColor = match($absen->status) {
-                                            'Hadir' => 'bg-green-100 text-green-700',
-                                            'Terlambat' => 'bg-yellow-100 text-yellow-700',
-                                            // 'Izin' => 'bg-blue-100 text-blue-700',
-                                            // 'Sakit' => 'bg-purple-100 text-purple-700',
-                                            default => 'bg-red-100 text-red-700',
-                                        };
-                                    @endphp
-                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
-                                        {{ $absen->status ?? '-' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
+                <div class="overflow-x-auto rounded-xl">
+                    <table id="tabel-absensi" class="min-w-full text-sm text-[#292D22]">
+                        <thead class="bg-[#8D9382] text-white text-left text-xs font-semibold uppercase">
                             <tr>
-                                <td colspan="5" class="text-center py-6 text-[#8D9382] italic">
-                                    Belum ada yang absen hari ini.
-                                </td>
+                                <th class="px-4 py-3">Nama</th>
+                                <th class="px-4 py-3">Tanggal</th>
+                                <th class="px-4 py-3">Check In</th>
+                                <th class="px-4 py-3">Check Out</th>
+                                <th class="px-4 py-3">Status</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-[#D6D8D2]">
+                            @if ($absensis->count() > 0)
+                                @foreach ( $absensis as $absen )
+                                    <tr class="hover:bg-[#BEC1B7] transition">
+                                        <td class="px-4 py-3">{{ $absen->user->name }}</td>
+                                        <td class="px-4 py-3">{{ \Carbon\Carbon::parse($absen->waktu_absen)->format('d M Y') }}</td>
+                                        <td class="px-4 py-3">{{ $absen->check_in ?? '-' }}</td>
+                                        <td class="px-4 py-3">{{ $absen->check_out ?? '-' }}</td>
+                                        <td class="px-4 py-3">
+                                            @php
+                                                $statusColor = match($absen->status) {
+                                                    'Hadir' => 'bg-green-100 text-green-700',
+                                                    'Terlambat' => 'bg-yellow-100 text-yellow-700',
+                                                    default => 'bg-red-100 text-red-700',
+                                                };
+                                            @endphp
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
+                                                {{ $absen->status ?? '-' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td class="text-center py-6 text-[#8D9382] italic" colspan="5">
+                                        <i class="bi bi-info-circle me-1"></i> Belum ada yang absen hari ini.
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Tabel: Karyawan Belum Absen --}}
+            <div class="bg-[#EEF3E9] p-6 rounded-2xl shadow-md border border-[#D6D8D2] h-fit">
+                <h3 class="text-lg font-semibold text-[#292D22] mb-4">Belum Absen</h3>
+
+                <div class="overflow-x-auto rounded-xl">
+                    <table id="tabel-belum-absen" class="min-w-full text-sm text-[#292D22]">
+                        <thead class="bg-[#8D9382] text-white text-left text-xs font-semibold uppercase">
+                            <tr>
+                                <th class="px-4 py-3">Nama</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#D6D8D2]">
+                            @if ($karyawanBelumAbsen->count() > 0)
+                                @foreach ($karyawanBelumAbsen as $karyawan)
+                                    <tr class="hover:bg-[#BEC1B7] transition">
+                                        <td class="px-4 py-3">{{ $karyawan->user->name }}</td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td class="text-center py-6 text-[#8D9382] italic">
+                                        Sudah Absen Semua
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+
+    {{-- Script DataTable --}}
+    <script>
+        $(document).ready(function () {
+            @if ($absensis->count() > 0)
+                $('#tabel-absensi').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ entri",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: ">>",
+                            previous: "<<"
+                        },
+                        zeroRecords: "Belum Ada Yang Absen",
+                    }
+                });
+            @endif
+
+            @if ($karyawanBelumAbsen->count() > 0)
+                $('#tabel-belum-absen').DataTable({
+                    pageLength: 10,
+                    paging: true,
+                    searching: true,
+                    info: true,
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ entri",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: "›",
+                            previous: "‹"
+                        },
+                        zeroRecords: "Sudah Absen Semua",
+                    },
+                    dom: 'ftip' // f: filter, t: table, i: info, p: pagination
+                });
+            @endif
+        });
+    </script>
 </x-app-layout>

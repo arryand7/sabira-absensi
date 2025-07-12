@@ -13,6 +13,24 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #000; padding: 6px; text-align: center; }
         th { background-color: #f0f0f0; }
+
+        .arabic {
+            direction: rtl;
+            text-align: right;
+            font-family: "Amiri", serif;
+        }
+
+        .flex-rtl {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rtl-text {
+            direction: rtl;
+            text-align: right;
+            font-family: "Amiri", serif;
+        }
     </style>
 </head>
 <body>
@@ -20,7 +38,12 @@
     {{-- <p><strong>Kelas:</strong> {{ $kelas ?? 'Semua' }}</p> --}}
     <p><strong>Mata Pelajaran:</strong> {{ $mapel ?? 'Semua' }}</p>
     <p><strong>Tahun Ajaran:</strong> {{ $tahun }}</p>
-    <p><strong>Kelas:</strong> <span class="{{ str_contains($kelas, 'ا') ? 'arabic' : '' }}">{{ $kelas ?? 'Semua' }}</span></p>
+    @php
+        $isArabic = preg_match('/[\x{0600}-\x{06FF}]/u', $kelas);
+        $kelasFormatted = $isArabic ? "\u{202B}" . $kelas . "\u{202C}" : $kelas;
+    @endphp
+
+    <p><strong>Kelas:</strong> <span class="{{ $isArabic ? 'arabic' : '' }}">{{ $kelasFormatted }}</span></p>
     <p><strong>Total Pertemuan:</strong> {{ $totalPertemuan }} pertemuan</p>
 
 

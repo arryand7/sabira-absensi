@@ -1,4 +1,11 @@
 <x-app-layout>
+    
+    <div class="px-2 py-2">
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
+            <i class="bi bi-arrow-left-circle me-1 text-lg"></i> Kembali
+        </a>
+    </div>
+
     <div class="p-4 max-w-6xl mx-auto">
         <h2 class="text-2xl font-bold mb-4 text-[#292D22]">Riwayat Mengajar</h2>
 

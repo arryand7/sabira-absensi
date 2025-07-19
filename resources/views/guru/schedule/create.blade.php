@@ -2,7 +2,7 @@
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
-                <a href="{{ route('guru.schedule.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
+                <a href="{{ route('guru.schedule') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
                     <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i> Kembali
                 </a>
             </div>

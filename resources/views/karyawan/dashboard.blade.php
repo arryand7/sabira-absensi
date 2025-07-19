@@ -19,6 +19,13 @@
 
         <!-- Menu Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 px-4 text-center text-sm font-semibold">
+            
+            <a href="{{ route('profile.edit') }}"
+               class="bg-[#F7F7F6] hover:bg-[#EFF0ED] transition p-4 rounded-md shadow flex flex-col items-center justify-center gap-2">
+                <i class="bi bi-person-check text-2xl text-[#5C644C]"></i>
+                <span class="text-[#373C2E]">Edit Profile</span>
+            </a>
+
             <a href="{{ route('absensi.index') }}"
                class="bg-[#F7F7F6] hover:bg-[#EFF0ED] transition p-4 rounded-md shadow flex flex-col items-center justify-center gap-2">
                 <i class="bi bi-clipboard-check text-2xl text-[#5C644C]"></i>

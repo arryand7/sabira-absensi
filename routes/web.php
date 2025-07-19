@@ -144,6 +144,10 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
     Route::middleware(['auth', 'checkRole:guru'])->group(function () {
         Route::get('/jadwal-guru', [TeacherScheduleController::class, 'index'])->name('guru.schedule');
         Route::get('/jadwal-guru/{schedule}/absen', [TeacherScheduleController::class, 'absen'])->name('guru.schedule.absen');
+        
+        Route::get('/', [TeacherScheduleController::class, 'index'])->name('guru.schedule.index');
+        Route::get('/create', [TeacherScheduleController::class, 'create'])->name('guru.schedule.create'); // Form tambah jadwal
+        Route::post('/', [TeacherScheduleController::class, 'store'])->name('guru.schedule.store'); // Simpan jadwal baru
 
         Route::post('/jadwal-guru/absen/{classGroup}', [TeacherScheduleController::class, 'submitAbsen'])
             ->name('guru.schedule.absen.submit');

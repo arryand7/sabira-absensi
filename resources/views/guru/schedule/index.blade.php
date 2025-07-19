@@ -1,10 +1,4 @@
 <x-app-layout>
-
-    <div class="px-2 py-2">
-        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
-            <i class="bi bi-arrow-left-circle me-1 text-lg"></i> Kembali
-        </a>
-    </div>
     
     <div class="py-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -18,7 +12,16 @@
             <div class="flex justify-end">
                 <a href="{{ route('dashboard') }}"
                    class="bg-[#D6D8D2] hover:bg-[#BEC1B7] text-[#1C1E17] px-4 py-2 rounded-md text-sm flex items-center gap-2 shadow transition">
-                    <i class="bi bi-arrow-left-circle"></i> Kembali
+                    
+                   <i class="bi bi-arrow-left-circle"></i> Kembali
+                </a>
+            </div>
+
+            {{-- Tombol Tambah --}}
+            <div class="mb-4">
+                <a href="{{ route('guru.schedule.create', ['guru_id' => $guru->id]) }}"
+                   class="inline-flex items-center gap-1 bg-[#8E412E] hover:bg-[#BA6F4D] text-white font-medium px-4 py-2 rounded shadow">
+                    <i class="bi bi-plus-circle-fill"></i> Tambah Jadwal
                 </a>
             </div>
 

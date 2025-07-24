@@ -35,9 +35,9 @@
     <div class="min-h-screen flex pt-16">
         {{-- Sidebar --}}
         @isset($sidebar)
-            <aside class="w-64 bg-white bg-[#5c644c] shadow-md hidden md:block">
+            <div class="w-64 bg-[#5c644c] text-[#F7F7F6] shadow-md min-h-screen">
                 {{ $sidebar }}
-            </aside>
+            </div>
         @endisset
 
         {{-- Main content (navbar + page) --}}

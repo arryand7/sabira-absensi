@@ -11,63 +11,56 @@
             </a>
         </div>
 
-        <form id="absenForm" method="POST" action="{{ route('asrama.sholat.submit', ['jenis' => $jenis]) }}"
-              class="space-y-6 bg-[#EFF0ED] p-6 rounded-xl border border-[#D6D8D2] shadow-sm"
-              autocomplete="off">
-            @csrf
-
-            {{-- Input Search NIS --}}
-            <div>
-                <label for="search" class="block text-sm font-medium text-[#44483B] mb-1">Cari NIS Siswa:</label>
-                <input
-                    type="text"
-                    id="search"
-                    name="search"
-                    placeholder="Ketik NIS siswa..."
-                    {{-- autocomplete="off" --}}
-                    class="w-full border border-[#BFC2B8] rounded-lg p-2 focus:ring-[#C6D2B2] focus:border-[#C6D2B2]"
-                />
-                <div id="searchResults"
-                     class="mt-2 border border-[#BFC2B8] rounded-lg max-h-40 overflow-y-auto bg-white shadow hidden z-10">
-                    {{-- Hasil pencarian dimuat dengan JS --}}
-                </div>
+        {{-- Input Search NIS --}}
+        <div class="mb-6 bg-[#EFF0ED] p-6 rounded-xl border border-[#D6D8D2] shadow-sm">
+            <label for="search" class="block text-sm font-medium text-[#44483B] mb-1">Cari NIS Siswa:</label>
+            <input
+                type="text"
+                id="search"
+                name="search"
+                placeholder="Ketik NIS siswa..."
+                class="w-full border border-[#BFC2B8] rounded-lg p-2 focus:ring-[#C6D2B2] focus:border-[#C6D2B2]"
+            />
+            <div id="searchResults"
+                 class="mt-2 border border-[#BFC2B8] rounded-lg max-h-40 overflow-y-auto bg-white shadow hidden z-10">
+                {{-- Hasil pencarian dimuat dengan JS --}}
             </div>
+        </div>
 
-            {{-- Daftar Absensi --}}
-            <div>
-                <h3 class="text-lg font-semibold text-[#292D22] mb-3">Daftar Absensi</h3>
-                <div id="absensiList" class="space-y-3 max-h-96 overflow-y-auto pr-1">
-                    @foreach(\App\Models\Student::orderBy('nama_lengkap')->get() as $siswa)
-                        <div class="flex items-center justify-between border border-[#D6D8D2] p-3 rounded-lg bg-white">
-                            <span class="font-medium text-[#292D22]">{{ $siswa->nama_lengkap }} <span class="text-sm text-[#6C6F65]">({{ $siswa->nis }})</span></span>
-                            <div class="text-sm {{ ($absensiHariIni[$siswa->id]->status ?? 'alpa') === 'hadir' ? 'text-green-600' : 'text-red-600' }} font-semibold" id="statusLabel_{{ $siswa->id }}">
-                                ({{ $absensiHariIni[$siswa->id]->status ?? 'alpa' }})
-                            </div>
-                            <input type="hidden" name="students[{{ $siswa->id }}]" id="status_{{ $siswa->id }}" value="{{ $absensiHariIni[$siswa->id]->status ?? 'alpa' }}">
+        {{-- Daftar Absensi --}}
+        <div>
+            <h3 class="text-lg font-semibold text-[#292D22] mb-3">Daftar Absensi</h3>
+            <div id="absensiList" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                @foreach(\App\Models\Student::orderBy('nama_lengkap')->get() as $siswa)
+                    <div class="flex items-center justify-between border border-[#D6D8D2] p-3 rounded-lg bg-white">
+                        <span class="font-medium text-[#292D22]">{{ $siswa->nama_lengkap }}
+                            <span class="text-sm text-[#6C6F65]">({{ $siswa->nis }})</span>
+                        </span>
+                        <div
+                            class="text-sm {{ ($absensiHariIni[$siswa->id]->status ?? 'alpa') === 'hadir' ? 'text-green-600' : 'text-red-600' }} font-semibold cursor-pointer"
+                            id="statusLabel_{{ $siswa->id }}">
+                            ({{ $absensiHariIni[$siswa->id]->status ?? 'alpa' }})
                         </div>
-                    @endforeach
-                </div>
+                        <input type="hidden" id="status_{{ $siswa->id }}"
+                               value="{{ $absensiHariIni[$siswa->id]->status ?? 'alpa' }}">
+                    </div>
+                @endforeach
             </div>
+        </div>
 
-            {{-- Tombol Submit --}}
-            <div class="text-center pt-4">
-                <button type="submit"
-                        class="inline-flex items-center px-6 py-2 bg-[#5C644C] text-white font-semibold rounded-lg shadow hover:bg-[#49543B] transition">
-                    <i class="bi bi-save2-fill mr-2"></i> Submit Absensi
-                </button>
-            </div>
-        </form>
+        <div class="text-center pt-4">
+            <a href="{{ route('asrama.sholat') }}"
+            class="inline-flex items-center px-6 py-2 bg-[#5C644C] text-white font-semibold rounded-lg shadow hover:bg-[#49543B] transition">
+                <i class="bi bi-check-circle-fill mr-2"></i> Selesai
+            </a>
+        </div>
     </div>
-
-    {{-- Bootstrap Icons --}}
-    {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"> --}}
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('search');
         const resultsDiv = document.getElementById('searchResults');
         const absensiList = document.getElementById('absensiList');
-
         let currentFocus = -1;
         let localStatusMap = {};
 
@@ -88,21 +81,38 @@
             const inputStatus = document.getElementById('status_' + studentId);
             const statusLabel = document.getElementById('statusLabel_' + studentId);
             const studentDiv = statusLabel.closest('.flex');
+            let newStatus = (inputStatus.value === 'hadir') ? 'alpa' : 'hadir';
 
-            if (inputStatus.value === 'hadir') {
-                inputStatus.value = 'alpa';
-                statusLabel.textContent = '(alpa)';
-                statusLabel.classList.remove('text-green-600');
-                statusLabel.classList.add('text-red-600');
-                localStatusMap[studentId] = 'alpa';
-            } else {
-                inputStatus.value = 'hadir';
-                statusLabel.textContent = '(hadir)';
-                statusLabel.classList.remove('text-red-600');
-                statusLabel.classList.add('text-green-600');
-                absensiList.prepend(studentDiv);
-                localStatusMap[studentId] = 'hadir';
-            }
+            fetch('{{ route('asrama.sholat.absen.update') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    status: newStatus,
+                    jadwal_id: '{{ $jadwal->id }}'
+                })
+            }).then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                    inputStatus.value = newStatus;
+                    statusLabel.textContent = `(${newStatus})`;
+                    if (newStatus === 'hadir') {
+                        statusLabel.classList.remove('text-red-600');
+                        statusLabel.classList.add('text-green-600');
+                        absensiList.prepend(studentDiv);
+                    } else {
+                        statusLabel.classList.remove('text-green-600');
+                        statusLabel.classList.add('text-red-600');
+                    }
+                } else {
+                    alert('Gagal update absen.');
+                }
+              }).catch(() => {
+                alert('Gagal update absen. Cek koneksi.');
+              });
         }
 
         resultsDiv.addEventListener('click', function (e) {
@@ -118,9 +128,7 @@
 
         searchInput.addEventListener('input', function () {
             const query = this.value.trim();
-            // const jenis = searchInput.dataset.jenis;
             currentFocus = -1;
-
             if (query.length >= 3) {
                 fetch(`{{ route('asrama.sholat.search', ['jenis' => $jenis]) }}?keyword=${encodeURIComponent(query)}`)
                     .then(response => response.json())
@@ -137,7 +145,6 @@
                                     ${student.nis} - ${student.nama_lengkap} -
                                     <span class="${statusColor} font-semibold">(${currentStatus})</span>
                                 `;
-
                                 resultsDiv.appendChild(div);
                             });
                             resultsDiv.classList.remove('hidden');
@@ -154,7 +161,6 @@
 
         searchInput.addEventListener('keydown', function (e) {
             let items = resultsDiv.querySelectorAll('.student');
-
             if (e.key === 'ArrowDown') {
                 currentFocus++;
                 currentFocus = addActive(items, currentFocus);
@@ -173,7 +179,6 @@
             }
         });
 
-        // Klik label ubah status
         document.querySelectorAll('[id^="statusLabel_"]').forEach(function (label) {
             label.addEventListener('click', function () {
                 const studentId = this.id.replace('statusLabel_', '');
@@ -182,6 +187,4 @@
         });
     });
     </script>
-
-
 </x-user-layout>

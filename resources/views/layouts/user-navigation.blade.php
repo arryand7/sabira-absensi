@@ -7,13 +7,6 @@
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="block h-10 w-auto">
                 </a>
             </div>
-
-            {{-- <div class="flex-1 text-center">
-                <span class="text-[#687259] font-semibold text-lg">
-                    @yield('pageTitle', 'Selamat datang')
-                </span>
-            </div> --}}
-
             <!-- Desktop Menu -->
             <div class="hidden sm:flex sm:items-center">
                 <x-dropdown align="right" width="48">

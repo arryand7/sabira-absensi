@@ -1,0 +1,147 @@
+
+
+<nav class="fixed top-0 z-50 w-full bg-[#EEF3E9] border-b border-[#A2A182] shadow-md">
+  <div class="px-3 py-3 lg:px-5 lg:pl-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center justify-start rtl:justify-end">
+        <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+            <span class="sr-only">Open sidebar</span>
+            <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+               <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+            </svg>
+         </button>
+        <a href="{{ route('dashboard') }}" class="flex ms-2 md:me-24">
+          <img src="{{ asset('images/logo.png') }}" class="h-8 me-3" alt="SABIRA Logo" />
+        </a>
+      </div>
+      <div class="flex items-center">
+          <div class="flex items-center ms-3">
+            <div>
+              <button type="button" class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#687259] bg-[#F4ECE2] border border-[#A2A182] rounded-xl hover:bg-[#E6CEBC] transition" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+                <span class="sr-only">{{ Auth::user()->name }}</span>
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </button>
+            </div>
+            <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-sm shadow-sm dark:bg-gray-700 dark:divide-gray-600" id="dropdown-user">
+              <div class="px-4 py-3" role="none"></div>
+                <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
+                  {{ Auth::user()->email }}
+                </p>
+              </div>
+              <!-- <ul class="py-1" role="none">
+                <li>
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
+                </li>
+              </ul> -->
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+</nav>
+
+<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0 sm:block bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
+   <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
+      <ul class="space-y-2 font-medium">
+         <li>
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.dashboard') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-house-door-fil"></i>
+               <span class="ms-3">Dashboard</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('laporan.karyawan') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('laporan.karyawan') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Absensi Karyawan</span>
+            </a>
+         </li>
+         <!-- <li>
+            <a href="{{ route('laporan.karyawan') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('laporan.karyawan') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Absensi Karyawan</span>
+            </a>
+         </li> -->
+         <li>
+            <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('users.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Manajemen User</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('admin.students.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.students.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Manajemen Murid</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('academic-years.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('academic-years.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Manajemen Tahun Ajaran</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('promotion.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('promotion.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Migrasi Data Siswa</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('divisis.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('divisis.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Manajemen Divisi</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('admin.lokasi.edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.lokasi.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Lokasi</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('admin.class-groups.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.class-groups.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Manajemen Kelas</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('subjects.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('subjects.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Mata Pelajaran</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('admin.schedules.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.schedules.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Jadwal Guru</span>
+            </a>
+         </li>
+         <li>
+            <a href="{{ route('admin.sholat') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.sholat') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+               <i class="bi bi-bar-chart-fill"></i>
+               <span class="ms-3">Kegiatan Sholat</span>
+            </a>
+         </li>
+      </ul>
+   </div>
+</aside>
+
+//aside selesei
+
+{{-- <div class="p-4 sm:ml-64">
+   <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+      {{ $slot }}
+   </div>
+</div> --}}

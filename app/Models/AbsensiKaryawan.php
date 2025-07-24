@@ -19,6 +19,7 @@ class AbsensiKaryawan extends Model
         'check_in',
         'check_out',
         'status',
+        'device_hash'
     ];
 
 

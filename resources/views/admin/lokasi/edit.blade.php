@@ -40,6 +40,15 @@
                         </div>
 
                         <div class="mb-4">
+                            <label for="radius" class="block text-sm font-medium">
+                                Radius (KM)
+                            </label>
+                            <input type="number" step="0.01" name="radius" id="radius"
+                                class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] p-2 shadow-sm"
+                                value="{{ old('radius', $lokasi->radius) }}" required>
+                        </div>
+
+                        <div class="mb-4">
                             <button type="button" id="detectLocation"
                                 class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 shadow">
                                 Gunakan Lokasi Saat Ini
@@ -71,6 +80,7 @@
     <script>
         const defaultLat = {{ old('latitude', $lokasi->latitude ?? -7.25) }};
         const defaultLng = {{ old('longitude', $lokasi->longitude ?? 112.75) }};
+        const defaultRadius = {{ old('radius', $lokasi->radius ?? 0.3) }} * 1000; // km to meters
 
         const map = L.map('map').setView([defaultLat, defaultLng], 16);
 
@@ -80,18 +90,37 @@
 
         let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
 
+        let circle = L.circle([defaultLat, defaultLng], {
+            radius: defaultRadius,
+            color: '#8E412E',
+            fillColor: '#8E412E',
+            fillOpacity: 0.2
+        }).addTo(map);
+
+        function updateCircle() {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lng = parseFloat(document.getElementById('longitude').value);
+            const radius = parseFloat(document.getElementById('radius').value || 0) * 1000;
+
+            marker.setLatLng([lat, lng]);
+            circle.setLatLng([lat, lng]);
+            circle.setRadius(radius);
+            map.setView([lat, lng]);
+        }
+
         marker.on('dragend', function (e) {
             const position = marker.getLatLng();
             document.getElementById('latitude').value = position.lat;
             document.getElementById('longitude').value = position.lng;
+            updateCircle();
         });
 
         map.on('click', function (e) {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
-            marker.setLatLng([lat, lng]);
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lng;
+            updateCircle();
         });
 
         document.getElementById('detectLocation').addEventListener('click', function () {
@@ -103,7 +132,7 @@
                     document.getElementById('latitude').value = lat;
                     document.getElementById('longitude').value = lng;
 
-                    marker.setLatLng([lat, lng]);
+                    updateCircle();
                     map.setView([lat, lng], 17);
                 }, function () {
                     alert('Gagal mendapatkan lokasi. Pastikan izin lokasi diaktifkan.');
@@ -112,5 +141,10 @@
                 alert('Browser tidak mendukung geolokasi.');
             }
         });
+
+        document.getElementById('radius').addEventListener('input', function () {
+            updateCircle();
+        });
     </script>
+
 </x-app-layout>

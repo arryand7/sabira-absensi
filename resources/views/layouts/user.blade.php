@@ -50,6 +50,8 @@
 <body class="font-sans antialiased">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
     <!-- Navbar Atas (Selalu di atas) -->
     <div class="fixed top-0 left-0 right-0 z-40">

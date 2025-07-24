@@ -19,6 +19,7 @@ use App\Http\Controllers\TeacherHistoryController;
 use App\Http\Controllers\AsramaAbsenController;
 use App\Http\Controllers\StudentPromotionController;
 use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AdminDashboardController;
 
 
 // Halaman welcome
@@ -52,7 +53,12 @@ Route::get('/redirect-after-login', function () {
 
 // Role: Admin
 Route::middleware(['auth', 'checkRole:admin'])->group(function () {
-    Route::get('/dashboard-admin', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard-admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::post('/dashboard/absen/manual', [AdminDashboardController::class, 'storeManualAbsen'])->name('admin.absensi.manual.store');
+    Route::get('/dashboard/absen/{id}/edit', [AdminDashboardController::class, 'editAbsen'])->name('admin.absensi.edit');
+    Route::put('/dashboard/absen/{id}', [AdminDashboardController::class, 'updateAbsen'])->name('admin.absensi.update');
+
 
     // karyawan
     Route::resource('/karyawan', KaryawanController::class);
@@ -161,8 +167,10 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
         // Sholat
         Route::get('/sholat', [AsramaAbsenController::class, 'pilihSholat'])->name('asrama.sholat');
         Route::get('/sholat/form/{jenis}', [AsramaAbsenController::class, 'formAbsenSholat'])->name('asrama.sholat.form');
-        Route::post('/sholat/{jenis}', [AsramaAbsenController::class, 'submitAbsenSholat'])->name('asrama.sholat.submit');
         Route::get('/sholat/search/{jenis}', [AsramaAbsenController::class, 'searchStudent'])->name('asrama.sholat.search');
+        Route::post('/sholat/absen/update', [AsramaAbsenController::class, 'updateAbsenStatus'])
+        ->name('asrama.sholat.absen.update');
+
 
         // Kegiatan
         Route::get('/kegiatan', [AsramaAbsenController::class, 'listKegiatan'])->name('asrama.kegiatan');
@@ -170,6 +178,8 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
         Route::get('/kegiatan/{id}/absen', [AsramaAbsenController::class, 'formAbsenKegiatan'])->name('asrama.kegiatan.absen');
         Route::post('/kegiatan/{id}/absen', [AsramaAbsenController::class, 'submitAbsenKegiatan'])->name('asrama.kegiatan.absen.submit');
         Route::get('/kegiatan/{id}/search', [AsramaAbsenController::class, 'searchStudentKegiatan'])->name('asrama.kegiatan.search');
+        Route::post('/kegiatan/{id}/absen/update', [AsramaAbsenController::class, 'updateAbsenStatusKegiatan'])
+        ->name('asrama.kegiatan.absen.update');
 
         Route::get('/sholat/history', [AsramaAbsenController::class, 'historySholat'])->name('asrama.sholat.history');
         Route::get('/kegiatan/{id}/history', [AsramaAbsenController::class, 'historyKegiatan'])->name('asrama.kegiatan.history');

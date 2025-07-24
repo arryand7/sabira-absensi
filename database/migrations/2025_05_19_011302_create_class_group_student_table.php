@@ -15,7 +15,7 @@ class CreateClassGroupStudentTable extends Migration
             $table->foreignId('academic_year_id')
                 ->constrained('academic_years');
             $table->timestamps();
-            $table->unique(['class_group_id', 'student_id']); // Optional: biar kombinasi ini unik
+            $table->unique(['class_group_id', 'student_id']);
         });
     }
 

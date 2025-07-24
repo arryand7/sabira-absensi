@@ -22,10 +22,11 @@ class AdminLokasiAbsenController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'radius' => 'required|numeric|min:0.01',
         ]);
 
         $lokasi = AbsensiLokasi::first();
-        $lokasi->update($request->only('latitude', 'longitude'));
+        $lokasi->update($request->only('latitude', 'longitude', 'radius'));
 
         return redirect()->back()->with('success', 'Lokasi absen berhasil diperbarui!');
     }

@@ -131,7 +131,7 @@ class AdminScheduleController extends Controller
 
         $tahunAktif = AcademicYear::where('is_active', true)->first();
 
-        $subjects = Subject::all(); 
+        $subjects = Subject::all();
         $classGroups = ClassGroup::where('academic_year_id', $tahunAktif?->id)->get(); // semua kelas tahun aktif
 
         $academicYears = AcademicYear::orderByDesc('start_date')->get();
@@ -215,7 +215,10 @@ class AdminScheduleController extends Controller
         $import = new ScheduleImport();
         Excel::import($import, $request->file('file'));
 
-        // Pastikan semua yang dikirim adalah string
+        if ($import->successRows === [] && $import->failures === []) {
+            return back()->withErrors(['file' => 'File tidak mengandung data valid atau formatnya salah.']);
+        }
+
         $success = collect($import->successRows)->map(function ($row) {
             return is_array($row) ? json_encode($row) : (string)$row;
         })->toArray();

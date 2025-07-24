@@ -10,6 +10,33 @@
         </div>
         <div id="map" class="h-64 md:h-96 rounded-xl shadow mb-6"></div>
 
+        @php
+            $absenHariIni = \App\Models\AbsensiKaryawan::where('user_id', auth()->user()->id)
+                ->whereDate('created_at', now())
+                ->first();
+        @endphp
+
+        <div class="rounded-xl p-4 shadow-sm mb-6 border"
+            style="background-color: {{ $absenHariIni ? '#ECFDF5' : '#FFFBEB' }};
+                border-color: {{ $absenHariIni ? '#6EE7B7' : '#FCD34D' }};
+                color: {{ $absenHariIni ? '#047857' : '#92400E' }};">
+
+            @if ($absenHariIni)
+                ✅ Check-In hari ini pada jam
+                <strong>{{ \Carbon\Carbon::parse($absenHariIni->check_in)->format('H:i') }}</strong>.
+
+                @if ($absenHariIni->check_out)
+                    <br>✅ Check-Out pada jam
+                    <strong>{{ \Carbon\Carbon::parse($absenHariIni->check_out)->format('H:i') }}</strong>.
+                @else
+                    <br>⚠️belum melakukan Check-Out hari ini.
+                @endif
+
+            @else
+                ⚠️ belum melakukan Check-In hari ini.
+            @endif
+        </div>
+
         <!-- Location Info Box -->
         <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 shadow-sm mb-6">
             <div class="mb-3">
@@ -25,71 +52,95 @@
         <!-- Form Buttons -->
         <div class="grid grid-cols-2 gap-4 mb-4 text-center">
             <!-- Check-In -->
-            <form method="POST" action="{{ route('absensi.checkin') }}">
+            <form method="POST" action="{{ route('absensi.checkin') }}" id="checkin-form">
                 @csrf
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-                <button type="submit" class="w-full py-3 bg-green-600 text-white rounded-md font-semibold">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Check-in
+                <input type="hidden" id="latitude_checkin" name="latitude">
+                <input type="hidden" id="longitude_checkin" name="longitude">
+                <input type="hidden" id="device_hash" name="device_hash">
+
+                <button type="submit" id="checkin-button" disabled class="w-full py-3 bg-green-600 text-white rounded-md font-semibold opacity-50">
+                    Loading device...
                 </button>
             </form>
 
             <!-- Check-Out -->
-            <form method="POST" action="{{ route('absensi.checkout') }}">
+            <form method="POST" action="{{ route('absensi.checkout') }}" id="checkout-form">
                 @csrf
-                <button type="submit" class="w-full py-3 bg-red-600 text-white rounded-md font-semibold">
+                <input type="hidden" id="latitude_checkout" name="latitude">
+                <input type="hidden" id="longitude_checkout" name="longitude">
+
+                <button type="submit" id="checkout-button" class="w-full py-3 bg-red-600 text-white rounded-md font-semibold">
                     <i class="bi bi-box-arrow-right me-2"></i>Check-out
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Leaflet JS & CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
 
     <script>
-        const sekolahLat = {{ $lokasi->latitude ?? '-7.310823820752337' }};
-        const sekolahLng = {{ $lokasi->longitude ?? '112.72923730812086' }};
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkinButton = document.getElementById('checkin-button');
+            const deviceInput = document.getElementById('device_hash');
 
-        const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
+            // Disable tombol saat persiapan device hash
+            checkinButton.disabled = true;
+            checkinButton.innerText = 'Loading device...';
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+            // Generate dan Simpan Device Hash (UUID)
+            let deviceHash = localStorage.getItem('device_hash');
+            if (!deviceHash) {
+                deviceHash = crypto.randomUUID();
+                localStorage.setItem('device_hash', deviceHash);
+            }
+            deviceInput.value = deviceHash;
 
-        const schoolMarker = L.marker([sekolahLat, sekolahLng]).addTo(map).bindPopup('Lokasi Sekolah');
+            console.log('Device Hash:', deviceHash);
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
+            // Aktifkan tombol saat siap
+            checkinButton.disabled = false;
+            checkinButton.classList.remove('opacity-50');
+            checkinButton.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Check-in';
 
-                document.getElementById('latitude').value = lat;
-                document.getElementById('longitude').value = lng;
-
-                L.marker([lat, lng]).addTo(map).bindPopup('Lokasi Kamu').openPopup();
-
-                L.circle([sekolahLat, sekolahLng], {
-                    color: 'blue',
-                    fillColor: '#902A2A',
-                    fillOpacity: 0.2,
-                    radius: 200
-                }).addTo(map);
-
-                map.fitBounds([
-                    [sekolahLat, sekolahLng],
-                    [lat, lng]
-                ]);
-            }, function() {
-                alert('Gagal mendapatkan lokasi! Pastikan izin lokasi aktif.');
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+            // Opsional: isi ulang di submit (backup)
+            document.getElementById('checkin-form').addEventListener('submit', function () {
+                deviceInput.value = localStorage.getItem('device_hash');
             });
-        } else {
-            alert('Browser tidak mendukung geolokasi.');
-        }
+
+            // Map dan Geolokasi tetap jalan seperti sebelumnya
+            const sekolahLat = {{ $lokasi->latitude ?? '-7.310823820752337' }};
+            const sekolahLng = {{ $lokasi->longitude ?? '112.72923730812086' }};
+            const radiusMeter = {{ ($lokasi->radius ?? 0.2) * 1000 }};
+
+            const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.marker([sekolahLat, sekolahLng]).addTo(map).bindPopup('Lokasi Sekolah');
+
+            L.circle([sekolahLat, sekolahLng], {
+                color: 'blue',
+                fillColor: '#902A2A',
+                fillOpacity: 0.2,
+                radius: radiusMeter
+            }).addTo(map);
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Simpan posisi di check-in dan check-out input
+                    document.getElementById('latitude_checkin').value = lat;
+                    document.getElementById('longitude_checkin').value = lng;
+                    document.getElementById('latitude_checkout').value = lat;
+                    document.getElementById('longitude_checkout').value = lng;
+
+                    L.marker([lat, lng]).addTo(map).bindPopup('Lokasi Kamu').openPopup();
+                    map.fitBounds([[sekolahLat, sekolahLng], [lat, lng]]);
+                });
+            }
+        });
     </script>
+
 </x-user-layout>
+
+

@@ -8,7 +8,7 @@
             <div class="bg-[#8D9382] shadow rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
                 <h1 class="text-2xl font-bold mb-4">Tambah Kelas</h1>
 
-                @if ($errors->any())
+                {{-- @if ($errors->any())
                     <div class="text-red-600 mb-4">
                         <ul>
                             @foreach ($errors->all() as $error)
@@ -16,7 +16,7 @@
                             @endforeach
                         </ul>
                     </div>
-                @endif
+                @endif --}}
 
                 <form action="{{ route('admin.class-groups.store') }}" method="POST" class="space-y-4">
                     @csrf

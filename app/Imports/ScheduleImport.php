@@ -26,6 +26,15 @@ class ScheduleImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows)
     {
+        $requiredColumns = ['guru', 'mapel', 'kelas', 'hari', 'jam_mulai', 'jam_selesai'];
+
+        // Cek kolom hanya sekali di baris pertama
+        $firstRow = $rows->first();
+        if (!$firstRow || collect($requiredColumns)->diff(array_keys($firstRow->toArray()))->isNotEmpty()) {
+            $this->failures[] = "Format file tidak sesuai. Pastikan kolom: guru, mapel, kelas, hari, jam_mulai, jam_selesai tersedia.";
+            return;
+        }
+        
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2;
 

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-user-layout>
     <div class="py-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <h2 class="font-semibold text-2xl text-[#292D22] mb-6">
@@ -176,4 +176,4 @@
             @endif
         });
     </script>
-</x-app-layout>
+</x-user-layout>

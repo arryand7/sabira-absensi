@@ -29,19 +29,19 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#E7EAE0] text-[#292D22] bg-white">
-                    @forelse($absensi as $a)
+                    @foreach(\App\Models\Student::orderBy('nama_lengkap')->get() as $siswa)
+                        @php
+                            $absenSiswa = $absensi->firstWhere('student_id', $siswa->id);
+                            $status = $absenSiswa->status ?? 'alpa';
+                        @endphp
                         <tr>
-                            <td class="px-4 py-3">{{ $a->student->nis }}</td>
-                            <td class="px-4 py-3">{{ $a->student->nama_lengkap }}</td>
-                            <td class="px-4 py-3 capitalize font-semibold {{ $a->status === 'hadir' ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $a->status }}
+                            <td class="px-4 py-3">{{ $siswa->nis }}</td>
+                            <td class="px-4 py-3">{{ $siswa->nama_lengkap }}</td>
+                            <td class="px-4 py-3 capitalize font-semibold {{ $status === 'hadir' ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $status }}
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="px-4 py-4 text-center text-gray-500">Belum ada absensi.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>

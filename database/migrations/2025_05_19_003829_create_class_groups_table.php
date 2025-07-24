@@ -15,14 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('nama_kelas');
             $table->enum('jenis_kelas', ['formal', 'muadalah']);
-            $table->foreignId('academic_year_id')
-                ->constrained('academic_years');
+            $table->foreignId('academic_year_id')->constrained('academic_years');
+            $table->foreignId('wali_kelas_id')->nullable()->constrained('gurus')->onDelete('set null');
             $table->timestamps();
-            $table->foreignId('wali_kelas_id')
-                ->nullable()
-                ->constrained('gurus')
-                ->onDelete('set null');
-       });
+            // constraint unik gabungan
+            $table->unique(['nama_kelas', 'academic_year_id'], 'unique_kelas_per_tahun');
+        });
     }
 
     /**
@@ -31,10 +29,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('class_groups', function (Blueprint $table) {
+            // Hapus constraint unik dulu
+            $table->dropUnique('unique_kelas_per_tahun');
+
             $table->dropForeign(['academic_year_id']);
-            $table->dropColumn('academic_year_id');
             $table->dropForeign(['wali_kelas_id']);
-            $table->dropColumn('wali_kelas_id');
         });
+
+        Schema::dropIfExists('class_groups');
     }
 };

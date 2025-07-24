@@ -104,34 +104,34 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
-                        @foreach ($students as $student)
-                            <tr class="hover:bg-[#BEC1B7] transition">
-                                <td class="px-4 py-2">
-                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="student-checkbox" />
-                                </td>
-                                <td class="px-4 py-2">{{ $student->nama_lengkap }}</td>
-                                <td class="px-4 py-2">{{ $student->nis }}</td>
-                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'formal')?->nama_kelas ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $student->jenis_kelamin }}</td>
-                                <td class="px-4 py-2 space-x-2 text-center">
-                                    <a href="{{ route('admin.students.edit', $student->id) }}"
-                                        class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
-                                        Edit
-                                    </a>
-                                    <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" class="inline delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-
-                        @if($students->isEmpty())
+                        @if ($students->count() > 0)
+                            @foreach ($students as $student)
+                                <tr class="hover:bg-[#BEC1B7] transition">
+                                    <td class="px-4 py-2">
+                                        <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="student-checkbox" />
+                                    </td>
+                                    <td class="px-4 py-2">{{ $student->nama_lengkap }}</td>
+                                    <td class="px-4 py-2">{{ $student->nis }}</td>
+                                    <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'formal')?->nama_kelas ?? '-' }}</td>
+                                    <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}</td>
+                                    <td class="px-4 py-2">{{ $student->jenis_kelamin }}</td>
+                                    <td class="px-4 py-2 space-x-2 text-center">
+                                        <a href="{{ route('admin.students.edit', $student->id) }}"
+                                            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                                            Edit
+                                        </a>
+                                        <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" class="inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="7" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
                                     Belum ada data murid.
@@ -146,21 +146,23 @@
 
     <script>
         $(document).ready(function () {
-            $('#studentTable').DataTable({
-                responsive: true,
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ entri",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "→",
-                        previous: "←"
-                    },
-                    emptyTable: "Belum ada data murid."
-                }
-            });
+            @if ($students->count() > 0)
+                $('#studentTable').DataTable({
+                    responsive: true,
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ entri",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                        paginate: {
+                            first: "Awal",
+                            last: "Akhir",
+                            next: "→",
+                            previous: "←"
+                        },
+                        emptyTable: "Belum ada data murid."
+                    }
+                });
+            @endif
 
             // Centang semua checkbox
             $('#select-all').on('click', function () {

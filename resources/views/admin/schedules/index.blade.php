@@ -32,6 +32,12 @@
                 </div>
             @endif
 
+            @error('file')
+                <div class="bg-red-100 text-red-800 px-4 py-2 rounded shadow mt-2 text-sm">
+                    {{ $message }}
+                </div>
+            @enderror
+
             <form action="{{ route('admin.schedules.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="file" name="file" required class="form-input" />

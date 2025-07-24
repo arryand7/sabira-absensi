@@ -2,6 +2,7 @@
     <x-slot name="sidebar">
         <x-admin-sidenav />
     </x-slot>
+
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
@@ -10,6 +11,7 @@
                     <i class="bi bi-arrow-left-circle-fill"></i> Kembali
                 </button>
             </div>
+
             <div class="bg-[#8D9382] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Edit User</h1>
 
@@ -20,7 +22,8 @@
                     <!-- Nama -->
                     <div>
                         <label class="block text-[#1C1E17] mb-1">Nama</label>
-                        <input type="text" name="name" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror"
+                        <input type="text" name="name"
+                            class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror"
                             value="{{ old('name', $user->name) }}" required>
                         @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -28,7 +31,8 @@
                     <!-- Email -->
                     <div>
                         <label class="block text-[#1C1E17]">Email</label>
-                        <input type="email" name="email" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('email') border-red-500 @enderror"
+                        <input type="email" name="email"
+                            class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('email') border-red-500 @enderror"
                             value="{{ old('email', $user->email) }}" required>
                         @error('email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -36,7 +40,9 @@
                     <!-- Role -->
                     <div>
                         <label class="block text-[#1C1E17]">Role</label>
-                        <select name="role" id="roleSelect" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('role') border-red-500 @enderror" required>
+                        <select name="role" id="roleSelect"
+                            class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('role') border-red-500 @enderror"
+                            required>
                             <option value="">-- Pilih Role --</option>
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="karyawan" {{ old('role', $user->role) == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
@@ -49,7 +55,8 @@
                     <!-- Password -->
                     <div>
                         <label class="block text-[#1C1E17]">Password (Kosongkan jika tidak diubah)</label>
-                        <input type="password" name="password" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('password') border-red-500 @enderror">
+                        <input type="password" name="password"
+                            class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('password') border-red-500 @enderror">
                         @error('password') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -67,14 +74,6 @@
                     <!-- Data Karyawan -->
                     <div id="karyawanFields" style="display: none;" class="border-t pt-4 space-y-4">
                         <h3 class="text-lg font-semibold text-[#1C1E17]">Data Karyawan</h3>
-
-                        <div>
-                            <label class="block text-[#1C1E17]">Nama Lengkap</label>
-                            <input type="text" name="nama_lengkap"
-                                value="{{ old('nama_lengkap', $user->karyawan->nama_lengkap ?? '') }}"
-                                class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('nama_lengkap') border-red-500 @enderror">
-                            @error('nama_lengkap') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
 
                         <!-- Divisi -->
                         <div id="divisiField">
@@ -94,7 +93,8 @@
                         <!-- Jenis Guru -->
                         <div id="jenisGuruField" style="display: none;">
                             <label class="block text-[#1C1E17]">Jenis Guru</label>
-                            <select name="jenis" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('jenis') border-red-500 @enderror">
+                            <select name="jenis"
+                                class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('jenis') border-red-500 @enderror">
                                 <option value="">-- Pilih Jenis Guru --</option>
                                 <option value="formal" {{ old('jenis', optional($user->guru)->jenis) == 'formal' ? 'selected' : '' }}>Formal</option>
                                 <option value="muadalah" {{ old('jenis', optional($user->guru)->jenis) == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
@@ -128,6 +128,7 @@
                         </div>
                     </div>
 
+                    <!-- Submit -->
                     <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
                         <i class="bi bi-save mr-1"></i> Update
                     </button>
@@ -146,7 +147,6 @@
 
             function toggleFields() {
                 const role = roleSelect.value;
-
                 const isKaryawan = role === 'karyawan';
                 const isGuru = role === 'guru';
 
@@ -155,11 +155,8 @@
                 divisiField.style.display = isGuru ? 'none' : 'block';
             }
 
-            // Event listener
             roleSelect.addEventListener('change', toggleFields);
-
-            // Trigger on load
-            toggleFields();
+            toggleFields(); // run on load
         });
     </script>
 </x-app-layout>

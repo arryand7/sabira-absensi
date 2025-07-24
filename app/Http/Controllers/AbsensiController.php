@@ -42,8 +42,19 @@ class AbsensiController extends Controller
 
     public function checkin(Request $request)
     {
-
+        // dd($request->device_hash);
         $user = Auth::user();
+
+        $deviceHash = $request->device_hash;
+
+        $deviceUsed = AbsensiKaryawan::where('device_hash', $deviceHash)
+            ->whereDate('created_at', Carbon::today())
+            ->where('user_id', '!=', $user->id)
+            ->exists();
+
+        if ($deviceUsed) {
+            return back()->with("error", "Perangkat ini sudah digunakan untuk absen akun lain hari ini.");
+        }
 
         $alreadyCheckedIn = AbsensiKaryawan::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())
@@ -63,7 +74,7 @@ class AbsensiController extends Controller
 
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
-        if ($jarak > 0.2) {
+        if ($jarak > ($lokasi->radius ?? 0.2)) {
             return back()->with("error", "Gagal Check-In: Lokasi terlalu jauh dari sekolah.");
         }
 
@@ -109,6 +120,7 @@ class AbsensiController extends Controller
             'waktu_absen' => $now,
             'check_in' => $jamSekarang,
             'status' => $status,
+            'device_hash' => $deviceHash,
         ]);
 
         return back()->with('success', "Check-In berhasil. Status: $status");
@@ -117,8 +129,20 @@ class AbsensiController extends Controller
 
     public function checkout(Request $request)
     {
-
         $user = Auth::user();
+
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+
+        $lokasi = AbsensiLokasi::first();
+        $sekolahLat = $lokasi->latitude ?? -7.310823820752337;
+        $sekolahLng = $lokasi->longitude ?? 112.72923730812086;
+
+        $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
+
+        if ($jarak > ($lokasi->radius ?? 0.2)) {
+            return back()->with("error", "Gagal Check-Out: Lokasi terlalu jauh dari sekolah.");
+        }
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())

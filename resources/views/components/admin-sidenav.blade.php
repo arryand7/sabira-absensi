@@ -148,17 +148,13 @@
                     {{ Route::is('admin.sholat') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
                 <i class="bi bi-clock-fill text-lg"></i> Kegiatan Sholat
             </a>
-
-            <!-- Logout -->
+            <!-- Footer Info -->
             <hr class="my-2 border-[#F7F7F6]/30">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                        class="w-full text-left flex items-center gap-3 px-4 py-2 rounded-xl transition
-                            text-red-300 hover:bg-red-100 hover:text-red-800">
-                    <i class="bi bi-box-arrow-right text-lg"></i> Logout
-                </button>
-            </form>
+            <div class="text-xs text-center text-[#F7F7F6]/60 px-4 py-4">
+                © {{ date('Y') }} TelkomUniversitySurabaya<br>
+                {{-- All rights reserved. --}}
+            </div>
+
         </nav>
     </aside>
 

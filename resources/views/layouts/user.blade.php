@@ -53,28 +53,35 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-    <!-- Navbar Atas (Selalu di atas) -->
-    <div class="fixed top-0 left-0 right-0 z-40">
-        @include('layouts.user-navigation') {{-- navbar atas --}}
-    </div>
-
-    <!-- Layout utama -->
-    <div class="min-h-screen flex pt-16">
-        {{-- Main content (navbar + page) --}}
-        <div class="flex-1 flex flex-col bg-[#D6D8D2]"> <!-- Ubah bg konten utama di sini -->
-            @if (isset($header))
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endif
-
-            <main class="flex-1 px-4 py-6">
-                {{ $slot }}
-            </main>
+    <div class="min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <div class="fixed top-0 left-0 right-0 z-40">
+            @include('layouts.user-navigation')
         </div>
+
+        <!-- Main Layout -->
+        <div class="flex-grow flex pt-16">
+            <div class="flex-1 flex flex-col bg-[#D6D8D2]">
+                @if (isset($header))
+                    <header class="bg-white dark:bg-gray-800 shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endif
+
+                <main class="flex-1 px-4 py-6">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="border-t border-gray-600 text-center text-xs text-gray-600 py-4 bg-[#D6D8D2]">
+            © {{ date('Y') }} TelkomUniversitySurabaya.
+        </footer>
     </div>
+
 
 
     <!-- Scripts -->

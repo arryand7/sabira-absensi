@@ -48,6 +48,7 @@
                             <option value="">Pilih Jenis</option>
                             <option value="formal" {{ old('jenis_kelas') == 'formal' ? 'selected' : '' }}>Formal</option>
                             <option value="muadalah" {{ old('jenis_kelas') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
+                            <option value="tambahan" {{ old('jenis_kelas') == 'tambahan' ? 'selected' : '' }}>Tambahan</option>
                         </select>
                         @error('jenis_kelas')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

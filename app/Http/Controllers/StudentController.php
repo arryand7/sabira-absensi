@@ -28,6 +28,7 @@ class StudentController extends Controller
         $students = $query->get()->filter(function ($student) use ($request) {
             $formalClass = true;
             $muadalahClass = true;
+            $tambahanClass = true;
 
             if ($request->filled('kelas_formal')) {
                 $formalClass = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id == $request->kelas_formal;
@@ -37,7 +38,11 @@ class StudentController extends Controller
                 $muadalahClass = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id == $request->kelas_muadalah;
             }
 
-            return $formalClass && $muadalahClass;
+            if ($request->filled('kelas_tambahan')) {
+                $tambahanClass = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id == $request->kelas_tambahan;
+            }
+
+            return $formalClass && $muadalahClass && $tambahanClass;
         });
 
         $academicClasses = ClassGroup::where('jenis_kelas', 'formal')
@@ -47,8 +52,12 @@ class StudentController extends Controller
         $muadalahClasses = ClassGroup::where('jenis_kelas', 'muadalah')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
+        
+        $tambahanClasses = ClassGroup::where('jenis_kelas', 'tambahan')
+            ->whereIn('academic_year_id', $activeYearIds)
+            ->get();
 
-        return view('admin.students.index', compact('students', 'academicClasses', 'muadalahClasses'));
+        return view('admin.students.index', compact('students', 'academicClasses', 'muadalahClasses', 'tambahanClasses'));
     }
 
     public function create()
@@ -63,7 +72,11 @@ class StudentController extends Controller
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
-        return view('admin.students.create', compact('academicClasses', 'muadalahClasses'));
+        $tambahanClasses = ClassGroup::where('jenis_kelas', 'tambahan')
+            ->whereIn('academic_year_id', $activeYearIds)
+            ->get();
+
+        return view('admin.students.create', compact('academicClasses', 'muadalahClasses', 'tambahanClasses'));
     }
 
 
@@ -75,6 +88,7 @@ class StudentController extends Controller
             'jenis_kelamin'   => 'required|in:L,P',
             'kelas_formal'  => 'nullable|exists:class_groups,id',
             'kelas_muadalah'  => 'nullable|exists:class_groups,id',
+            'kelas_tambahan'  => 'nullable|exists:class_groups,id',
         ]);
 
         $student = Student::create($request->only(['nama_lengkap', 'nis', 'jenis_kelamin']));
@@ -88,6 +102,13 @@ class StudentController extends Controller
 
         if ($request->kelas_muadalah) {
             $classGroup = ClassGroup::find($request->kelas_muadalah);
+            $student->classGroups()->attach($classGroup->id, [
+                'academic_year_id' => $classGroup->academic_year_id,
+            ]);
+        }
+
+        if ($request->kelas_tambahan) {
+            $classGroup = ClassGroup::find($request->kelas_tambahan);
             $student->classGroups()->attach($classGroup->id, [
                 'academic_year_id' => $classGroup->academic_year_id,
             ]);
@@ -112,9 +133,10 @@ class StudentController extends Controller
 
         $kelasFormalId = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id;
         $kelasMuadalahId = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id;
+        $kelasTambahanId = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id;
 
         return view('admin.students.edit', compact(
-            'student', 'academicClasses', 'muadalahClasses', 'kelasFormalId', 'kelasMuadalahId'
+            'student', 'academicClasses', 'muadalahClasses', 'kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
         ));
     }
 
@@ -127,6 +149,7 @@ class StudentController extends Controller
             'jenis_kelamin'   => 'required|in:L,P',
             'kelas_formal'  => 'nullable|exists:class_groups,id',
             'kelas_muadalah'  => 'nullable|exists:class_groups,id',
+            'kelas_tambahan'  => 'nullable|exists:class_groups,id',
         ]);
 
         $student = Student::findOrFail($id);
@@ -141,6 +164,11 @@ class StudentController extends Controller
 
         if ($request->kelas_muadalah) {
             $classGroup = ClassGroup::find($request->kelas_muadalah);
+            $syncData[$classGroup->id] = ['academic_year_id' => $classGroup->academic_year_id];
+        }
+
+        if ($request->kelas_tambahan) {
+            $classGroup = ClassGroup::find($request->kelas_tambahan);
             $syncData[$classGroup->id] = ['academic_year_id' => $classGroup->academic_year_id];
         }
 

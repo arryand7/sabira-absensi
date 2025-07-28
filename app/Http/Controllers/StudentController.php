@@ -131,12 +131,16 @@ class StudentController extends Controller
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
+        $tambahanClasses = ClassGroup::where('jenis_kelas', 'tambahan')
+            ->whereIn('academic_year_id', $activeYearIds)
+            ->get();
+
         $kelasFormalId = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id;
         $kelasMuadalahId = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id;
         $kelasTambahanId = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id;
 
         return view('admin.students.edit', compact(
-            'student', 'academicClasses', 'muadalahClasses', 'kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
+            'student', 'academicClasses', 'muadalahClasses', 'tambahanClasses','kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
         ));
     }
 

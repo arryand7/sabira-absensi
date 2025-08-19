@@ -18,24 +18,19 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label for="tahun_ajaran" class="block text-sm font-medium text-gray-700">Tahun Ajaran</label>
-                    <select name="tahun_ajaran" id="tahun_ajaran" class="w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-orange-200">
-                        <option value="">Semua</option>
-                        @foreach($academicYears as $year)
-                            <option value="{{ $year->id }}" {{ request('tahun_ajaran') == $year->id ? 'selected' : '' }}>
-                                {{ $year->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- <div>
+                    <label class="block text-sm font-medium text-gray-700">Tahun Ajaran Aktif</label>
+                    <div class="text-sm text-gray-900 mt-1">
+                        {{ $activeYear?->name ?? '-' }}
+                    </div>
+                </div> --}}
 
-                <div class="flex gap-2 mt-1">
+                {{-- <div class="flex gap-2 mt-1">
                     <button type="submit"
                             class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] flex items-center gap-2 shadow">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
-                </div>
+                </div> --}}
             </form>
 
             {{-- Table --}}
@@ -50,25 +45,27 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
-                        @forelse($students as $student)
-                            <tr class="hover:bg-[#BEC1B7] transition">
-                                <td class="px-4 py-3">{{ $student->nama_lengkap }}</td>
-                                <td class="px-4 py-3">{{ $student->nis }}</td>
-                                <td class="px-4 py-3">{{ $student->kelas }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <a href="{{ route('laporan.murid.download', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
-                                    class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-md text-xs hover:bg-green-700 shadow">
-                                        <i class="bi bi-download"></i> Download
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
+                        @if ($students->count() > 0)
+                            @foreach($students as $student)
+                                <tr class="hover:bg-[#BEC1B7] transition">
+                                    <td class="px-4 py-3">{{ $student->nama_lengkap }}</td>
+                                    <td class="px-4 py-3">{{ $student->nis }}</td>
+                                    <td class="px-4 py-3">{{ $student->kelas }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <a href="{{ route('laporan.murid.download', ['student' => $student->id]) }}"
+                                        class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-md text-xs hover:bg-green-700 shadow">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="4" class="text-center py-6 text-slate-500 italic">
                                     Tidak ada data murid.
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -81,25 +78,27 @@
                 $('#kelas').on('change', function () {
                     $('#filterForm').submit();
                 });
-
-                $('#laporanTable').DataTable({
-                    responsive: true,
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ entri",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                        paginate: {
-                            first: "Pertama",
-                            last: "Terakhir",
-                            next: "›",
-                            previous: "‹"
+                
+                @if ($students->count() > 0)
+                    $('#laporanTable').DataTable({
+                        responsive: true,
+                        language: {
+                            search: "Cari:",
+                            lengthMenu: "Tampilkan _MENU_ entri",
+                            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                            paginate: {
+                                first: "Pertama",
+                                last: "Terakhir",
+                                next: "›",
+                                previous: "‹"
+                            },
+                            zeroRecords: "Tidak ditemukan data yang sesuai",
                         },
-                        zeroRecords: "Tidak ditemukan data yang sesuai",
-                    },
-                    pageLength: 10,
-                    ordering: true,
-                    order: [[0, 'asc']],
-                });
+                        pageLength: 10,
+                        ordering: true,
+                        order: [[0, 'asc']],
+                    });
+                @endif
             });
         </script>
     @endpush

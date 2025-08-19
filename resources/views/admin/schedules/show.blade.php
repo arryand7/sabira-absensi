@@ -1,6 +1,6 @@
 <x-app-layout>
     <h2 class="font-semibold text-xl text-[#292D22]">
-        Jadwal untuk: {{ $teacher->name }} ({{ $teacher->guru->jenis ?? '-' }})
+        Jadwal untuk: {{ $teacher->name }}
     </h2>
 
     <x-slot name="sidebar">

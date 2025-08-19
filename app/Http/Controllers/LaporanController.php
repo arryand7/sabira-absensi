@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LaporanKaryawanExport;
 
+
 class LaporanController extends Controller
 {
     public function index(Request $request)
@@ -72,8 +73,10 @@ class LaporanController extends Controller
     {
         $divisi = $request->divisi;
         $jenisGuru = $request->jenis_guru;
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
+
+        // Jika tidak ada tanggal dikirim, default ke hari ini
+        $start_date = $request->start_date ?? Carbon::now()->format('Y-m-d');
+        $end_date = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
         $label = 'semua';
         if ($divisi) $label = $divisi;
@@ -88,6 +91,7 @@ class LaporanController extends Controller
             $end_date
         ), $filename);
     }
+
 
     public function detail($id, Request $request)
     {
@@ -104,6 +108,7 @@ class LaporanController extends Controller
             ->map(function ($item) {
                 $item->tanggal = \Carbon\Carbon::parse($item->waktu_absen)->format('Y-m-d');
                 $item->jam = $item->check_in ?? '-';
+                $item->check_out = $item->check_out ?? '-';
                 return $item;
             });
 
@@ -115,6 +120,11 @@ class LaporanController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
 
-        return Excel::download(new \App\Exports\DetailKaryawanExport($id, $bulan, $tahun), 'rekap-karyawan.xlsx');
+        $user = User::findOrFail($id);
+
+        $namaBulan = $bulan ? \Carbon\Carbon::create()->month($bulan)->locale('id')->monthName : 'Semua-Bulan';
+        $filename = 'rekap-' . str()->slug($user->name) . "-{$namaBulan}-{$tahun}.xlsx";
+
+        return Excel::download(new \App\Exports\DetailKaryawanExport($id, $bulan, $tahun), $filename);
     }
 }

@@ -39,7 +39,6 @@ class RekapSholat extends Component
         $absensiList = AbsensiAsrama::whereIn('jadwal_kegiatan_asrama_id', $jadwalList->pluck('id'))
             ->get();
 
-        // Indexing untuk cepat akses
         $jadwalByDateSholat = $jadwalList->keyBy(function ($item) {
             return $item->kegiatan_asrama_id . '|' . $item->tanggal;
         });
@@ -62,7 +61,12 @@ class RekapSholat extends Component
                         $jadwalId = $jadwalByDateSholat[$jadwalKey]->id;
                         $absenKey = $student->id . '|' . $jadwalId;
 
-                        $data[$student->id][$sholat->id][$day] = $absenByStudentJadwal[$absenKey]->status ?? null;
+                        // Sudah ada jadwal
+                        $data[$student->id][$sholat->id][$day] =
+                            $absenByStudentJadwal[$absenKey]->status ?? 'alpa';
+                    } else {
+                        // Jadwal belum dibuat
+                        $data[$student->id][$sholat->id][$day] = '-';
                     }
                 }
             }

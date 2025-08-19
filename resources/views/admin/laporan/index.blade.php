@@ -1,7 +1,7 @@
 <x-app-layout>
-    <h2 class="font-semibold text-xl text-[#292D22]">
-        {{ __('Laporan Absensi Karyawan') }}
-    </h2>
+    <div class="sm:px-6 lg:px-8">
+        <x-page-title title="LAPORAN ABSENSI KARYAWAN" />
+    </div>
 
     <x-slot name="sidebar">
         <x-admin-sidenav />
@@ -93,7 +93,7 @@
                                 <td class="px-4 py-3 text-center">
                                     <a href="{{ route('laporan.karyawan.detail', $row['user']->id) }}"
                                         class="inline-flex items-center gap-1 px-3 py-1 bg-[#8E412E] text-white rounded-md text-xs hover:bg-[#BA6F4D] shadow">
-                                        <i class="bi bi-eye-fill"></i> Lihat
+                                        <i class="bi bi-eye-fill"></i> Lihat absen
                                     </a>
                                 </td>
                             </tr>
@@ -116,7 +116,7 @@
                                     <td class="px-4 py-3 text-center">
                                         <a href="{{ route('laporan.karyawan.detail', $row['user']->id) }}"
                                             class="inline-flex items-center gap-1 px-3 py-1 bg-[#8E412E] text-white rounded-md text-xs hover:bg-[#BA6F4D] shadow">
-                                            <i class="bi bi-eye-fill"></i> Lihat
+                                            <i class="bi bi-eye-fill"></i> Lihat absen
                                         </a>
                                     </td>
                                 </tr>

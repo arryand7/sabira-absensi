@@ -4,13 +4,6 @@
     </x-slot>
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="mb-4">
-                <a href="{{ route('subjects.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
-                    <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
-                    Kembali
-                </a>
-            </div>
-
             <div class="bg-[#8D9382] shadow-md rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Tambah Mata Pelajaran</h1>
 
@@ -50,17 +43,21 @@
                             class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm focus:ring focus:ring-orange-200 @error('jenis_mapel') border-red-500 @enderror"
                             required>
                             <option value="">-- Pilih Jenis --</option>
-                            <option value="formal" {{ old('jenis_mapel') == 'formal' ? 'selected' : '' }}>Formal</option>
-                            <option value="muadalah" {{ old('jenis_mapel') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
+                            <option value="formal" {{ old('jenis_mapel') == 'formal' ? 'selected' : '' }}>Reguler</option>
+                            <option value="muadalah" {{ old('jenis_mapel') == 'muadalah' ? 'selected' : '' }}>Non Reguler</option>
                         </select>
                         @error('jenis_mapel') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="pt-4">
+                    <div class="flex gap-4 mt-6">
                         <button type="submit"
                             class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center gap-2">
                             <i class="bi bi-save"></i> Simpan
                         </button>
+                        <a href="{{ route('subjects.index') }}"
+                            class="bg-[#D9D9D9] text-[#1C1E17] px-4 py-2 rounded-md text-xs hover:bg-[#BFBFBF] shadow inline-flex items-center gap-2">
+                            <i class="bi bi-x-circle"></i> Batal
+                        </a>
                     </div>
                 </form>
             </div>

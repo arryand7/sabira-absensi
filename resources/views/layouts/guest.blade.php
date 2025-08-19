@@ -15,25 +15,25 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased" style="background-color:#dcecf8">
-    <div class="min-h-screen flex flex-col justify-center sm:flex-row items-center">
+<body class="font-sans antialiased bg-[#D6D8D2]">
 
-        <!-- Left Image (Only on desktop) -->
-        <div class="hidden sm:flex sm:w-1/2 h-screen items-center justify-center">
-            <img src="{{ asset('images/gambar.png') }}" alt="Login Image" class="w-4/5 max-w-md object-contain">
-        </div>
+    <!-- Background blur overlay -->
+    <div class="min-h-screen flex items-center justify-center relative">
+        <div class="absolute inset-0 bg-[#D6D8D2] backdrop-blur-md"></div>
 
-        <!-- Right Form -->
-        <div class="w-full sm:w-1/2 flex justify-center items-center p-6">
-            <div class="w-full max-w-md shadow-md rounded-lg p-6">
-                <!-- Logo di atas form -->
-                <div class="flex justify-center mb-4">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 object-contain">
-                </div>
-
-                {{ $slot }}
+        <!-- Login Form -->
+        <div class="relative z-10 w-full max-w-md bg-white border border-gray-300 shadow-2xl rounded-2xl p-6 mx-4">
+            <!-- Logo -->
+            <div class="flex justify-center mb-4">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 object-contain">
             </div>
+            {{ $slot }}
+            <footer class="border-t border-gray-600 text-center text-xs text-gray-600 mt-2 py-2">
+                © {{ date('Y') }} TelkomUniversitySurabaya.
+            </footer>
         </div>
+
     </div>
+
 </body>
 </html>

@@ -31,15 +31,19 @@
                         <td class="border border-[#D6D8D2] p-2">{{ $sholat->nama }}</td>
                         @foreach($tanggal as $tgl)
                             @php
-                                $status = $data[$student->id][$sholat->id][$tgl] ?? null;
+                                $status = $data[$student->id][$sholat->id][$tgl] ?? '-'; 
+
                                 $bgColor = match($status) {
                                     'hadir' => 'bg-green-100 text-green-700 font-semibold',
                                     'alpa' => 'bg-red-100 text-red-700 font-semibold',
+                                    '-'     => 'bg-gray-100 text-gray-400',
                                     default => 'bg-gray-100 text-gray-400',
                                 };
+
                                 $symbol = match($status) {
                                     'hadir' => '✓',
                                     'alpa' => '×',
+                                    '-'     => '-',
                                     default => '-',
                                 };
                             @endphp

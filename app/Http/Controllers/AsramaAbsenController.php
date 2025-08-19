@@ -14,7 +14,7 @@ class AsramaAbsenController extends Controller
 {
     public function index()
     {
-        return view('organisasi.index'); // halaman pilihan sholat / kegiatan
+        return view('organisasi.index');
     }
 
     public function pilihSholat()
@@ -24,24 +24,21 @@ class AsramaAbsenController extends Controller
         $totalSiswa = Student::count();
 
         $dataSholat = $kegiatanSholat->map(function ($sholat) use ($tanggal, $totalSiswa) {
-            $jadwal = JadwalKegiatanAsrama::firstOrCreate(
-                [
-                    'kegiatan_asrama_id' => $sholat->id,
-                    'tanggal' => $tanggal,
-                ],
-                [
-                    'jam_mulai' => null,
-                    'jam_selesai' => null,
-                    'dibuat_oleh' => auth()->id(),
-                ]
-            );
+            // Tidak membuat jadwal otomatis
+            $jadwal = JadwalKegiatanAsrama::where('kegiatan_asrama_id', $sholat->id)
+                ->where('tanggal', $tanggal)
+                ->first();
 
-            $jumlahAbsen = AbsensiAsrama::where('jadwal_kegiatan_asrama_id', $jadwal->id)->count();
-            $sudahAbsenSemua = $jumlahAbsen >= $totalSiswa;
+            if ($jadwal) {
+                $jumlahAbsen = AbsensiAsrama::where('jadwal_kegiatan_asrama_id', $jadwal->id)->count();
+                $sudahAbsenSemua = $jumlahAbsen >= $totalSiswa;
+            } else {
+                $sudahAbsenSemua = false;  // Karena memang belum ada jadwal (belum dimulai)
+            }
 
             return [
                 'sholat' => $sholat,
-                'jadwal' => $jadwal,
+                'jadwal' => $jadwal,  // Bisa null
                 'sudahAbsenSemua' => $sudahAbsenSemua,
             ];
         });
@@ -49,8 +46,10 @@ class AsramaAbsenController extends Controller
         return view('organisasi.sholat.pilih', compact('dataSholat'));
     }
 
+
     public function formAbsenSholat(Request $request, $jenis = null)
     {
+
         $tanggal = Carbon::now()->toDateString();
 
         // Ambil jenis kegiatan asrama sholat yang dipilih
@@ -96,7 +95,7 @@ class AsramaAbsenController extends Controller
         return view('organisasi.sholat.form', compact('jenis', 'tanggal', 'students', 'search', 'jadwal', 'absensiHariIni'));
     }
 
-    public function searchStudent(Request $request, $jenis)
+    public function searchStudent($namaKegiatan, Request $request)
     {
         $keyword = $request->query('keyword');
 
@@ -104,63 +103,63 @@ class AsramaAbsenController extends Controller
             return response()->json([]);
         }
 
-        $students = Student::where('nis', 'like', "%$keyword%")
-                    ->orWhere('nama_lengkap', 'like', "%$keyword%")
-                    ->orderBy('nama_lengkap')
-                    ->limit(5)
-                    ->get(['id', 'nis', 'nama_lengkap']);
-
-        return response()->json($students);
-    }
-
-
-    public function submitAbsenSholat(Request $request, $jenis)
-    {
-        $tanggal = Carbon::now()->toDateString();
-
-        // Cari kegiatan dan jadwal yang sama seperti di formAbsenSholat
-        $kegiatan = KegiatanAsrama::where('nama', 'like', '%' . $jenis . '%')
-            ->where('jenis', 'sholat')
-            ->where('berulang', true)
-            ->first();
-
-        if (!$kegiatan) {
-            abort(404, "Kegiatan sholat tidak ditemukan.");
-        }
-
-        $jadwal = JadwalKegiatanAsrama::where('kegiatan_asrama_id', $kegiatan->id)
-            ->where('tanggal', $tanggal)
-            ->first();
+        // Temukan jadwal berdasarkan nama kegiatan dan tanggal hari ini
+        $jadwal = JadwalKegiatanAsrama::whereHas('kegiatanAsrama', function ($query) use ($namaKegiatan) {
+            $query->where('nama', 'like', $namaKegiatan);
+        })
+        ->whereDate('tanggal', now()->toDateString())
+        ->first();
 
         if (!$jadwal) {
-            abort(404, "Jadwal kegiatan tidak ditemukan.");
+            return response()->json([]);
         }
 
-        // Ambil input absen (array of students)
-        $inputAbsen = $request->input('students', []);
+        $id = $jadwal->id;
 
-        foreach ($inputAbsen as $studentId => $status) {
-            // Validasi nilai status
-            if (!in_array($status, ['hadir', 'alpa'])) {
-                $status = 'alpa'; // fallback default
-            }
+        $students = Student::where(function ($query) use ($keyword) {
+                            $query->where('nis', 'like', "%$keyword%")
+                                ->orWhere('nama_lengkap', 'like', "%$keyword%");
+                        })
+                        ->orderBy('nama_lengkap')
+                        ->limit(5)
+                        ->get(['id', 'nis', 'nama_lengkap']);
 
-            // Simpan atau update absensi
-            AbsensiAsrama::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'jadwal_kegiatan_asrama_id' => $jadwal->id,
-                ],
-                [
-                    'status' => $status,
-                ]
-            );
-        }
+        $studentsWithStatus = $students->map(function ($student) use ($id) {
+            $absen = AbsensiAsrama::where('student_id', $student->id)
+                ->where('jadwal_kegiatan_asrama_id', $id)
+                ->first();
 
-        return redirect()->route('asrama.sholat')->with('success', 'Absensi sholat berhasil disimpan.');
+            return [
+                'id' => $student->id,
+                'nis' => $student->nis,
+                'nama_lengkap' => $student->nama_lengkap,
+                'status' => $absen->status ?? 'alpa',
+            ];
+        });
+
+        return response()->json($studentsWithStatus);
     }
 
+    public function updateAbsenStatus(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
+            'status' => 'required|in:hadir,alpa',
+            'jadwal_id' => 'required|exists:jadwal_kegiatan_asrama,id',
+        ]);
 
+        AbsensiAsrama::updateOrCreate(
+            [
+                'student_id' => $request->student_id,
+                'jadwal_kegiatan_asrama_id' => $request->jadwal_id,
+            ],
+            [
+                'status' => $request->status,
+            ]
+        );
+
+        return response()->json(['success' => true]);
+    }
 
     public function historySholat(Request $request)
     {
@@ -199,7 +198,7 @@ class AsramaAbsenController extends Controller
 
         return view('organisasi.sholat.history', compact('bulan', 'tahun', 'students', 'tanggal', 'sholatList', 'data'));
     }
-    
+
 //kegiatannnn
     public function listKegiatan()
     {
@@ -272,35 +271,51 @@ class AsramaAbsenController extends Controller
             return response()->json([]);
         }
 
-        $students = Student::where('nis', 'like', "%$keyword%")
-                    ->orWhere('nama_lengkap', 'like', "%$keyword%")
-                    ->orderBy('nama_lengkap')
-                    ->limit(5)
-                    ->get(['id', 'nis', 'nama_lengkap']);
+        $students = Student::where(function ($query) use ($keyword) {
+                            $query->where('nis', 'like', "%$keyword%")
+                                ->orWhere('nama_lengkap', 'like', "%$keyword%");
+                        })
+                        ->orderBy('nama_lengkap')
+                        ->limit(5)
+                        ->get(['id', 'nis', 'nama_lengkap']);
 
-        return response()->json($students);
+        // Ambil status absensi
+        $studentsWithStatus = $students->map(function ($student) use ($id) {
+            $absen = AbsensiAsrama::where('student_id', $student->id)
+                ->where('jadwal_kegiatan_asrama_id', $id)
+                ->first();
+
+            return [
+                'id' => $student->id,
+                'nis' => $student->nis,
+                'nama_lengkap' => $student->nama_lengkap,
+                'status' => $absen->status ?? 'alpa',
+            ];
+        });
+
+        return response()->json($studentsWithStatus);
     }
 
-    public function submitAbsenKegiatan(Request $request, $id)
+    public function updateAbsenStatusKegiatan(Request $request, $id)
     {
-        foreach ($request->input('students', []) as $studentId => $status) {
-            if (!in_array($status, ['hadir', 'alpa'])) {
-                $status = 'alpa';
-            }
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|in:hadir,alpa',
+        ]);
 
-            AbsensiAsrama::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'jadwal_kegiatan_asrama_id' => $id,
-                ],
-                [
-                    'status' => $status,
-                ]
-            );
-        }
+        AbsensiAsrama::updateOrCreate(
+            [
+                'student_id' => $request->student_id,
+                'jadwal_kegiatan_asrama_id' => $id,
+            ],
+            [
+                'status' => $request->status,
+            ]
+        );
 
-        return redirect()->route('asrama.kegiatan')->with('success', 'Absensi kegiatan berhasil disimpan.');
+        return response()->json(['success' => true]);
     }
+
 
     public function historyKegiatan($id)
     {
@@ -315,6 +330,23 @@ class AsramaAbsenController extends Controller
         return view('organisasi.kegiatan.history', compact('kegiatan', 'absensi'));
     }
 
+    public function deleteKegiatan($id)
+    {
+        $jadwal = JadwalKegiatanAsrama::findOrFail($id);
+
+        // Hapus semua absensi terkait terlebih dahulu
+        AbsensiAsrama::where('jadwal_kegiatan_asrama_id', $jadwal->id)->delete();
+
+        // Hapus kegiatan utama
+        $kegiatan = $jadwal->kegiatanAsrama;
+        $jadwal->delete();
+
+        // Jika tidak ada jadwal lain yang pakai kegiatan ini, hapus juga kegiatannya
+        if ($kegiatan && $kegiatan->jadwal()->count() === 0) {
+            $kegiatan->delete();
+        }
+        return redirect()->route('asrama.kegiatan')->with('success', 'Kegiatan berhasil dihapus.');
+    }
 
 
     //ADMINNNNNN

@@ -17,11 +17,11 @@
             </div>
 
             {{-- Notifikasi sukses --}}
-            @if (session('success'))
+            {{-- @if (session('success'))
                 <div class="mb-4 text-green-600 font-medium">
                     {{ session('success') }}
                 </div>
-            @endif
+            @endif --}}
 
             {{-- Tabel Tahun Ajaran --}}
             <div class="overflow-x-auto">

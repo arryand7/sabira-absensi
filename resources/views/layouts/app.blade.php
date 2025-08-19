@@ -12,6 +12,7 @@
     <!-- Fonts & Icons -->
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     <!-- SweetAlert & DataTables -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -34,13 +35,13 @@
     <div class="min-h-screen flex pt-16">
         {{-- Sidebar --}}
         @isset($sidebar)
-            <aside class="w-64 bg-white bg-[#5c644c] shadow-md hidden md:block">
+            <div class="w-64 bg-[#5c644c] text-[#F7F7F6] shadow-md min-h-screen">
                 {{ $sidebar }}
-            </aside>
+            </div>
         @endisset
 
         {{-- Main content (navbar + page) --}}
-        <div class="flex-1 flex flex-col bg-[#D6D8D2]"> <!-- Ubah bg konten utama di sini -->
+        <div class="flex-1 flex flex-col bg-[#D6D8D2]">
             {{-- @include('layouts.navigation') --}}
 
             @if (isset($header))
@@ -51,7 +52,7 @@
                 </header>
             @endif
 
-            <main class="flex-1 px-4 py-6">
+            <main class="flex-1 px-4 py-6 ">
                 {{ $slot }}
             </main>
         </div>

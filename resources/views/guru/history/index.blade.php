@@ -7,7 +7,16 @@
     </div>
 
     <div class="p-4 max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-[#292D22]">Riwayat Mengajar</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-[#292D22]">
+                Riwayat Absensi Murid
+            </h2>
+
+            <a href="{{ route('dashboard') }}"
+            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+                ← Kembali
+            </a>
+        </div>
 
         <div class="bg-[#5C644C] p-4 rounded-xl shadow mb-6">
             <form method="GET" class="grid gap-4 sm:grid-cols-3">
@@ -79,4 +88,4 @@
             </table>
         </div>
     </div>
-</x-app-layout>
+</x-user-layout>

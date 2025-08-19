@@ -1,6 +1,15 @@
-<x-app-layout>
+<x-user-layout>
     <div class="p-4 max-w-5xl mx-auto">
-        <h2 class="text-xl font-bold mb-4 text-[#292D22]">Absensi Siswa - {{ $classGroup->nama_kelas }}</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-[#292D22]">
+                Absensi Siswa - {{ $classGroup->nama_kelas }}
+            </h2>
+
+            <a href="{{ route('guru.schedule') }}"
+            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+                ← Kembali
+            </a>
+        </div>
 
         <form action="{{ route('guru.schedule.absen.submit', $classGroup->id) }}" method="POST">
             @csrf
@@ -13,7 +22,7 @@
                     <input type="hidden" name="mata_pelajaran" value="{{ $schedule->subject->nama_mapel }}">
                 </div>
                 <div>
-                    <label class="font-semibold text-[#535A44]">Kode</label>
+                    <label class="font-semibold text-[#535A44]">Kode Mata Pelajaran</label>
                     <div class="font-bold text-[#1C1E17]">{{ $schedule->subject->kode_mapel }}</div>
                     <input type="hidden" name="kode_mapel" value="{{ $schedule->subject->kode_mapel }}">
                 </div>
@@ -39,8 +48,10 @@
                 </div>
                 <div class="col-span-full">
                     <label class="font-semibold text-[#535A44]">Materi</label>
-                    <textarea name="materi" rows="2" placeholder="Jelaskan pembahasan materi..."
-                              class="w-full border border-[#D6D8D2] p-2 rounded bg-white text-[#1C1E17]"></textarea>
+                    <textarea name="materi" rows="2" placeholder="Jelaskan pembahasan materi..." required
+                    class="w-full border border-[#D6D8D2] p-2 rounded bg-white text-[#1C1E17]"
+                    oninvalid="this.setCustomValidity('Materi harus diisi')"
+                    oninput="this.setCustomValidity('')">{{ old('materi') }}</textarea>
                 </div>
             </div>
 
@@ -83,7 +94,7 @@
                                             name="attendance[{{ $student->id }}]"
                                             value="{{ $status }}"
                                             required
-                                            {{ $status == 'hadir' ? 'checked' : '' }}>
+                                            {{ old("attendance.{$student->id}", 'hadir') === $status ? 'checked' : '' }}>
                                     </td>
                                 @endforeach
                             </tr>
@@ -121,4 +132,4 @@
             });
         </script>
     </div>
-</x-app-layout>
+</x-user-layout>

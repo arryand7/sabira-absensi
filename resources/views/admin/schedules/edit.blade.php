@@ -5,19 +5,19 @@
 
     <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
         <div class="bg-[#8D9382] shadow-md rounded-xl p-6">
-
+{{--
             <div class="mb-4">
                 <a href="{{ route('admin.schedules.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
                     <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
                     Kembali ke Jadwal
                 </a>
-            </div>
+            </div> --}}
 
             <h2 class="text-2xl font-bold text-[#1C1E17] mb-6">
                 {{ __('Edit Jadwal Guru') }}
             </h2>
 
-            @if ($errors->any())
+            {{-- @if ($errors->any())
                 <div class="mb-4 px-4 py-3 bg-red-100 text-red-700 border border-red-300 rounded">
                     <strong>Ups!</strong> Ada beberapa masalah dengan input kamu:
                     <ul class="mt-2 list-disc list-inside text-sm">
@@ -26,7 +26,7 @@
                         @endforeach
                     </ul>
                 </div>
-            @endif
+            @endif --}}
 
             <form action="{{ route('admin.schedules.update', $schedule->id) }}" method="POST" class="space-y-6">
                 @csrf
@@ -118,8 +118,9 @@
                     <button type="submit" class="bg-[#8E412E] hover:bg-[#BA6F4D] text-white px-4 py-2 rounded shadow text-sm">
                         <i class="bi bi-save-fill mr-1"></i> Simpan Perubahan
                     </button>
-                    <a href="{{ route('admin.schedules.index') }}" class="bg-[#D6D9CF] hover:bg-[#BFC2B8] text-[#1C1E17] px-4 py-2 rounded shadow text-sm">
-                        <i class="bi bi-x-circle-fill mr-1"></i> Batal
+                    <a href="{{ url()->previous() }}"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md shadow flex items-center gap-2">
+                        <i class="bi bi-arrow-left-circle-fill"></i> Kembali
                     </a>
                 </div>
             </form>

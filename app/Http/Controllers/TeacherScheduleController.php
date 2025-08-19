@@ -153,7 +153,7 @@ class TeacherScheduleController extends Controller
             'schedule_id' => 'required|exists:schedules,id',
             'attendance' => 'required|array',
             'pertemuan' => 'required|integer|min:1',
-            'materi' => 'nullable|string',
+            'materi' => 'required|nullable|string',
         ]);
 
         $scheduleId = $request->input('schedule_id');
@@ -173,9 +173,10 @@ class TeacherScheduleController extends Controller
             ->exists();
 
         if ($duplicatePertemuan) {
-            return back()->with('error', 'Pertemuan ke-' . $request->pertemuan . ' untuk mata pelajaran dan kelas ini sudah pernah diisi.');
+            return back()
+                ->withInput()
+                ->with('error', 'Pertemuan ke-' . $request->pertemuan . ' untuk mata pelajaran dan kelas ini sudah pernah diisi.');
         }
-
 
         DB::beginTransaction();
         try {

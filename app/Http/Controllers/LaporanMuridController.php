@@ -23,6 +23,8 @@ class LaporanMuridController extends Controller
 
     public function index(Request $request)
     {
+        $activeYear = \App\Models\AcademicYear::where('is_active', true)->first();
+
         $academicYears = \App\Models\AcademicYear::orderByDesc('start_date')->get();
 
         // Ambil semua kelas, tidak harus difilter dulu
@@ -45,25 +47,26 @@ class LaporanMuridController extends Controller
         }])
         ->orderBy('nama_lengkap')
         ->get()
-        ->map(function ($student) {
+        ->map(function ($student) use ($activeYear) {
+            $kelasAktif = $student->classGroups->filter(function ($group) use ($activeYear) {
+                return $group->pivot->academic_year_id == ($activeYear->id ?? null);
+            })->pluck('nama_kelas')->join(', ');
+
             return (object)[
                 'id' => $student->id,
                 'nama_lengkap' => $student->nama_lengkap,
                 'nis' => $student->nis,
-                'kelas' => $student->classGroups->pluck('nama_kelas')->join(', '),
+                'kelas' => $kelasAktif,
             ];
         });
 
-
-        return view('admin.laporan.murid.index', compact('students', 'kelasList', 'academicYears'));
+        return view('admin.laporan.murid.index', compact('students', 'kelasList', 'academicYears', 'activeYear'));
     }
-
-
 
 
     public function download(Student $student, Request $request)
     {
-        $tahunAjaranId = $request->tahun_ajaran;
+        $tahunAjaranId = \App\Models\AcademicYear::where('is_active', true)->value('id');
 
         $grouped = Attendance::with(['schedule.subject', 'schedule.classGroup'])
             ->where('student_id', $student->id)
@@ -159,7 +162,6 @@ class LaporanMuridController extends Controller
             'tahunAktif'
         ));
     }
-
 
 
     public function downloadMapel(Request $request)

@@ -67,13 +67,19 @@ class StudentPromotionController extends Controller
             $inserted++;
         }
 
-        if ($inserted > 0) {
+        if ($inserted > 0 && empty($errors)) {
+            // Semua berhasil, tampilkan pesan sukses saja
             session()->flash('success', "$inserted siswa berhasil dipindahkan.");
+        } elseif ($inserted === 0 && !empty($errors)) {
+            // Semua gagal, tampilkan pesan error saja
+            session()->flash('error', implode('<br>', $errors));
+        } elseif ($inserted > 0 && !empty($errors)) {
+            // Sebagian berhasil, tampilkan info ringkas (atau bisa hanya error)
+            session()->flash('success', "$inserted siswa berhasil dipindahkan.");
+            // ATAU: kalau kamu hanya ingin tampilkan sukses, hapus baris bawah ini
+            // session()->flash('error', implode('<br>', $errors));
         }
 
-        if (!empty($errors)) {
-            session()->flash('error', implode('<br>', $errors));
-        }
 
         return back();
     }

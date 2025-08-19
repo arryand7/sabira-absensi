@@ -6,9 +6,9 @@
     <div class="p-4">
         <main class="mt-6 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- FORMAL --}}
+                {{-- REGULER --}}
                 <div class="bg-[#EEF3E9] p-6 shadow-md rounded-2xl">
-                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Formal</h3>
+                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Reguler</h3>
                     <form method="GET" action="{{ route('laporan.murid.mapel') }}" class="space-y-4">
                         <input type="hidden" name="jenis" value="formal">
 
@@ -69,9 +69,9 @@
                     </form>
                 </div>
 
-                {{-- MUADALAH --}}
+                {{-- NON REGULER --}}
                 <div class="bg-[#EEF3E9] p-6 shadow-md rounded-2xl">
-                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Muadalah</h3>
+                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Non Reguler</h3>
                     <form method="GET" action="{{ route('laporan.murid.mapel') }}" class="space-y-4">
                         <input type="hidden" name="jenis" value="muadalah">
 

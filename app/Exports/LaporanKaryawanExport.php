@@ -24,9 +24,10 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
     {
         $this->divisi = $divisi;
         $this->jenisGuru = $jenisGuru;
-        $this->start_date = Carbon::parse($start_date);
-        $this->end_date = Carbon::parse($end_date);
+        $this->start_date = Carbon::parse($start_date)->startOfDay();
+        $this->end_date = Carbon::parse($end_date)->endOfDay();
     }
+
 
     public function array(): array
     {
@@ -38,7 +39,7 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
         }
 
         $header = ['No', 'Nama'];
-        $header = array_merge($header, $headerTanggal, ['Jumlah Kehadiran']);
+        $header = array_merge($header, $headerTanggal, ['Total Hadir', 'Total Terlambat', 'Total Alpha']);
 
         $data = [
             ['Absensi Karyawan'],
@@ -54,7 +55,7 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
                 $q->whereBetween('waktu_absen', [$this->start_date, $this->end_date]);
             }
         ])
-        ->whereNotIn('role', ['admin', 'organisasi']) // Tambahkan baris ini
+        ->whereNotIn('role', ['admin', 'organisasi'])
         ->when($this->jenisGuru, function ($q) {
             $q->whereHas('guru', function ($query) {
                 $query->where(DB::raw('LOWER(jenis)'), strtolower($this->jenisGuru));
@@ -67,26 +68,21 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
         })
         ->get();
 
-
-        // debug
-        // dd([
-        //     'jenisGuru' => $this->jenisGuru,
-        //     'divisi' => $this->divisi,
-        //     'filtered_users' => $users->pluck('name'),
-        // ]);
-
         $no = 1;
 
         foreach ($users as $user) {
             $row = [$no++, $user->name];
             $hadirCount = 0;
+            $terlambatCount = 0;
+            $alphaCount = 0;
+
             $tanggal = $this->start_date->copy();
             $statusList = [];
 
             while ($tanggal->lte($this->end_date)) {
-                $absen = $user->absensis->firstWhere(fn($a) =>
-                    Carbon::parse($a->waktu_absen)->isSameDay($tanggal)
-                );
+                $absen = $user->absensis->first(function ($a) use ($tanggal) {
+                    return Carbon::parse($a->waktu_absen)->isSameDay($tanggal);
+                });
 
                 if ($absen) {
                     if ($absen->status === 'Hadir') {
@@ -96,26 +92,32 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
                     } elseif ($absen->status === 'Terlambat') {
                         $row[] = '✓';
                         $statusList[] = 'terlambat';
-                        $hadirCount++;
+                        $terlambatCount++;
                     } else {
                         $row[] = '-';
                         $statusList[] = 'tidak_hadir';
+                        $alphaCount++;
                     }
                 } else {
                     $row[] = '-';
                     $statusList[] = 'kosong';
+                    $alphaCount++;
                 }
 
                 $tanggal->addDay();
             }
 
             $row[] = $hadirCount;
+            $row[] = $terlambatCount;
+            $row[] = $alphaCount;
+
             $data[] = $row;
             $this->statusMatrix[] = $statusList;
         }
 
         return $data;
     }
+
 
     protected function getDivisiLabel()
     {
@@ -157,7 +159,7 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
 
                 foreach ($this->statusMatrix as $r => $statusList) {
                     foreach ($statusList as $c => $status) {
-                        $colIndex = $c + 3;
+                        $colIndex = $c + 3; // Karena No = A (1), Nama = B (2), Tanggal mulai dari kolom ke-3
                         $rowIndex = $startRow + $r;
                         $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex) . $rowIndex;
 

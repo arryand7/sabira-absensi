@@ -6,6 +6,8 @@ use App\Models\ClassGroup;
 use App\Models\Guru;
 use App\Models\AcademicYear;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
 
 class ClassGroupController extends Controller
 {
@@ -19,8 +21,11 @@ class ClassGroupController extends Controller
             })
             ->get();
 
-        return view('admin.class-groups.index', compact('classGroups'));
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
+        return view('admin.class-groups.index', compact('classGroups', 'academicYears'));
     }
+
 
 
     public function create()
@@ -33,7 +38,14 @@ class ClassGroupController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_kelas' => 'required|string|max:255',
+            'nama_kelas' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('class_groups')->where(function ($query) use ($request) {
+                    return $query->where('academic_year_id', $request->academic_year_id);
+                }),
+            ],
             'jenis_kelas' => 'required|in:formal,muadalah',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
@@ -43,6 +55,7 @@ class ClassGroupController extends Controller
 
         return redirect()->route('admin.class-groups.index')->with('success', 'Kelas berhasil ditambahkan');
     }
+
 
     public function edit(ClassGroup $classGroup)
     {
@@ -54,7 +67,16 @@ class ClassGroupController extends Controller
     public function update(Request $request, ClassGroup $classGroup)
     {
         $request->validate([
-            'nama_kelas' => 'required|string|max:255',
+            'nama_kelas' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('class_groups')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('academic_year_id', $request->academic_year_id);
+                    })
+                    ->ignore($classGroup->id), // Abaikan ID-nya sendiri saat validasi
+            ],
             'jenis_kelas' => 'required|in:formal,muadalah',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
@@ -94,7 +116,7 @@ class ClassGroupController extends Controller
                 'nama_kelas' => $class->nama_kelas,
                 'jenis_kelas' => $class->jenis_kelas,
                 'academic_year_id' => $targetYear,
-                'wali_kelas_id' => null, // Kosongin dulu wali kelas
+                'wali_kelas_id' => null,
             ]);
         }
 

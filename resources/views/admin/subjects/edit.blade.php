@@ -5,12 +5,6 @@
 
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="mb-4">
-                <a href="{{ route('subjects.index') }}" class="inline-flex items-center text-sm text-[#1C1E17] hover:text-blue-600">
-                    <i class="bi bi-arrow-left-circle-fill text-lg mr-1"></i>
-                    Kembali
-                </a>
-            </div>
 
             <div class="bg-[#8D9382] shadow-md rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Edit Mata Pelajaran</h1>
@@ -56,8 +50,8 @@
                             class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm @error('jenis_mapel') border-red-500 @enderror"
                             required>
                             <option value="">-- Pilih Jenis --</option>
-                            <option value="formal" {{ old('jenis_mapel', $subject->jenis_mapel) == 'formal' ? 'selected' : '' }}>Formal</option>
-                            <option value="muadalah" {{ old('jenis_mapel', $subject->jenis_mapel) == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
+                            <option value="formal" {{ old('jenis_mapel', $subject->jenis_mapel) == 'formal' ? 'selected' : '' }}>Reguler</option>
+                            <option value="muadalah" {{ old('jenis_mapel', $subject->jenis_mapel) == 'muadalah' ? 'selected' : '' }}>Non Reguler</option>
                         </select>
                         @error('jenis_mapel')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

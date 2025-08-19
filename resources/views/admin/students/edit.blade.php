@@ -61,14 +61,14 @@
                     </div>
 
                     <div>
-                        <label for="kelas_formal" class="block font-medium mb-1">Kelas Formal</label>
+                        <label for="kelas_formal" class="block font-medium mb-1">Kelas Reguler</label>
                         <select name="kelas_formal" id="kelas_formal"
                             class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9] text-[#1C1E17]
                                    @error('kelas_formal') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($academicClasses as $class)
                                 <option value="{{ $class->id }}" {{ old('kelas_formal', $kelasFormalId) == $class->id ? 'selected' : '' }}>
-                                    {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
+                                    {{ $class->nama_kelas }}
                                 </option>
                             @endforeach
                         </select>
@@ -78,35 +78,18 @@
                     </div>
 
                     <div>
-                        <label for="kelas_muadalah" class="block font-medium mb-1">Kelas Muadalah</label>
+                        <label for="kelas_muadalah" class="block font-medium mb-1">Kelas Non-Reguler</label>
                         <select name="kelas_muadalah" id="kelas_muadalah"
                             class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9] text-[#1C1E17]
                                    @error('kelas_muadalah') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($muadalahClasses as $class)
                                 <option value="{{ $class->id }}" {{ old('kelas_muadalah', $kelasMuadalahId) == $class->id ? 'selected' : '' }}>
-                                    {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
+                                    {{ $class->nama_kelas }}
                                 </option>
                             @endforeach
                         </select>
                         @error('kelas_muadalah')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="kelas_tambahan" class="block font-medium mb-1">Kelas Tambahan</label>
-                        <select name="kelas_tambahan" id="kelas_tambahan"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9] text-[#1C1E17]
-                                   @error('kelas_tambahan') border-red-500 @enderror">
-                            <option value="">Tidak Ada</option>
-                            @foreach($tambahanClasses as $class)
-                                <option value="{{ $class->id }}" {{ old('kelas_tambahan', $kelasTambahanId) == $class->id ? 'selected' : '' }}>
-                                    {{ $class->nama_kelas }} ({{ $class->tahun_ajaran }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('kelas_tambahan')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>

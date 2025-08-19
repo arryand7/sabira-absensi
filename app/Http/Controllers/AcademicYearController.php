@@ -79,7 +79,6 @@ class AcademicYearController extends Controller
 
     public function destroy(AcademicYear $academicYear)
     {
-        // Cek apakah ada class_group_student yang masih memakai tahun ajaran ini
         if ($academicYear->classGroupStudents()->exists()) {
             return redirect()->route('academic-years.index')
                 ->with('error', 'Tahun ajaran tidak bisa dihapus karena masih digunakan.');

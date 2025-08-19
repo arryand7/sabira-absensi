@@ -33,7 +33,7 @@ class UserController extends Controller
             'email' => 'required|string|email|unique:users',
             'role' => 'required|in:admin,karyawan,guru,organisasi',
             'password' => 'required|min:6',
-            'nama_lengkap' => 'nullable|string|max:255',
+            // 'nama_lengkap' => 'nullable|string|max:255',
             'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
             'jenis_guru' => $request->role === 'guru' ? 'required|in:formal,muadalah,' : 'nullable',
             'alamat' => 'nullable|string',
@@ -59,7 +59,7 @@ class UserController extends Controller
 
             Karyawan::create([
                 'user_id' => $user->id,
-                'nama_lengkap' => $request->nama_lengkap,
+                // 'nama_lengkap' => $request->nama_lengkap,
                 'divisi_id' => $request->divisi_id,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,
@@ -97,7 +97,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:admin,karyawan,guru,organisasi',
             'password' => 'nullable|min:6',
-            'nama_lengkap' => 'nullable|string|max:255',
+            // 'nama_lengkap' => 'nullable|string|max:255',
             'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
@@ -128,7 +128,7 @@ class UserController extends Controller
             $divisiId = $request->role === 'karyawan' ? $request->divisi_id : null;
 
             $user->karyawan()->updateOrCreate(['user_id' => $user->id], [
-                'nama_lengkap' => $request->nama_lengkap,
+                // 'nama_lengkap' => $request->nama_lengkap,
                 'divisi_id' => $divisiId,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,

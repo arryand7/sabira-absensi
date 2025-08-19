@@ -1,4 +1,4 @@
-<div x-data="{ sidebarOpen: false }" class="h-screen flex overflow-hidden bg-[#5c644c] text-[#F7F7F6]">
+<div x-data="{ sidebarOpen: false }" class="flex overflow-hidden bg-[#5c644c] text-[#F7F7F6]">
 
     <!-- Overlay (Mobile) -->
     <div x-show="sidebarOpen"
@@ -8,8 +8,10 @@
     </div>
 
     <!-- Sidebar -->
-    <aside :class="sidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'"
-           class="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto transition duration-300 transform bg-[#5c644c] text-[#F7F7F6] md:translate-x-0 md:static md:inset-0 shadow-lg rounded-r-2xl md:rounded-none">
+    <aside
+        :class="sidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'"
+        class="fixed inset-y-0 left-0 z-30 w-64 transition duration-300 transform bg-[#5c644c] text-[#F7F7F6] md:translate-x-0 md:static md:inset-0 shadow-lg rounded-r-2xl md:rounded-none
+            overflow-y-auto">
 
         <!-- Sidebar Header -->
         <div class="px-4 py-3 border-b border-[#F7F7F6]/20">
@@ -27,7 +29,6 @@
             @endif
         </div>
 
-        <!-- Navigation -->
         <!-- Navigation -->
         <nav class="px-4 py-4 space-y-1 text-sm font-medium">
 
@@ -95,13 +96,13 @@
             <a href="{{ route('academic-years.index') }}"
             class="flex items-center gap-3 px-4 py-2 rounded-xl transition
                     {{ Route::is('academic-years.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-people-fill text-lg"></i> Manajemen Tahun Ajaran
+                <i class="bi-calendar-range text-lg"></i> Manajemen Tahun Ajaran
             </a>
 
             <a href="{{ route('promotion.index') }}"
             class="flex items-center gap-3 px-4 py-2 rounded-xl transition
                     {{ Route::is('promotion.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-people-fill text-lg"></i> Migrasi Data Siswa
+                <i class="bi-arrow-left-right text-lg"></i> Migrasi Data Siswa
             </a>
 
             <!-- Master Data Karyawan -->
@@ -147,23 +148,18 @@
                     {{ Route::is('admin.sholat') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
                 <i class="bi bi-clock-fill text-lg"></i> Kegiatan Sholat
             </a>
-
-            <!-- Logout -->
+            <!-- Footer Info -->
             <hr class="my-2 border-[#F7F7F6]/30">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                        class="w-full text-left flex items-center gap-3 px-4 py-2 rounded-xl transition
-                            text-red-300 hover:bg-red-100 hover:text-red-800">
-                    <i class="bi bi-box-arrow-right text-lg"></i> Logout
-                </button>
-            </form>
-        </nav>
+            <div class="text-xs text-center text-[#F7F7F6]/60 px-4 py-4">
+                © {{ date('Y') }} TelkomUniversitySurabaya<br>
+                {{-- All rights reserved. --}}
+            </div>
 
+        </nav>
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+    {{-- <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Topbar (Mobile Only) -->
         <header class="md:hidden flex items-center justify-between px-4 py-4 bg-[#5c644c] text-[#F7F7F6] shadow-lg">
             <button @click="sidebarOpen = true" class="focus:outline-none" aria-label="Buka Sidebar">☰</button>
@@ -174,5 +170,5 @@
         <main class="flex-1 overflow-y-auto p-6 bg-[#5c644c] text-[#F7F7F6]">
             {{ $slot }}
         </main>
-    </div>
+    </div> --}}
 </div>

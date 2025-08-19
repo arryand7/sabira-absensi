@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('divisi_id')->nullable();
-            $table->string('nama_lengkap');
+            // $table->string('nama_lengkap');
             $table->string('alamat')->nullable();
             $table->string('no_hp')->nullable();
             $table->string('foto')->nullable();

@@ -12,5 +12,6 @@ class AbsensiLokasi extends Model
     protected $fillable = [
         'latitude',
         'longitude',
+        'radius',
     ];
 }

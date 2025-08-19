@@ -1,18 +1,21 @@
-<x-app-layout>
-    <div class="min-h-screen bg-[#D6D8D2] text-[#1C1E17] pb-8">
+<x-user-layout>
+    <div class="min-h-screen text-[#1C1E17] pb-8">
 
         <!-- Welcome Box -->
         <div class="bg-[#F7F7F6] rounded-md m-4 p-4 shadow-md flex items-center gap-4">
-            <img src="{{ asset('storage/' . Auth::user()->karyawan?->foto) }}"
-                onerror="this.onerror=null; this.src='{{ asset('images/default-photo.jpg') }}'"
+            <img src="{{ Auth::user()->karyawan?->foto
+                    ? asset('storage/' . Auth::user()->karyawan->foto)
+                    : asset('images/default-photo.jpg') }}"
                 alt="Foto"
                 class="w-20 h-24 object-cover rounded shadow">
 
+
             <div>
-                <p class="text-lg font-semibold text-[#373C2E]">Selamat datang, {{ Auth::user()->name }}</p>
+                <p class="text-base font-semibold">Hello,</p>
+                <p class="text-sm font-semibold">{{ Auth::user()->name }}</p>
                 <p class="text-sm text-[#8D9382]">
                     {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}<br>
-                    <span class="text-[#5C644C] font-medium text-base">{{ \Carbon\Carbon::now()->format('H:i') }}</span>
+                    {{-- <span class="text-[#5C644C] font-medium text-base">{{ \Carbon\Carbon::now()->format('H:i') }}</span> --}}
                 </p>
             </div>
         </div>
@@ -58,4 +61,4 @@
             @endif
         </div>
     </div>
-</x-app-layout>
+</x-user-layout>

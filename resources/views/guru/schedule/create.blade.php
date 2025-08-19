@@ -84,7 +84,7 @@
                                             @foreach($classGroups as $group)
                                                 <option value="{{ $group->id }}"
                                                     {{ old("details.$i.class_group_id", $detail['class_group_id'] ?? '') == $group->id ? 'selected' : '' }}>
-                                                    {{ $group->nama_kelas }} ({{ ucfirst($group->jenis_kelas) }})
+                                                    {{ $group->nama_kelas }} ({{ ($group->jenis_kelas == 'formal' ? 'Reguler' : ($group->jenis_kelas == 'muadalah' ? 'Non Reguler' : $group->jenis_kelas)) }})
                                                 </option>
                                             @endforeach
                                         </select>

@@ -52,6 +52,21 @@
                                            class="inline-flex items-center gap-1 px-3 py-1 bg-[#5C644C] text-white rounded-md text-xs hover:bg-[#535A44] transition shadow">
                                             <i class="bi bi-clipboard-check"></i> Absen
                                         </a>
+
+                                        <a href="{{ route('guru.schedule.edit', ['schedule' => $schedule->id]) }}"
+                                           class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700 shadow">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </a>
+
+                                        <form action="{{ route('guru.schedule.destroy', ['schedule' => $schedule->id]) }}"
+                                              method="POST" class="inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 shadow">
+                                                <i class="bi bi-trash-fill"></i> Hapus
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

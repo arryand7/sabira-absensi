@@ -20,10 +20,10 @@ class TeacherScheduleController extends Controller
         $tahunAktif = \App\Models\AcademicYear::where('is_active', true)->first();
 
         $user = Auth::user();
-        $guru = $user->guru;
+        $guru = $user;
 
         // It's good practice to ensure the user has a 'guru' profile.
-        if (!$guru) {
+        if (!$guru->guru) {
             // Redirect with an error if the user with 'guru' role has no associated guru record.
             return redirect()->route('dashboard')->with('error', 'Profil guru tidak ditemukan.');
         }
@@ -127,9 +127,103 @@ class TeacherScheduleController extends Controller
             ]);
         }
 
-        return redirect()->route('guru.schedules.show-by-teacher', $request->user_id)->with('success', 'Jadwal berhasil dibuat.');
+        return redirect()->route('guru.schedule.show-by-teacher', $request->user_id)->with('success', 'Jadwal berhasil dibuat.');
     }
 
+    public function showByTeacher($id)
+    {
+        $guru = User::with('guru')->findOrFail($id);
+
+        $tahunAktif = \App\Models\AcademicYear::where('is_active', true)->first();
+
+        $schedules = Schedule::with(['subject', 'classGroup'])
+            ->where('user_id', $id)
+            ->where('academic_year_id', $tahunAktif?->id)
+            ->get();
+
+        return view('guru.schedule.index', compact('guru', 'schedules'));
+    }
+
+    public function edit(Schedule $schedule)
+    {
+        $teachers = User::where('role', 'guru')->get(); // ambil semua guru
+
+        $tahunAktif = AcademicYear::where('is_active', true)->first();
+
+        $subjects = Subject::all();
+        $classGroups = ClassGroup::where('academic_year_id', $tahunAktif?->id)->get(); // semua kelas tahun aktif
+
+        $academicYears = AcademicYear::orderByDesc('start_date')->get();
+
+        return view('guru.schedule.edit', compact(
+            'schedule', 'teachers', 'subjects', 'classGroups', 'academicYears', 'tahunAktif'
+        ));
+    }
+
+
+    public function update(Request $request, Schedule $schedule)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'class_group_id' => 'required|exists:class_groups,id',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Ahad',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required|after:jam_mulai',
+        ]);
+
+        // Cek bentrok guru
+        $guruConflict = Schedule::where('user_id', $request->user_id)
+            ->where('hari', $request->hari)
+            ->where('id', '!=', $schedule->id)
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
+                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
+                    ->orWhere(function ($q) use ($request) {
+                        $q->where('jam_mulai', '<', $request->jam_mulai)
+                          ->where('jam_selesai', '>', $request->jam_selesai);
+                    });
+            })
+            ->exists();
+
+        // Cek bentrok kelas
+        $kelasConflict = Schedule::where('class_group_id', $request->class_group_id)
+            ->where('hari', $request->hari)
+            ->where('id', '!=', $schedule->id)
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
+                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
+                    ->orWhere(function ($q) use ($request) {
+                        $q->where('jam_mulai', '<', $request->jam_mulai)
+                          ->where('jam_selesai', '>', $request->jam_selesai);
+                    });
+            })
+            ->exists();
+
+        if ($guruConflict || $kelasConflict) {
+            return redirect()->back()->withInput()->withErrors([
+                'jadwal' => $guruConflict
+                    ? 'Jadwal bentrok: Guru sudah mengajar di jam tersebut.'
+                    : 'Jadwal bentrok: Kelas sudah memiliki pelajaran di jam tersebut.',
+            ]);
+        }
+
+        $classGroup = ClassGroup::findOrFail($request->class_group_id);
+
+        $schedule->update(array_merge($validated, [
+            'academic_year_id' => $classGroup->academic_year_id,
+        ]));
+
+        return redirect()->route('guru.schedule.show-by-teacher', $validated['user_id'])->with('success', 'Jadwal berhasil diperbarui.');
+    }
+
+    public function destroy(Schedule $schedule)
+    {
+        $userId = $schedule->user_id;
+        $schedule->delete();
+
+        return redirect()->route('guru.schedule.show-by-teacher', $userId)->with('success', 'Jadwal berhasil dihapus.');
+    }
 
     public function absen(Schedule $schedule)
     {

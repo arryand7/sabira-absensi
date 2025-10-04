@@ -78,33 +78,44 @@ class AdminScheduleController extends Controller
 
 
         foreach ($validated['details'] as $detail) {
-            $guruConflict = Schedule::where('user_id', $request->user_id)
+            $guruConflict = Schedule::with(['user', 'subject', 'classGroup'])->where('user_id', $request->user_id)
                 ->where('hari', $detail['hari'])
                 ->where(function ($query) use ($detail) {
-                    $query->whereBetween('jam_mulai', [$detail['jam_mulai'], $detail['jam_selesai']])
-                        ->orWhereBetween('jam_selesai', [$detail['jam_mulai'], $detail['jam_selesai']])
-                        ->orWhere(function ($q) use ($detail) {
-                            $q->where('jam_mulai', '<', $detail['jam_mulai'])
-                            ->where('jam_selesai', '>', $detail['jam_selesai']);
-                        });
-                })->exists();
+                    $query->where(function ($q) use ($detail) {
+                        $q->where('jam_mulai', '>=', $detail['jam_mulai'])
+                            ->where('jam_mulai', '<', $detail['jam_selesai']);
+                    })->orWhere(function ($q) use ($detail) {
+                        $q->where('jam_selesai', '>', $detail['jam_mulai'])
+                            ->where('jam_selesai', '<=', $detail['jam_selesai']);
+                    })->orWhere(function ($q) use ($detail) {
+                        $q->where('jam_mulai', '<=', $detail['jam_mulai'])
+                            ->where('jam_selesai', '>=', $detail['jam_selesai']);
+                    });
+                })
+                ->first();
 
-            $kelasConflict = Schedule::where('class_group_id', $detail['class_group_id'])
+            $kelasConflict = Schedule::with(['user', 'subject', 'classGroup'])->where('class_group_id', $detail['class_group_id'])
                 ->where('hari', $detail['hari'])
                 ->where(function ($query) use ($detail) {
-                    $query->whereBetween('jam_mulai', [$detail['jam_mulai'], $detail['jam_selesai']])
-                        ->orWhereBetween('jam_selesai', [$detail['jam_mulai'], $detail['jam_selesai']])
-                        ->orWhere(function ($q) use ($detail) {
-                            $q->where('jam_mulai', '<', $detail['jam_mulai'])
-                            ->where('jam_selesai', '>', $detail['jam_selesai']);
-                        });
-                })->exists();
+                    $query->where(function ($q) use ($detail) {
+                        $q->where('jam_mulai', '>=', $detail['jam_mulai'])
+                            ->where('jam_mulai', '<', $detail['jam_selesai']);
+                    })->orWhere(function ($q) use ($detail) {
+                        $q->where('jam_selesai', '>', $detail['jam_mulai'])
+                            ->where('jam_selesai', '<=', $detail['jam_selesai']);
+                    })->orWhere(function ($q) use ($detail) {
+                        $q->where('jam_mulai', '<=', $detail['jam_mulai'])
+                            ->where('jam_selesai', '>=', $detail['jam_selesai']);
+                    });
+                })
+                ->first();
 
             if ($guruConflict || $kelasConflict) {
-                return back()->withInput()->withErrors([
-                    'jadwal' => $guruConflict
-                        ? 'Jadwal bentrok: Guru sudah mengajar di jam tersebut.'
-                        : 'Jadwal bentrok: Kelas sudah memiliki pelajaran di jam tersebut.',
+                $conflictingSchedule = $guruConflict ?: $kelasConflict;
+                $detailBentrok = ' dengan jadwal ' . $conflictingSchedule->subject->nama_mapel . ' oleh ' . $conflictingSchedule->user->name . ' di kelas ' . $conflictingSchedule->classGroup->nama_kelas . ' pada jam ' . date('H:i', strtotime($conflictingSchedule->jam_mulai)) . ' - ' . date('H:i', strtotime($conflictingSchedule->jam_selesai));
+
+                return redirect()->back()->withInput()->withErrors([
+                    'jadwal' => ($guruConflict ? 'Jadwal guru bentrok' : 'Jadwal kelas bentrok') . $detailBentrok,
                 ]);
             }
 
@@ -154,38 +165,47 @@ class AdminScheduleController extends Controller
         ]);
 
         // Cek bentrok guru
-        $guruConflict = Schedule::where('user_id', $request->user_id)
+        $guruConflict = Schedule::with(['user', 'subject', 'classGroup'])->where('user_id', $request->user_id)
             ->where('hari', $request->hari)
             ->where('id', '!=', $schedule->id)
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<', $request->jam_mulai)
-                          ->where('jam_selesai', '>', $request->jam_selesai);
-                    });
+                $query->where(function ($q) use ($request) {
+                    $q->where('jam_mulai', '>=', $request->jam_mulai)
+                        ->where('jam_mulai', '<', $request->jam_selesai);
+                })->orWhere(function ($q) use ($request) {
+                    $q->where('jam_selesai', '>', $request->jam_mulai)
+                        ->where('jam_selesai', '<=', $request->jam_selesai);
+                })->orWhere(function ($q) use ($request) {
+                    $q->where('jam_mulai', '<=', $request->jam_mulai)
+                        ->where('jam_selesai', '>=', $request->jam_selesai);
+                });
             })
-            ->exists();
+            ->first();
 
         // Cek bentrok kelas
-        $kelasConflict = Schedule::where('class_group_id', $request->class_group_id)
+        $kelasConflict = Schedule::with(['user', 'subject', 'classGroup'])->where('class_group_id', $request->class_group_id)
             ->where('hari', $request->hari)
             ->where('id', '!=', $schedule->id)
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<', $request->jam_mulai)
-                          ->where('jam_selesai', '>', $request->jam_selesai);
-                    });
+                $query->where(function ($q) use ($request) {
+                    $q->where('jam_mulai', '>=', $request->jam_mulai)
+                        ->where('jam_mulai', '<', $request->jam_selesai);
+                })->orWhere(function ($q) use ($request) {
+                    $q->where('jam_selesai', '>', $request->jam_mulai)
+                        ->where('jam_selesai', '<=', $request->jam_selesai);
+                })->orWhere(function ($q) use ($request) {
+                    $q->where('jam_mulai', '<=', $request->jam_mulai)
+                        ->where('jam_selesai', '>=', $request->jam_selesai);
+                });
             })
-            ->exists();
+            ->first();
 
         if ($guruConflict || $kelasConflict) {
+            $conflictingSchedule = $guruConflict ?: $kelasConflict;
+            $detailBentrok = ' dengan jadwal ' . $conflictingSchedule->subject->nama_mapel . ' oleh ' . $conflictingSchedule->user->name . ' di kelas ' . $conflictingSchedule->classGroup->nama_kelas . ' pada jam ' . date('H:i', strtotime($conflictingSchedule->jam_mulai)) . ' - ' . date('H:i', strtotime($conflictingSchedule->jam_selesai));
+
             return redirect()->back()->withInput()->withErrors([
-                'jadwal' => $guruConflict
-                    ? 'Jadwal bentrok: Guru sudah mengajar di jam tersebut.'
-                    : 'Jadwal bentrok: Kelas sudah memiliki pelajaran di jam tersebut.',
+                'jadwal' => ($guruConflict ? 'Jadwal guru bentrok' : 'Jadwal kelas bentrok') . $detailBentrok,
             ]);
         }
 

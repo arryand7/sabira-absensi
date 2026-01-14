@@ -108,9 +108,9 @@
             });
 
             // Map dan Geolokasi tetap jalan seperti sebelumnya
-            const sekolahLat = {{ $lokasi->latitude ?? '-7.310823820752337' }};
-            const sekolahLng = {{ $lokasi->longitude ?? '112.72923730812086' }};
-            const radiusMeter = {{ ($lokasi->radius ?? 0.2) * 1000 }};
+            const sekolahLat = {{ $lokasi?->latitude ?? '-7.310823820752337' }};
+            const sekolahLng = {{ $lokasi?->longitude ?? '112.72923730812086' }};
+            const radiusMeter = {{ ($lokasi?->radius ?? 0.2) * 1000 }};
 
             const map = L.map('map').setView([sekolahLat, sekolahLng], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -142,5 +142,4 @@
     </script>
 
 </x-user-layout>
-
 

@@ -56,6 +56,18 @@ class StudentsImport implements ToModel, WithHeadingRow
             }
         }
 
+        $tambahan = null;
+        if (!empty($row['kelas_tambahan'])) {
+            $tambahan = ClassGroup::where('nama_kelas', trim($row['kelas_tambahan']))
+                ->where('jenis_kelas', 'tambahan')
+                ->where('academic_year_id', $activeYearId)
+                ->first();
+
+            if (!$tambahan) {
+                $errors[] = "Kelas tambahan '{$row['kelas_tambahan']}' tidak ditemukan untuk tahun ajaran aktif.";
+            }
+        }
+
         if (!empty($errors)) {
             throw ValidationException::withMessages([
                 'row' => $errors
@@ -77,6 +89,12 @@ class StudentsImport implements ToModel, WithHeadingRow
 
         if ($muadalah) {
             $student->classGroups()->attach($muadalah->id, [
+                'academic_year_id' => $activeYearId,
+            ]);
+        }
+
+        if ($tambahan) {
+            $student->classGroups()->attach($tambahan->id, [
                 'academic_year_id' => $activeYearId,
             ]);
         }

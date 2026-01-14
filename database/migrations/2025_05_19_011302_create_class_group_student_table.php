@@ -21,9 +21,6 @@ class CreateClassGroupStudentTable extends Migration
 
     public function down()
     {
-        Schema::table('class_group_student', function (Blueprint $table) {
-            $table->dropForeign(['academic_year_id']);
-            $table->dropColumn('academic_year_id');
-        });
+        Schema::dropIfExists('class_group_student');
     }
 }

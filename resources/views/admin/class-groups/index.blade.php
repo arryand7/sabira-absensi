@@ -71,6 +71,8 @@
                                             Reguler
                                         @elseif($group->jenis_kelas == 'muadalah')
                                             Non Reguler
+                                        @elseif($group->jenis_kelas == 'tambahan')
+                                            Tambahan
                                         @endif
                                     </td>
                                     <td class="px-4 py-3">{{ $group->academicYear->name }}</td>

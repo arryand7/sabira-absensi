@@ -148,6 +148,16 @@
                     {{ Route::is('admin.sholat') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
                 <i class="bi bi-clock-fill text-lg"></i> Kegiatan Sholat
             </a>
+
+            <!-- Pengaturan -->
+            <hr class="my-2 border-[#F7F7F6]/30">
+            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Pengaturan</p>
+
+            <a href="{{ route('admin.settings.sso') }}"
+            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
+                    {{ Route::is('admin.settings.sso*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
+                <i class="bi bi-shield-lock-fill text-lg"></i> SSO Sabira Connect
+            </a>
             <!-- Footer Info -->
             <hr class="my-2 border-[#F7F7F6]/30">
             <div class="text-xs text-center text-[#F7F7F6]/60 px-4 py-4">

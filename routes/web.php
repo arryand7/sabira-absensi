@@ -20,6 +20,7 @@ use App\Http\Controllers\AsramaAbsenController;
 use App\Http\Controllers\StudentPromotionController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\SsoSettingController;
 
 
 // Halaman welcome
@@ -54,6 +55,9 @@ Route::get('/redirect-after-login', function () {
 // Role: Admin
 Route::middleware(['auth', 'checkRole:admin'])->group(function () {
     Route::get('/dashboard-admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::get('/admin/settings/sso', [SsoSettingController::class, 'edit'])->name('admin.settings.sso');
+    Route::put('/admin/settings/sso', [SsoSettingController::class, 'update'])->name('admin.settings.sso.update');
 
     Route::post('/dashboard/absen/manual', [AdminDashboardController::class, 'storeManualAbsen'])->name('admin.absensi.manual.store');
     Route::get('/dashboard/absen/{id}/edit', [AdminDashboardController::class, 'editAbsen'])->name('admin.absensi.edit');

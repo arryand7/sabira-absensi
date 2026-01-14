@@ -17,6 +17,8 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'sso_sub',
+        'sso_synced_at',
     ];
 
     protected $hidden = [
@@ -26,6 +28,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'sso_synced_at' => 'datetime',
     ];
 
     public function isAdmin()

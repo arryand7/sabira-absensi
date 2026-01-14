@@ -46,7 +46,7 @@ class ClassGroupController extends Controller
                     return $query->where('academic_year_id', $request->academic_year_id);
                 }),
             ],
-            'jenis_kelas' => 'required|in:formal,muadalah',
+            'jenis_kelas' => 'required|in:formal,muadalah,tambahan',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
         ]);
@@ -77,7 +77,7 @@ class ClassGroupController extends Controller
                     })
                     ->ignore($classGroup->id), // Abaikan ID-nya sendiri saat validasi
             ],
-            'jenis_kelas' => 'required|in:formal,muadalah',
+            'jenis_kelas' => 'required|in:formal,muadalah,tambahan',
             'academic_year_id' => 'required|exists:academic_years,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
         ]);

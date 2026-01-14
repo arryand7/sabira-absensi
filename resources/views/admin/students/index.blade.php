@@ -70,6 +70,19 @@
                     </div>
 
                     <div class="flex flex-col">
+                        <label for="kelas_tambahan" class="text-sm font-medium mb-1 text-gray-900">Kelas Tambahan</label>
+                        <select id="kelas_tambahan" name="kelas_tambahan"
+                            class="border border-gray-300 rounded px-3 py-2 w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+                            <option value="">Semua</option>
+                            @foreach ($tambahanClasses as $class)
+                                <option value="{{ $class->id }}" {{ request('kelas_tambahan') == $class->id ? 'selected' : '' }}>
+                                    {{ $class->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col">
                         <label for="jenis_kelamin" class="text-sm font-medium mb-1 text-gray-900">Jenis Kelamin</label>
                         <select id="jenis_kelamin" name="jenis_kelamin"
                             class="border border-gray-300 rounded px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
@@ -99,6 +112,7 @@
                             <th class="px-4 py-2">NIS</th>
                             <th class="px-4 py-2">Kelas Reguler</th>
                             <th class="px-4 py-2">Kelas Non-Reguler</th>
+                            <th class="px-4 py-2">Kelas Tambahan</th>
                             <th class="px-4 py-2">Jenis Kelamin</th>
                             <th class="px-4 py-2 text-center">Aksi</th>
                         </tr>
@@ -114,6 +128,7 @@
                                     <td class="px-4 py-2">{{ $student->nis }}</td>
                                     <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'formal')?->nama_kelas ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->nama_kelas ?? '-' }}</td>
+                                    <td class="px-4 py-2">{{ $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->nama_kelas ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $student->jenis_kelamin }}</td>
                                     <td class="px-4 py-2 space-x-2 text-center">
                                         <a href="{{ route('admin.students.edit', $student->id) }}"
@@ -133,7 +148,7 @@
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="7" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="8" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
                                     Belum ada data murid.
                                 </td>
                             </tr>

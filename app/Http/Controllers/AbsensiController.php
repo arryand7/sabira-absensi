@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Absensi;
 use App\Models\AbsensiKaryawan;
 use Carbon\Carbon;
 use App\Models\AbsensiLokasi;
@@ -69,12 +68,12 @@ class AbsensiController extends Controller
         $longitude = $request->longitude;
 
         $lokasi = AbsensiLokasi::first();
-        $sekolahLat = $lokasi->latitude ?? -7.310823820752337;
-        $sekolahLng = $lokasi->longitude ?? 112.72923730812086;
+        $sekolahLat = $lokasi?->latitude ?? -7.310823820752337;
+        $sekolahLng = $lokasi?->longitude ?? 112.72923730812086;
 
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
-        if ($jarak > ($lokasi->radius ?? 0.2)) {
+        if ($jarak > ($lokasi?->radius ?? 0.2)) {
             return back()->with("error", "Gagal Check-In: Lokasi terlalu jauh dari sekolah.");
         }
 
@@ -135,12 +134,12 @@ class AbsensiController extends Controller
         $longitude = $request->longitude;
 
         $lokasi = AbsensiLokasi::first();
-        $sekolahLat = $lokasi->latitude ?? -7.310823820752337;
-        $sekolahLng = $lokasi->longitude ?? 112.72923730812086;
+        $sekolahLat = $lokasi?->latitude ?? -7.310823820752337;
+        $sekolahLng = $lokasi?->longitude ?? 112.72923730812086;
 
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
-        if ($jarak > ($lokasi->radius ?? 0.2)) {
+        if ($jarak > ($lokasi?->radius ?? 0.2)) {
             return back()->with("error", "Gagal Check-Out: Lokasi terlalu jauh dari sekolah.");
         }
 

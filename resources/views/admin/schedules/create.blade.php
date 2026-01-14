@@ -64,9 +64,9 @@
                         <div id="schedule-rows-container" class="space-y-4">
                             @php $oldDetails = old('details', [0 => []]); @endphp
                             @foreach ($oldDetails as $i => $detail)
-                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 schedule-row">
+                                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 schedule-row">
                                     <div>
-                                        <select name="details[{{ $i }}][hari]" class="form-select w-full rounded-md border-gray-300 shadow-sm">
+                                        <select name="details[{{ $i }}][hari]" class="form-select w-full rounded-md border-gray-300 shadow-sm schedule-day">
                                             <option value="">-- Hari --</option>
                                             @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Ahad'] as $hari)
                                                 <option value="{{ $hari }}" {{ old("details.$i.hari", $detail['hari'] ?? '') == $hari ? 'selected' : '' }}>
@@ -76,14 +76,24 @@
                                         </select>
                                     </div>
                                     <div>
+                                        <select name="details[{{ $i }}][jam_ke]" class="form-select w-full rounded-md border-gray-300 shadow-sm schedule-slot">
+                                            <option value="">-- Jam ke --</option>
+                                            @foreach (range(1, 8) as $slot)
+                                                <option value="{{ $slot }}" data-slot-index="{{ $slot }}" {{ old("details.$i.jam_ke") == $slot ? 'selected' : '' }}>
+                                                    {{ $slot }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
                                         <input type="time" name="details[{{ $i }}][jam_mulai]"
                                             value="{{ old("details.$i.jam_mulai", $detail['jam_mulai'] ?? '') }}"
-                                            class="form-input w-full rounded-md border-gray-300 shadow-sm" />
+                                            class="form-input w-full rounded-md border-gray-300 shadow-sm schedule-start" />
                                     </div>
                                     <div>
                                         <input type="time" name="details[{{ $i }}][jam_selesai]"
                                             value="{{ old("details.$i.jam_selesai", $detail['jam_selesai'] ?? '') }}"
-                                            class="form-input w-full rounded-md border-gray-300 shadow-sm" />
+                                            class="form-input w-full rounded-md border-gray-300 shadow-sm schedule-end" />
                                     </div>
                                     <div class="flex gap-2 items-center">
                                         <select name="details[{{ $i }}][class_group_id]" class="form-select w-full rounded-md border-gray-300 shadow-sm">
@@ -113,7 +123,7 @@
                         <label for="academic_year_id" class="block font-semibold text-[#1C1E17]">Tahun Ajaran</label>
                         <select name="academic_year_id" class="form-select w-full rounded-md border-gray-300 shadow-sm" required>
                             @foreach ($academicYears as $year)
-                                <option value="{{ $year->id }}" {{ old('academic_year_id', $tahunAktif?->id) == $year->id ? 'selected' : '' }}>
+                                <option value="{{ $year->id }}" {{ old('academic_year_id', $selectedYear ?? $tahunAktif?->id) == $year->id ? 'selected' : '' }}>
                                     {{ $year->name }}
                                 </option>
                             @endforeach
@@ -148,10 +158,10 @@
         function addScheduleRow() {
             const container = document.getElementById('schedule-rows-container');
             const newRow = document.createElement('div');
-            newRow.className = 'grid grid-cols-1 sm:grid-cols-4 gap-4 schedule-row';
+            newRow.className = 'grid grid-cols-1 sm:grid-cols-5 gap-4 schedule-row';
             newRow.innerHTML = `
                 <div>
-                    <select name="details[${rowIndex}][hari]" class="form-select w-full rounded-md border-gray-300 shadow-sm mt-1">
+                    <select name="details[${rowIndex}][hari]" class="form-select w-full rounded-md border-gray-300 shadow-sm mt-1 schedule-day">
                         <option value="">-- Hari --</option>
                         @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Ahad'] as $hari)
                             <option value="{{ $hari }}">{{ $hari }}</option>
@@ -159,10 +169,18 @@
                     </select>
                 </div>
                 <div>
-                    <input type="time" name="details[${rowIndex}][jam_mulai]" class="form-input w-full rounded-md border-gray-300 shadow-sm mt-1" />
+                    <select name="details[${rowIndex}][jam_ke]" class="form-select w-full rounded-md border-gray-300 shadow-sm mt-1 schedule-slot">
+                        <option value="">-- Jam ke --</option>
+                        @foreach (range(1, 8) as $slot)
+                            <option value="{{ $slot }}" data-slot-index="{{ $slot }}">{{ $slot }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <input type="time" name="details[${rowIndex}][jam_selesai]" class="form-input w-full rounded-md border-gray-300 shadow-sm mt-1" />
+                    <input type="time" name="details[${rowIndex}][jam_mulai]" class="form-input w-full rounded-md border-gray-300 shadow-sm mt-1 schedule-start" />
+                </div>
+                <div>
+                    <input type="time" name="details[${rowIndex}][jam_selesai]" class="form-input w-full rounded-md border-gray-300 shadow-sm mt-1 schedule-end" />
                 </div>
                 <div class="flex gap-2 items-center">
                     <select name="details[${rowIndex}][class_group_id]" class="form-select w-full rounded-md border-gray-300 shadow-sm mt-1">
@@ -177,6 +195,7 @@
                 </div>
             `;
             container.appendChild(newRow);
+            initializeScheduleRow(newRow);
             rowIndex++;
         }
 
@@ -184,6 +203,118 @@
             const row = button.closest('.schedule-row');
             row.remove();
         }
+
+        const slotTimes = {
+            1: { start: '07:15', end: '07:55' },
+            2: { start: '07:55', end: '08:35' },
+            3: { start: '08:35', end: '09:15' },
+            4: { start: '09:15', end: '09:55' },
+            5: { start: '10:25', end: '11:05' },
+            6: { start: '11:05', end: '11:45' },
+            7: { start: '11:45', end: '12:25' },
+            8: { start: '12:25', end: '13:05' },
+        };
+
+        function getMatchingSlot(start, end, day) {
+            for (const [index, slot] of Object.entries(slotTimes)) {
+                const slotIndex = parseInt(index, 10);
+                if (day === 'Jumat' && slotIndex > 5) {
+                    continue;
+                }
+                if (slot.start === start && slot.end === end) {
+                    return index;
+                }
+            }
+            return '';
+        }
+
+        function updateFridaySlots(row) {
+            const daySelect = row.querySelector('.schedule-day');
+            const slotSelect = row.querySelector('.schedule-slot');
+            if (!daySelect || !slotSelect) {
+                return;
+            }
+
+            const isFriday = daySelect.value === 'Jumat';
+            const options = Array.from(slotSelect.options);
+            options.forEach((option) => {
+                const slotIndex = parseInt(option.value, 10);
+                if (!Number.isNaN(slotIndex) && slotIndex > 5) {
+                    option.disabled = isFriday;
+                    option.hidden = isFriday;
+                }
+            });
+
+            const selectedIndex = parseInt(slotSelect.value, 10);
+            if (isFriday && !Number.isNaN(selectedIndex) && selectedIndex > 5) {
+                slotSelect.value = '';
+            }
+        }
+
+        function updateTimesFromSlot(row) {
+            const slotSelect = row.querySelector('.schedule-slot');
+            const startInput = row.querySelector('.schedule-start');
+            const endInput = row.querySelector('.schedule-end');
+            if (!slotSelect || !startInput || !endInput) {
+                return;
+            }
+
+            const selected = slotSelect.value;
+            if (!selected || !slotTimes[selected]) {
+                return;
+            }
+
+            startInput.value = slotTimes[selected].start;
+            endInput.value = slotTimes[selected].end;
+        }
+
+        function updateSlotFromTimes(row) {
+            const daySelect = row.querySelector('.schedule-day');
+            const slotSelect = row.querySelector('.schedule-slot');
+            const startInput = row.querySelector('.schedule-start');
+            const endInput = row.querySelector('.schedule-end');
+            if (!daySelect || !slotSelect || !startInput || !endInput) {
+                return;
+            }
+
+            const match = getMatchingSlot(startInput.value, endInput.value, daySelect.value);
+            slotSelect.value = match;
+        }
+
+        function initializeScheduleRow(row) {
+            const daySelect = row.querySelector('.schedule-day');
+            const slotSelect = row.querySelector('.schedule-slot');
+            const startInput = row.querySelector('.schedule-start');
+            const endInput = row.querySelector('.schedule-end');
+
+            if (!daySelect || !slotSelect || !startInput || !endInput) {
+                return;
+            }
+
+            daySelect.addEventListener('change', () => {
+                updateFridaySlots(row);
+                updateSlotFromTimes(row);
+            });
+
+            slotSelect.addEventListener('change', () => {
+                updateTimesFromSlot(row);
+            });
+
+            startInput.addEventListener('change', () => {
+                updateSlotFromTimes(row);
+            });
+
+            endInput.addEventListener('change', () => {
+                updateSlotFromTimes(row);
+            });
+
+            updateFridaySlots(row);
+            updateSlotFromTimes(row);
+        }
+
+        document.querySelectorAll('.schedule-row').forEach((row) => {
+            initializeScheduleRow(row);
+        });
     </script>
     @endpush
 </x-app-layout>

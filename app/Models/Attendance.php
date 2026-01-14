@@ -22,4 +22,9 @@ class Attendance extends Model
     {
         return $this->belongsTo(Schedule::class);
     }
+
+    public function session()
+    {
+        return $this->belongsTo(ScheduleSession::class, 'schedule_session_id');
+    }
 }

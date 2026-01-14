@@ -13,6 +13,7 @@
 
     <p><strong>Nama:</strong> {{ $student->nama_lengkap }}</p>
     <p><strong>NIS:</strong> {{ $student->nis }}</p>
+    <p><strong>Tahun Ajaran:</strong> {{ $tahun ?? '-' }}</p>
 
     @foreach ($rekap as $jenis => $mapels)
         <h3>Jenis: {{ ucfirst($jenis) }}</h3>

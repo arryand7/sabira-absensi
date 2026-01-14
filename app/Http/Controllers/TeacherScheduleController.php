@@ -8,6 +8,7 @@ use App\Models\ClassGroup;
 use App\Models\Schedule;
 use App\Models\Subject;
 use App\Models\User;
+use App\Models\ScheduleSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,9 @@ class TeacherScheduleController extends Controller
             ->orderBy('jam_mulai')
             ->get();
 
-        return view('guru.schedule.index', compact('schedules','guru'));
+        $gridData = $this->buildScheduleGrid($schedules);
+
+        return view('guru.schedule.index', array_merge(compact('schedules', 'guru'), $gridData));
     }
 
 
@@ -152,7 +155,9 @@ class TeacherScheduleController extends Controller
             ->where('academic_year_id', $tahunAktif?->id)
             ->get();
 
-        return view('guru.schedule.index', compact('guru', 'schedules'));
+        $gridData = $this->buildScheduleGrid($schedules);
+
+        return view('guru.schedule.index', array_merge(compact('guru', 'schedules'), $gridData));
     }
 
     public function edit(Schedule $schedule)
@@ -279,11 +284,10 @@ class TeacherScheduleController extends Controller
 
         $schedule = Schedule::with('subject')->findOrFail($request->schedule_id);
 
-        $duplicatePertemuan = Attendance::whereHas('schedule', function ($query) use ($schedule) {
-                $query->where('subject_id', $schedule->subject_id)
-                    ->where('class_group_id', $schedule->class_group_id);
-            })
-            ->where('pertemuan', $request->pertemuan)
+        $duplicatePertemuan = ScheduleSession::where('subject_id', $schedule->subject_id)
+            ->where('class_group_id', $schedule->class_group_id)
+            ->where('academic_year_id', $schedule->academic_year_id)
+            ->where('meeting_no', $request->pertemuan)
             ->exists();
 
         if ($duplicatePertemuan) {
@@ -292,11 +296,35 @@ class TeacherScheduleController extends Controller
                 ->with('error', 'Pertemuan ke-' . $request->pertemuan . ' untuk mata pelajaran dan kelas ini sudah pernah diisi.');
         }
 
+        $existingSession = ScheduleSession::where('schedule_id', $scheduleId)
+            ->where('date', $tanggal)
+            ->first();
+
+        if ($existingSession) {
+            return back()
+                ->withInput()
+                ->with('error', 'Sesi pertemuan untuk jadwal ini sudah dibuat hari ini.');
+        }
+
         DB::beginTransaction();
         try {
+            $session = ScheduleSession::create([
+                'schedule_id' => $scheduleId,
+                'subject_id' => $schedule->subject_id,
+                'class_group_id' => $schedule->class_group_id,
+                'academic_year_id' => $schedule->academic_year_id,
+                'date' => $tanggal,
+                'start_time' => $jamMulai,
+                'end_time' => $jamSelesai,
+                'meeting_no' => $pertemuan,
+                'created_by' => Auth::id(),
+                'status' => 'open',
+            ]);
+
             foreach ($request->attendance as $studentId => $status) {
                 Attendance::create([
                     'schedule_id' => $scheduleId,
+                    'schedule_session_id' => $session->id,
                     'tanggal' => $tanggal,
                     'pertemuan' => $pertemuan,
                     'jam_mulai' => $jamMulai,
@@ -314,6 +342,61 @@ class TeacherScheduleController extends Controller
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan saat menyimpan absensi.');
         }
+    }
+
+    private function buildScheduleGrid($schedules): array
+    {
+        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+
+        $slotRanges = [
+            ['index' => 1, 'start' => '07:15', 'end' => '07:55'],
+            ['index' => 2, 'start' => '07:55', 'end' => '08:35'],
+            ['index' => 3, 'start' => '08:35', 'end' => '09:15'],
+            ['index' => 4, 'start' => '09:15', 'end' => '09:55'],
+            ['index' => 5, 'start' => '10:25', 'end' => '11:05'],
+            ['index' => 6, 'start' => '11:05', 'end' => '11:45'],
+            ['index' => 7, 'start' => '11:45', 'end' => '12:25'],
+            ['index' => 8, 'start' => '12:25', 'end' => '13:05'],
+        ];
+
+        $toMinutes = function (string $time): int {
+            $parts = explode(':', $time);
+            return ((int) $parts[0] * 60) + (int) $parts[1];
+        };
+
+        $slotRanges = collect($slotRanges)->map(function ($slot) use ($toMinutes) {
+            return array_merge($slot, [
+                'start_minutes' => $toMinutes($slot['start']),
+                'end_minutes' => $toMinutes($slot['end']),
+            ]);
+        })->values();
+
+        $slotBuckets = [];
+        $outsideSchedules = [];
+
+        foreach ($schedules as $schedule) {
+            $day = $schedule->hari;
+            $startMinutes = $toMinutes(substr($schedule->jam_mulai, 0, 5));
+            $endMinutes = $toMinutes(substr($schedule->jam_selesai, 0, 5));
+            $matched = false;
+
+            foreach ($slotRanges as $slot) {
+                if ($day === 'Jumat' && $slot['index'] > 5) {
+                    continue;
+                }
+
+                if ($startMinutes < $slot['end_minutes'] && $endMinutes > $slot['start_minutes']) {
+                    $slotBuckets[$day][$slot['index']][] = $schedule;
+                    $matched = true;
+                }
+            }
+
+            if (!$matched) {
+                $outsideSchedules[$day][] = $schedule;
+            }
+        }
+
+        return compact('days', 'slotRanges', 'slotBuckets', 'outsideSchedules');
     }
 
 }

@@ -62,6 +62,15 @@
                     class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 shadow">
                         <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                     </a>
+                    <a href="{{ route('laporan.karyawan.export.pdf', [
+                        'divisi' => request('divisi'),
+                        'jenis_guru' => request('jenis_guru'),
+                        'start_date' => request('start_date'),
+                        'end_date' => request('end_date'),
+                    ]) }}"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 shadow">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+                    </a>
 
                     <a href="{{ route('laporan.karyawan') }}"
                     class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 flex items-center gap-2 shadow">

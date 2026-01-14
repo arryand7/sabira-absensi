@@ -1,3 +1,14 @@
+@php
+    $appSetting = \App\AppSettingManager::current();
+    $appName = $appSetting->app_name ?? config('app.name', 'Sabira Absensi');
+    $appLogo = $appSetting->app_logo
+        ? asset('storage/' . $appSetting->app_logo)
+        : asset('images/logo.png');
+    $appFavicon = $appSetting->app_favicon
+        ? asset('storage/' . $appSetting->app_favicon)
+        : $appLogo;
+    $appDescription = $appSetting->app_description ?: 'Silakan masuk untuk melanjutkan';
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -5,35 +16,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
+    <title>{{ $appName }}</title>
+    <link rel="icon" href="{{ $appFavicon }}" type="image/png">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-[#D6D8D2]">
-
-    <!-- Background blur overlay -->
-    <div class="min-h-screen flex items-center justify-center relative">
-        <div class="absolute inset-0 bg-[#D6D8D2] backdrop-blur-md"></div>
-
-        <!-- Login Form -->
-        <div class="relative z-10 w-full max-w-md bg-white border border-gray-300 shadow-2xl rounded-2xl p-6 mx-4">
-            <!-- Logo -->
-            <div class="flex justify-center mb-4">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 object-contain">
-            </div>
-            {{ $slot }}
-            <footer class="border-t border-gray-600 text-center text-xs text-gray-600 mt-2 py-2">
-                © {{ date('Y') }} TelkomUniversitySurabaya.
-            </footer>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="card card-outline card-primary shadow-sm">
+        <div class="card-header text-center">
+            <img src="{{ $appLogo }}" alt="Logo" class="mb-3" style="height: 52px;">
+            <div class="h5 mb-0 font-weight-semibold">{{ $appName }}</div>
+            <p class="text-sm text-muted mb-0">{{ $appDescription }}</p>
         </div>
-
+        <div class="card-body">
+            {{ $slot }}
+        </div>
+        <div class="card-footer text-center text-xs text-muted">
+            Copyright {{ now()->year }} {{ $appName }}. Created by Ryand Arifriantoni in collaboration with TelkomUniversitySurabaya.
+        </div>
     </div>
-
+</div>
 </body>
 </html>

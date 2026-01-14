@@ -16,6 +16,10 @@ class AppSettingManager
             'sso_client_secret' => config('sso.client_secret'),
             'sso_redirect_uri' => config('sso.redirect_uri'),
             'sso_scopes' => config('sso.scopes', 'openid profile email roles'),
+            'app_name' => config('app.name', 'Sabira Absensi'),
+            'app_description' => config('app.description'),
+            'app_logo' => null,
+            'app_favicon' => null,
         ];
 
         if (!Schema::hasTable('app_settings')) {

@@ -1,184 +1,220 @@
-<div x-data="{ sidebarOpen: false }" class="flex overflow-hidden bg-[#5c644c] text-[#F7F7F6]">
+@php
+    $user = auth()->user();
+    $appSetting = \App\AppSettingManager::current();
+    $avatarUrl = $user?->karyawan?->foto
+        ? asset('storage/' . $user->karyawan->foto)
+        : asset('images/default-photo.jpg');
+    $brandName = $appSetting->app_name ?? config('app.name', 'Sabira Absensi');
+    $brandLogo = $appSetting->app_logo
+        ? asset('storage/' . $appSetting->app_logo)
+        : asset('images/logo.png');
+    $laporanOpen = request()->routeIs('laporan.karyawan')
+        || request()->routeIs('laporan.pertemuan')
+        || request()->routeIs('laporan.murid*');
+    $manajemenOpen = request()->routeIs('users.*')
+        || request()->routeIs('admin.students.*')
+        || request()->routeIs('divisis.*')
+        || request()->routeIs('admin.lokasi.*');
+    $akademikOpen = request()->routeIs('academic-years.*')
+        || request()->routeIs('promotion.*');
+    $masterOpen = request()->routeIs('admin.class-groups.*')
+        || request()->routeIs('subjects.*')
+        || request()->routeIs('admin.schedules.*')
+        || request()->routeIs('admin.sholat');
+    $pengaturanOpen = request()->routeIs('admin.settings.sso*')
+        || request()->routeIs('admin.settings.app*');
+@endphp
 
-    <!-- Overlay (Mobile) -->
-    <div x-show="sidebarOpen"
-         x-transition.opacity
-         class="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
-         @click="sidebarOpen = false">
-    </div>
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="{{ route('admin.dashboard') }}" class="brand-link">
+        <img src="{{ $brandLogo }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">{{ $brandName }}</span>
+    </a>
 
-    <!-- Sidebar -->
-    <aside
-        :class="sidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'"
-        class="fixed inset-y-0 left-0 z-30 w-64 transition duration-300 transform bg-[#5c644c] text-[#F7F7F6] md:translate-x-0 md:static md:inset-0 shadow-lg rounded-r-2xl md:rounded-none
-            overflow-y-auto">
-
-        <!-- Sidebar Header -->
-        <div class="px-4 py-3 border-b border-[#F7F7F6]/20">
-            <div class="flex items-center justify-between">
-                <h1 class="text-xl font-semibold">Admin</h1>
-                <button class="md:hidden" @click="sidebarOpen = false" aria-label="Tutup Sidebar">✕</button>
+    <div class="sidebar">
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <img src="{{ $avatarUrl }}" class="img-circle elevation-2" alt="User">
             </div>
-
-            @if($activeYear)
-                <p class="text-sm mt-1 text-[#F7F7F6]/70">
-                    Tahun Ajaran: <span class="font-medium">{{ $activeYear->name }}</span>
-                </p>
-            @else
-                <p class="text-sm mt-1 text-red-300 italic">Tahun ajaran belum diset</p>
-            @endif
+            <div class="info">
+                <a href="#" class="d-block">{{ $user->name ?? 'Guest' }}</a>
+                <span class="text-xs text-muted">{{ ucfirst($user->role ?? '-') }}</span>
+            </div>
         </div>
 
-        <!-- Navigation -->
-        <nav class="px-4 py-4 space-y-1 text-sm font-medium">
-
-            <!-- Dashboard -->
-            <a href="{{ route('admin.dashboard') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.dashboard') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-house-door-fill text-lg"></i> Dashboard
-            </a>
-
-            <!-- Laporan Absensi -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Laporan Absensi</p>
-
-            <a href="{{ route('laporan.karyawan') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('laporan.karyawan') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-bar-chart-fill text-lg"></i> Absensi Karyawan
-            </a>
-
-            <!-- Submenu Absensi Murid -->
-            <div x-data="{ open: {{ Route::is('laporan.murid') || Route::is('laporan.murid.*') ? 'true' : 'false' }} }">
-                <button @click="open = !open"
-                        class="w-full flex items-center justify-between gap-3 px-4 py-2 rounded-xl transition
-                            {{ Route::is('laporan.murid.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                    <div class="flex items-center gap-3">
-                        <i class="bi bi-bar-chart-fill text-lg"></i> Absensi Murid
-                    </div>
-                    <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </button>
-                <div x-show="open" x-transition class="ml-8 mt-2 space-y-1">
-                    <a href="{{ route('laporan.murid') }}"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition
-                    {{ Route::is('laporan.murid') ? 'bg-[#F7F7F6] text-[#5c644c]' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                        <i class="bi bi-journal-bookmark-fill"></i> Absen Kelas
-                    </a>
-                    <a href="{{ route('laporan.murid.mapel') }}"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition
-                    {{ Route::is('laporan.murid.mapel') ? 'bg-[#F7F7F6] text-[#5c644c]' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                        <i class="bi bi-journal-check"></i> Absen Mata Pelajaran
-                    </a>
-                </div>
+        @if($activeYear)
+            <div class="px-3 pb-3 text-xs text-muted">
+                Tahun Ajaran: <span class="font-weight-semibold">{{ $activeYear->name }}</span>
             </div>
+        @else
+            <div class="px-3 pb-3 text-xs text-warning">Tahun ajaran belum diset</div>
+        @endif
 
-            <!-- Manajemen Data -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Manajemen Data</p>
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+                <li class="nav-item">
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-house-door-fill"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
 
-            <a href="{{ route('users.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('users.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-people-fill text-lg"></i> Manajemen User
-            </a>
+                <li class="nav-item has-treeview {{ $laporanOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $laporanOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-clipboard-data"></i>
+                        <p>
+                            Laporan
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('laporan.karyawan') }}" class="nav-link {{ request()->routeIs('laporan.karyawan') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Absensi Karyawan</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('laporan.pertemuan') }}" class="nav-link {{ request()->routeIs('laporan.pertemuan') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Rekap Pertemuan</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('laporan.murid') }}" class="nav-link {{ request()->routeIs('laporan.murid') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Absen Kelas</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('laporan.murid.mapel') }}" class="nav-link {{ request()->routeIs('laporan.murid.mapel') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Absen Mata Pelajaran</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <a href="{{ route('admin.students.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.students.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-person-lines-fill text-lg"></i> Manajemen Murid
-            </a>
+                <li class="nav-item has-treeview {{ $manajemenOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $manajemenOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-people-fill"></i>
+                        <p>
+                            Manajemen Data
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manajemen User</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manajemen Murid</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('divisis.index') }}" class="nav-link {{ request()->routeIs('divisis.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manajemen Divisi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.lokasi.edit') }}" class="nav-link {{ request()->routeIs('admin.lokasi.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Lokasi</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <!-- Tahun Ajaran -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Tahun Ajaran</p>
+                <li class="nav-item has-treeview {{ $akademikOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $akademikOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-calendar-range"></i>
+                        <p>
+                            Tahun Ajaran
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('academic-years.index') }}" class="nav-link {{ request()->routeIs('academic-years.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manajemen Tahun Ajaran</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('promotion.index') }}" class="nav-link {{ request()->routeIs('promotion.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Migrasi Data Siswa</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <a href="{{ route('academic-years.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('academic-years.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi-calendar-range text-lg"></i> Manajemen Tahun Ajaran
-            </a>
+                <li class="nav-item has-treeview {{ $masterOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $masterOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-building"></i>
+                        <p>
+                            Master Data Sekolah
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.class-groups.index') }}" class="nav-link {{ request()->routeIs('admin.class-groups.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manajemen Kelas</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('subjects.index') }}" class="nav-link {{ request()->routeIs('subjects.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Mata Pelajaran</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.schedules.index') }}" class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Jadwal Guru</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.sholat') }}" class="nav-link {{ request()->routeIs('admin.sholat') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Kegiatan Sholat</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <a href="{{ route('promotion.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('promotion.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi-arrow-left-right text-lg"></i> Migrasi Data Siswa
-            </a>
-
-            <!-- Master Data Karyawan -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Master Data Karyawan</p>
-
-            <a href="{{ route('divisis.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('divisis.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-diagram-3-fill text-lg"></i> Manajemen Divisi
-            </a>
-
-            <a href="{{ route('admin.lokasi.edit') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.lokasi.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-geo-alt text-lg"></i> Lokasi
-            </a>
-
-            <!-- Master Data Sekolah -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Master Data Sekolah</p>
-
-            <a href="{{ route('admin.class-groups.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.class-groups.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-building-fill text-lg"></i> Manajemen Kelas
-            </a>
-
-            <a href="{{ route('subjects.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('subjects.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-book text-lg"></i> Mata Pelajaran
-            </a>
-
-            <a href="{{ route('admin.schedules.index') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.schedules.*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-calendar-event-fill text-lg"></i> Jadwal Guru
-            </a>
-
-            <a href="{{ route('admin.sholat') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.sholat') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-clock-fill text-lg"></i> Kegiatan Sholat
-            </a>
-
-            <!-- Pengaturan -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <p class="text-xs text-[#F7F7F6]/60 uppercase px-4">Pengaturan</p>
-
-            <a href="{{ route('admin.settings.sso') }}"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl transition
-                    {{ Route::is('admin.settings.sso*') ? 'bg-[#F7F7F6] text-[#5c644c] shadow' : 'hover:bg-[#F7F7F6] hover:text-[#5c644c]' }}">
-                <i class="bi bi-shield-lock-fill text-lg"></i> SSO Sabira Connect
-            </a>
-            <!-- Footer Info -->
-            <hr class="my-2 border-[#F7F7F6]/30">
-            <div class="text-xs text-center text-[#F7F7F6]/60 px-4 py-4">
-                © {{ date('Y') }} TelkomUniversitySurabaya<br>
-                {{-- All rights reserved. --}}
-            </div>
-
+                <li class="nav-item has-treeview {{ $pengaturanOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $pengaturanOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-gear-fill"></i>
+                        <p>
+                            Pengaturan
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.settings.app') }}" class="nav-link {{ request()->routeIs('admin.settings.app*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Pengaturan Aplikasi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.settings.sso') }}" class="nav-link {{ request()->routeIs('admin.settings.sso*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>SSO Sabira Connect</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
         </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    {{-- <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Topbar (Mobile Only) -->
-        <header class="md:hidden flex items-center justify-between px-4 py-4 bg-[#5c644c] text-[#F7F7F6] shadow-lg">
-            <button @click="sidebarOpen = true" class="focus:outline-none" aria-label="Buka Sidebar">☰</button>
-            <h2 class="text-lg font-semibold">Dashboard</h2>
-        </header>
-
-        <!-- Page Content -->
-        <main class="flex-1 overflow-y-auto p-6 bg-[#5c644c] text-[#F7F7F6]">
-            {{ $slot }}
-        </main>
-    </div> --}}
-</div>
+    </div>
+</aside>

@@ -72,10 +72,10 @@
                     @enderror
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label for="hari" class="block font-semibold text-[#1C1E17] mb-1">Hari</label>
-                        <select name="hari" id="hari" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none @error('hari') border-red-500 @enderror">
+                        <select name="hari" id="hari" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none schedule-day @error('hari') border-red-500 @enderror">
                             @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Ahad'] as $hari)
                                 <option value="{{ $hari }}" {{ old('hari', $schedule->hari) == $hari ? 'selected' : '' }}>{{ $hari }}</option>
                             @endforeach
@@ -86,8 +86,20 @@
                     </div>
 
                     <div>
+                        <label for="jam_ke" class="block font-semibold text-[#1C1E17] mb-1">Jam ke</label>
+                        <select name="jam_ke" id="jam_ke" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none schedule-slot">
+                            <option value="">-- Jam ke --</option>
+                            @foreach (range(1, 8) as $slot)
+                                <option value="{{ $slot }}" data-slot-index="{{ $slot }}" {{ old('jam_ke') == $slot ? 'selected' : '' }}>
+                                    {{ $slot }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="jam_mulai" class="block font-semibold text-[#1C1E17] mb-1">Jam Mulai</label>
-                        <input type="time" name="jam_mulai" id="jam_mulai" value="{{ old('jam_mulai', $schedule->jam_mulai) }}" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none @error('jam_mulai') border-red-500 @enderror">
+                        <input type="time" name="jam_mulai" id="jam_mulai" value="{{ old('jam_mulai', $schedule->jam_mulai) }}" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none schedule-start @error('jam_mulai') border-red-500 @enderror">
                         @error('jam_mulai')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -95,7 +107,7 @@
 
                     <div>
                         <label for="jam_selesai" class="block font-semibold text-[#1C1E17] mb-1">Jam Selesai</label>
-                        <input type="time" name="jam_selesai" id="jam_selesai" value="{{ old('jam_selesai', $schedule->jam_selesai) }}" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none @error('jam_selesai') border-red-500 @enderror">
+                        <input type="time" name="jam_selesai" id="jam_selesai" value="{{ old('jam_selesai', $schedule->jam_selesai) }}" class="w-full rounded border border-gray-300 bg-[#EEF3E9] text-[#1C1E17] px-3 py-2 focus:ring-blue-500 focus:outline-none schedule-end @error('jam_selesai') border-red-500 @enderror">
                         @error('jam_selesai')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -137,5 +149,104 @@
                 });
             </script>
         @endif
+        <script>
+            const slotTimes = {
+                1: { start: '07:15', end: '07:55' },
+                2: { start: '07:55', end: '08:35' },
+                3: { start: '08:35', end: '09:15' },
+                4: { start: '09:15', end: '09:55' },
+                5: { start: '10:25', end: '11:05' },
+                6: { start: '11:05', end: '11:45' },
+                7: { start: '11:45', end: '12:25' },
+                8: { start: '12:25', end: '13:05' },
+            };
+
+            function getMatchingSlot(start, end, day) {
+                for (const [index, slot] of Object.entries(slotTimes)) {
+                    const slotIndex = parseInt(index, 10);
+                    if (day === 'Jumat' && slotIndex > 5) {
+                        continue;
+                    }
+                    if (slot.start === start && slot.end === end) {
+                        return index;
+                    }
+                }
+                return '';
+            }
+
+            function updateFridayOptions(daySelect, slotSelect) {
+                if (!daySelect || !slotSelect) {
+                    return;
+                }
+
+                const isFriday = daySelect.value === 'Jumat';
+                Array.from(slotSelect.options).forEach((option) => {
+                    const slotIndex = parseInt(option.value, 10);
+                    if (!Number.isNaN(slotIndex) && slotIndex > 5) {
+                        option.disabled = isFriday;
+                        option.hidden = isFriday;
+                    }
+                });
+
+                const selectedIndex = parseInt(slotSelect.value, 10);
+                if (isFriday && !Number.isNaN(selectedIndex) && selectedIndex > 5) {
+                    slotSelect.value = '';
+                }
+            }
+
+            function updateTimesFromSlot(slotSelect, startInput, endInput) {
+                if (!slotSelect || !startInput || !endInput) {
+                    return;
+                }
+
+                const selected = slotSelect.value;
+                if (!selected || !slotTimes[selected]) {
+                    return;
+                }
+
+                startInput.value = slotTimes[selected].start;
+                endInput.value = slotTimes[selected].end;
+            }
+
+            function updateSlotFromTimes(daySelect, slotSelect, startInput, endInput) {
+                if (!daySelect || !slotSelect || !startInput || !endInput) {
+                    return;
+                }
+
+                const match = getMatchingSlot(startInput.value, endInput.value, daySelect.value);
+                slotSelect.value = match;
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const daySelect = document.getElementById('hari');
+                const slotSelect = document.getElementById('jam_ke');
+                const startInput = document.getElementById('jam_mulai');
+                const endInput = document.getElementById('jam_selesai');
+
+                if (!daySelect || !slotSelect || !startInput || !endInput) {
+                    return;
+                }
+
+                daySelect.addEventListener('change', () => {
+                    updateFridayOptions(daySelect, slotSelect);
+                    updateSlotFromTimes(daySelect, slotSelect, startInput, endInput);
+                });
+
+                slotSelect.addEventListener('change', () => {
+                    updateTimesFromSlot(slotSelect, startInput, endInput);
+                });
+
+                startInput.addEventListener('change', () => {
+                    updateSlotFromTimes(daySelect, slotSelect, startInput, endInput);
+                });
+
+                endInput.addEventListener('change', () => {
+                    updateSlotFromTimes(daySelect, slotSelect, startInput, endInput);
+                });
+
+                updateFridayOptions(daySelect, slotSelect);
+                updateSlotFromTimes(daySelect, slotSelect, startInput, endInput);
+            });
+        </script>
     @endpush
 </x-app-layout>

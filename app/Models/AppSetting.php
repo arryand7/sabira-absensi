@@ -12,5 +12,9 @@ class AppSetting extends Model
         'sso_client_secret',
         'sso_redirect_uri',
         'sso_scopes',
+        'app_name',
+        'app_description',
+        'app_logo',
+        'app_favicon',
     ];
 }

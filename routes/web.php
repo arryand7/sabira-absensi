@@ -20,7 +20,9 @@ use App\Http\Controllers\AsramaAbsenController;
 use App\Http\Controllers\StudentPromotionController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\SsoSettingController;
+use App\Http\Controllers\LaporanPertemuanController;
 
 
 // Halaman welcome
@@ -58,6 +60,8 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
 
     Route::get('/admin/settings/sso', [SsoSettingController::class, 'edit'])->name('admin.settings.sso');
     Route::put('/admin/settings/sso', [SsoSettingController::class, 'update'])->name('admin.settings.sso.update');
+    Route::get('/admin/settings/app', [AppSettingController::class, 'edit'])->name('admin.settings.app');
+    Route::put('/admin/settings/app', [AppSettingController::class, 'update'])->name('admin.settings.app.update');
 
     Route::post('/dashboard/absen/manual', [AdminDashboardController::class, 'storeManualAbsen'])->name('admin.absensi.manual.store');
     Route::get('/dashboard/absen/{id}/edit', [AdminDashboardController::class, 'editAbsen'])->name('admin.absensi.edit');
@@ -72,11 +76,18 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
     ->name('laporan.karyawan.detail');
     // export
     Route::get('/laporan-karyawan/export', [LaporanController::class, 'export'])->name('laporan.karyawan.export');
+    Route::get('/laporan-karyawan/export/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.karyawan.export.pdf');
     Route::get('/laporan/karyawan/{id}/export', [LaporanController::class, 'exportDetail'])->name('laporan.karyawan.detail.export');
 
     Route::get('/admin/laporan/murid', [LaporanMuridController::class, 'dashboard'])->name('laporan.murid.dashboard');
     Route::get('/laporan-murid', [LaporanMuridController::class, 'index'])->name('laporan.murid');
+    Route::get('/admin/laporan/pertemuan', [LaporanPertemuanController::class, 'index'])->name('laporan.pertemuan');
+    Route::get('/admin/laporan/pertemuan/export/pdf', [LaporanPertemuanController::class, 'exportPdf'])->name('laporan.pertemuan.export.pdf');
+    Route::get('/admin/laporan/pertemuan/export/excel', [LaporanPertemuanController::class, 'exportExcel'])->name('laporan.pertemuan.export.excel');
     Route::get('/admin/muid/{student}/download', [LaporanMuridController::class, 'download'])->name('laporan.murid.download');
+    Route::get('/admin/muid/{student}/download/excel', [LaporanMuridController::class, 'exportStudentExcel'])->name('laporan.murid.download.excel');
+    Route::get('/admin/laporan/murid/kelas/export/pdf', [LaporanMuridController::class, 'exportKelasPdf'])->name('laporan.murid.kelas.export.pdf');
+    Route::get('/admin/laporan/murid/kelas/export/excel', [LaporanMuridController::class, 'exportKelasExcel'])->name('laporan.murid.kelas.export.excel');
     Route::get('/admin/laporan/murid/mapel', [LaporanMuridController::class, 'laporanMapel'])->name('laporan.murid.mapel');
     Route::get('/admin/laporan/murid/mapel/download', [LaporanMuridController::class, 'downloadMapel'])->name('laporan.murid.mapel.download');
     Route::get('/laporan/murid/mapel/excel', [LaporanMuridController::class, 'exportExcel'])->name('laporan.murid.mapel.excel');
@@ -153,25 +164,20 @@ Route::middleware(['auth', 'checkRole:admin'])->group(function () {
 // Route untuk GURU
     Route::middleware(['auth', 'checkRole:guru'])->group(function () {
         Route::get('/jadwal-guru', [TeacherScheduleController::class, 'index'])->name('guru.schedule');
+        Route::get('/jadwal-guru/create', [TeacherScheduleController::class, 'create'])->name('guru.schedule.create'); // Form tambah jadwal
+        Route::post('/jadwal-guru', [TeacherScheduleController::class, 'store'])->name('guru.schedule.store'); // Simpan jadwal baru
+        Route::get('/jadwal-guru/guru/{id}', [TeacherScheduleController::class, 'showByTeacher'])->name('guru.schedule.show-by-teacher');
+        Route::get('/jadwal-guru/{schedule}/edit', [TeacherScheduleController::class, 'edit'])->name('guru.schedule.edit'); // Form edit
+        Route::put('/jadwal-guru/{schedule}', [TeacherScheduleController::class, 'update'])->name('guru.schedule.update'); // Update data
+        Route::delete('/jadwal-guru/{schedule}', [TeacherScheduleController::class, 'destroy'])->name('guru.schedule.destroy'); // Hapus
         Route::get('/jadwal-guru/{schedule}/absen', [TeacherScheduleController::class, 'absen'])->name('guru.schedule.absen');
-        
-        // Route::get('/', [TeacherScheduleController::class, 'index'])->name('guru.schedule.index');
-        Route::get('/create', [TeacherScheduleController::class, 'create'])->name('guru.schedule.create'); // Form tambah jadwal
-        Route::post('/', [TeacherScheduleController::class, 'store'])->name('guru.schedule.store'); // Simpan jadwal baru
-
-        Route::get('/guru/{id}', [TeacherScheduleController::class, 'showByTeacher'])->name('guru.schedule.show-by-teacher');
-
-        Route::get('/{schedule}/edit', [TeacherScheduleController::class, 'edit'])->name('guru.schedule.edit'); // Form edit
-        Route::put('/{schedule}', [TeacherScheduleController::class, 'update'])->name('guru.schedule.update'); // Update data
-        Route::delete('/{schedule}', [TeacherScheduleController::class, 'destroy'])->name('guru.schedule.destroy'); // Hapus
-
         Route::post('/jadwal-guru/absen/{classGroup}', [TeacherScheduleController::class, 'submitAbsen'])
             ->name('guru.schedule.absen.submit');
 
         Route::get('/history', [TeacherHistoryController::class, 'index'])->name('guru.history.index');
         Route::get('/history/{schedule}/{pertemuan}', [TeacherHistoryController::class, 'detail'])->name('guru.history.detail');
-        Route::get('history/{scheduleId}/{pertemuan}/edit', [TeacherHistoryController::class, 'edit'])->name('guru.history.edit');
-        Route::post('history/{scheduleId}/{pertemuan}/update', [TeacherHistoryController::class, 'update'])->name('guru.history.update');
+        Route::get('/history/{scheduleId}/{pertemuan}/edit', [TeacherHistoryController::class, 'edit'])->name('guru.history.edit');
+        Route::post('/history/{scheduleId}/{pertemuan}/update', [TeacherHistoryController::class, 'update'])->name('guru.history.update');
     });
 
     // Route untuk ORGANISASI (asrama)

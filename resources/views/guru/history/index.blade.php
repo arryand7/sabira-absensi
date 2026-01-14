@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-user-layout>
     
     <div class="px-2 py-2">
         <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
@@ -61,22 +61,29 @@
                     </tr>
                 </thead>
                 <tbody class="bg-[#EFF0ED] text-[#1C1E17] divide-y divide-[#D6D8D2]">
-                    @forelse ($attendances as $item)
+                    @forelse ($sessions as $session)
+                        @php
+                            $materi = $session->attendances->first()?->materi;
+                        @endphp
                         <tr class="hover:bg-[#D6D8D2] transition">
-                            <td class="px-4 py-2">{{ $item->schedule->subject->nama_mapel }}</td>
-                            <td class="px-4 py-2">{{ $item->schedule->classGroup->nama_kelas }}</td>
-                            <td class="px-4 py-2">{{ $item->pertemuan }}</td>
-                            <td class="px-4 py-2">{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}</td>
-                            <td class="px-4 py-2">{{ $item->materi ?? '-' }}</td>
+                            <td class="px-4 py-2">{{ $session->schedule->subject->nama_mapel }}</td>
+                            <td class="px-4 py-2">{{ $session->schedule->classGroup->nama_kelas }}</td>
+                            <td class="px-4 py-2">{{ $session->meeting_no ?? '-' }}</td>
+                            <td class="px-4 py-2">{{ \Carbon\Carbon::parse($session->date)->format('d M Y') }}</td>
+                            <td class="px-4 py-2">{{ $materi ?? '-' }}</td>
                             <td class="px-4 py-2 text-center space-x-2">
-                                <a href="{{ route('guru.history.detail', [$item->schedule_id, $item->pertemuan]) }}"
-                                   class="text-[#5C644C] hover:text-[#373C2E]" title="Lihat Absensi">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('guru.history.edit', [$item->schedule_id, $item->pertemuan]) }}"
-                                   class="text-[#8D9382] hover:text-[#5C644C]" title="Edit Absensi">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
+                                @if ($session->meeting_no)
+                                    <a href="{{ route('guru.history.detail', [$session->schedule_id, $session->meeting_no]) }}"
+                                       class="text-[#5C644C] hover:text-[#373C2E]" title="Lihat Absensi">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('guru.history.edit', [$session->schedule_id, $session->meeting_no]) }}"
+                                       class="text-[#8D9382] hover:text-[#5C644C]" title="Edit Absensi">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                @else
+                                    <span class="text-[#8D9382] text-xs">Tidak tersedia</span>
+                                @endif
                             </td>
                         </tr>
                     @empty

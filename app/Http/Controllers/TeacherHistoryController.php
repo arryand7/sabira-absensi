@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Schedule;
+use App\Models\ScheduleSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,13 +22,15 @@ class TeacherHistoryController extends Controller
             return back()->withErrors(['Tahun ajaran aktif tidak ditemukan.']);
         }
 
-        $query = Attendance::with(['schedule.subject', 'schedule.classGroup'])
+        $query = ScheduleSession::with([
+            'schedule.subject',
+            'schedule.classGroup',
+            'attendances:id,schedule_session_id,materi',
+        ])
             ->whereHas('schedule', function ($q) use ($user, $activeYear) {
                 $q->where('user_id', $user->id)
-                ->where('academic_year_id', $activeYear->id); // Filter tahun ajaran
-            })
-            ->select('schedule_id', 'pertemuan', 'tanggal', 'materi')
-            ->groupBy('schedule_id', 'pertemuan', 'tanggal', 'materi');
+                    ->where('academic_year_id', $activeYear->id);
+            });
 
         // Filter berdasarkan request (kelas / mapel)
         if ($request->filled('kelas')) {
@@ -41,7 +45,7 @@ class TeacherHistoryController extends Controller
             });
         }
 
-        $attendances = $query->orderBy('tanggal', 'desc')->get();
+        $sessions = $query->orderBy('date', 'desc')->get();
 
         // List kelas & mapel hanya dari jadwal di tahun ajaran aktif
         $kelasList = \App\Models\Schedule::where('user_id', $user->id)
@@ -60,31 +64,56 @@ class TeacherHistoryController extends Controller
             ->unique()
             ->sort();
 
-        return view('guru.history.index', compact('attendances', 'kelasList', 'mapelList'));
+        return view('guru.history.index', compact('sessions', 'kelasList', 'mapelList'));
     }
 
     public function detail($scheduleId, $pertemuan)
     {
-        $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
-            ->where('schedule_id', $scheduleId)
-            ->where('pertemuan', $pertemuan)
-            ->get();
+        $schedule = $this->resolveOwnedSchedule($scheduleId);
+        $session = ScheduleSession::where('schedule_id', $schedule->id)
+            ->where('meeting_no', $pertemuan)
+            ->first();
+
+        $absensiQuery = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup']);
+        if ($session) {
+            $absensiQuery->where('schedule_session_id', $session->id);
+        } else {
+            $absensiQuery->where('schedule_id', $schedule->id)
+                ->where('pertemuan', $pertemuan);
+        }
+
+        $absensi = $absensiQuery->get();
 
         return view('guru.history.detail', compact('absensi'));
     }
 
     public function edit($scheduleId, $pertemuan)
     {
-        $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
-            ->where('schedule_id', $scheduleId)
-            ->where('pertemuan', $pertemuan)
-            ->get();
+        $schedule = $this->resolveOwnedSchedule($scheduleId);
+        $session = ScheduleSession::where('schedule_id', $schedule->id)
+            ->where('meeting_no', $pertemuan)
+            ->first();
+
+        $absensiQuery = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup']);
+        if ($session) {
+            $absensiQuery->where('schedule_session_id', $session->id);
+        } else {
+            $absensiQuery->where('schedule_id', $schedule->id)
+                ->where('pertemuan', $pertemuan);
+        }
+
+        $absensi = $absensiQuery->get();
 
         return view('guru.history.edit', compact('absensi'));
     }
 
     public function update(Request $request, $scheduleId, $pertemuan)
     {
+        $schedule = $this->resolveOwnedSchedule($scheduleId);
+        $session = ScheduleSession::where('schedule_id', $schedule->id)
+            ->where('meeting_no', $pertemuan)
+            ->first();
+
         $data = $request->validate([
             'materi' => 'required|string',
             'pertemuan' => 'required|integer|min:1',
@@ -93,28 +122,54 @@ class TeacherHistoryController extends Controller
 
         $newPertemuan = $data['pertemuan'];
 
-        // Cek jika pertemuan baru sudah ada (kecuali pertemuan lama yang sedang diedit)
-        $exists = \App\Models\Attendance::where('schedule_id', $scheduleId)
-            ->where('pertemuan', $newPertemuan)
-            ->where('pertemuan', '!=', $pertemuan)
-            ->exists();
+        if ($newPertemuan != $pertemuan) {
+            $exists = ScheduleSession::where('subject_id', $schedule->subject_id)
+                ->where('class_group_id', $schedule->class_group_id)
+                ->where('academic_year_id', $schedule->academic_year_id)
+                ->where('meeting_no', $newPertemuan)
+                ->exists();
 
-        if ($exists) {
-            return back()->withErrors(['pertemuan' => 'Nomor pertemuan sudah ada untuk jadwal ini. Gunakan nomor lain.'])->withInput();
+            if ($exists) {
+                return back()->withErrors(['pertemuan' => 'Nomor pertemuan sudah ada untuk mata pelajaran dan kelas ini di tahun ajaran tersebut.'])->withInput();
+            }
+
+            if ($session) {
+                $session->update(['meeting_no' => $newPertemuan]);
+            }
         }
 
         // Update materi dan pertemuan (jika berubah)
         foreach ($data['attendance'] as $studentId => $status) {
-            \App\Models\Attendance::where('schedule_id', $scheduleId)
-                ->where('pertemuan', $pertemuan) // pertemuan lama
-                ->where('student_id', $studentId)
-                ->update([
-                    'status' => $status,
-                    'materi' => $data['materi'],
-                    'pertemuan' => $newPertemuan,
-                ]);
+            $attendanceQuery = Attendance::where('student_id', $studentId);
+            if ($session) {
+                $attendanceQuery->where('schedule_session_id', $session->id);
+            } else {
+                $attendanceQuery->where('schedule_id', $scheduleId)
+                    ->where('pertemuan', $pertemuan);
+            }
+
+            $attendanceQuery->update([
+                'status' => $status,
+                'materi' => $data['materi'],
+                'pertemuan' => $newPertemuan,
+            ]);
         }
 
         return redirect()->route('guru.history.index')->with('success', 'Absensi berhasil diperbarui.');
+    }
+
+    private function resolveOwnedSchedule($scheduleId): Schedule
+    {
+        $user = Auth::user();
+
+        $schedule = Schedule::where('id', $scheduleId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$schedule) {
+            abort(403, 'Anda tidak memiliki akses ke jadwal ini.');
+        }
+
+        return $schedule;
     }
 }

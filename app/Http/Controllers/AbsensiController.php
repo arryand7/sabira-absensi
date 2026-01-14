@@ -47,7 +47,7 @@ class AbsensiController extends Controller
         $deviceHash = $request->device_hash;
 
         $deviceUsed = AbsensiKaryawan::where('device_hash', $deviceHash)
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('waktu_absen', Carbon::today())
             ->where('user_id', '!=', $user->id)
             ->exists();
 
@@ -56,7 +56,7 @@ class AbsensiController extends Controller
         }
 
         $alreadyCheckedIn = AbsensiKaryawan::where('user_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('waktu_absen', Carbon::today())
             ->exists();
 
         if ($alreadyCheckedIn) {
@@ -144,7 +144,7 @@ class AbsensiController extends Controller
         }
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('waktu_absen', Carbon::today())
             ->first();
 
         if (!$absensi) {
@@ -171,8 +171,8 @@ class AbsensiController extends Controller
         $tahun = $request->input('tahun', now()->year);
 
         $query = AbsensiKaryawan::where('user_id', $user->id)
-            ->whereMonth('created_at', $bulan)
-            ->whereYear('created_at', $tahun);
+            ->whereMonth('waktu_absen', $bulan)
+            ->whereYear('waktu_absen', $tahun);
 
         $absensis = $query->orderBy('created_at', 'desc')->get();
 

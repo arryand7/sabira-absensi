@@ -13,9 +13,24 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
+
+        <div>
+            <x-input-label for="foto" :value="__('Foto Profil')" />
+            @php
+                $fotoUrl = $user?->karyawan?->foto
+                    ? asset('storage/' . $user->karyawan->foto)
+                    : asset('images/default-photo.jpg');
+            @endphp
+            <div class="mt-2 flex items-center gap-4">
+                <img src="{{ $fotoUrl }}" alt="Foto Profil" class="h-16 w-16 rounded-full object-cover border border-gray-200">
+                <input id="foto" name="foto" type="file" accept=".jpg,.jpeg,.png,.webp"
+                       class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8E412E] file:text-white hover:file:bg-[#BA6F4D]">
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('foto')" />
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
@@ -45,6 +60,19 @@
                     @endif
                 </div>
             @endif
+        </div>
+
+        <div>
+            <x-input-label for="no_hp" :value="__('No HP')" />
+            <x-text-input id="no_hp" name="no_hp" type="text" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17]" :value="old('no_hp', $user->karyawan->no_hp ?? '')" autocomplete="tel" />
+            <x-input-error class="mt-2" :messages="$errors->get('no_hp')" />
+        </div>
+
+        <div>
+            <x-input-label for="alamat" :value="__('Alamat')" />
+            <textarea id="alamat" name="alamat" rows="3"
+                class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17]">{{ old('alamat', $user->karyawan->alamat ?? '') }}</textarea>
+            <x-input-error class="mt-2" :messages="$errors->get('alamat')" />
         </div>
 
         <div class="flex items-center gap-4">

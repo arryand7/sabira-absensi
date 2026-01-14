@@ -8,6 +8,16 @@
             {{-- Filter --}}
             <form method="GET" id="filterForm" class="mb-6 flex flex-wrap items-end gap-4">
                 <div>
+                    <label for="tahun_ajaran" class="block text-sm font-medium text-gray-700">Tahun Ajaran</label>
+                    <select name="tahun_ajaran" id="tahun_ajaran" class="w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-orange-200">
+                        @foreach($academicYears as $tahun)
+                            <option value="{{ $tahun->id }}" {{ (string) $selectedYear === (string) $tahun->id ? 'selected' : '' }}>
+                                {{ $tahun->name }}{{ $tahun->is_active ? ' (Aktif)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label for="kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
                     <select name="kelas" id="kelas" class="w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-orange-200">
                         <option value="">Semua</option>
@@ -18,19 +28,29 @@
                         @endforeach
                     </select>
                 </div>
-                {{-- <div>
-                    <label class="block text-sm font-medium text-gray-700">Tahun Ajaran Aktif</label>
-                    <div class="text-sm text-gray-900 mt-1">
-                        {{ $activeYear?->name ?? '-' }}
-                    </div>
-                </div> --}}
 
-                {{-- <div class="flex gap-2 mt-1">
+                <div class="flex gap-2 mt-1 flex-wrap">
                     <button type="submit"
                             class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] flex items-center gap-2 shadow">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
-                </div> --}}
+
+                    @if(request('kelas'))
+                        <a href="{{ route('laporan.murid.kelas.export.pdf', request()->only('kelas', 'tahun_ajaran')) }}"
+                           class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 shadow">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Kelas
+                        </a>
+                        <a href="{{ route('laporan.murid.kelas.export.excel', request()->only('kelas', 'tahun_ajaran')) }}"
+                           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 shadow">
+                            <i class="bi bi-file-earmark-excel-fill"></i> Download Excel Kelas
+                        </a>
+                    @endif
+
+                    <a href="{{ route('laporan.murid') }}"
+                       class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 flex items-center gap-2 shadow">
+                        <i class="bi bi-x-circle-fill"></i> Reset
+                    </a>
+                </div>
             </form>
 
             {{-- Table --}}
@@ -52,10 +72,16 @@
                                     <td class="px-4 py-3">{{ $student->nis }}</td>
                                     <td class="px-4 py-3">{{ $student->kelas }}</td>
                                     <td class="px-4 py-3 text-center">
-                                        <a href="{{ route('laporan.murid.download', ['student' => $student->id]) }}"
-                                        class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-md text-xs hover:bg-green-700 shadow">
-                                            <i class="bi bi-download"></i> Download
-                                        </a>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <a href="{{ route('laporan.murid.download', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
+                                               class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-md text-xs hover:bg-green-700 shadow">
+                                                <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                            </a>
+                                            <a href="{{ route('laporan.murid.download.excel', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
+                                               class="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700 shadow">
+                                                <i class="bi bi-file-earmark-excel-fill"></i> Excel
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -76,6 +102,10 @@
         <script>
             $(document).ready(function () {
                 $('#kelas').on('change', function () {
+                    $('#filterForm').submit();
+                });
+
+                $('#tahun_ajaran').on('change', function () {
                     $('#filterForm').submit();
                 });
                 

@@ -13,13 +13,104 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        $selectedYear = $request->tahun_ajaran ?? $activeYear?->id;
+
         $teachers = User::where('role', 'guru')
             ->where('status', 'aktif')
             ->with('guru')
+            ->orderBy('name')
             ->get();
-        return view('admin.schedules.index', compact('teachers'));
+
+        $classGroups = ClassGroup::when($selectedYear, fn($q) => $q->where('academic_year_id', $selectedYear))
+            ->orderBy('nama_kelas')
+            ->get();
+
+        $subjects = Subject::orderBy('nama_mapel')->get();
+
+        $schedules = Schedule::with(['subject', 'classGroup', 'user'])
+            ->when($selectedYear, fn($q) => $q->where('academic_year_id', $selectedYear))
+            ->when($request->guru_id, fn($q) => $q->where('user_id', $request->guru_id))
+            ->when($request->class_group_id, fn($q) => $q->where('class_group_id', $request->class_group_id))
+            ->when($request->subject_id, fn($q) => $q->where('subject_id', $request->subject_id))
+            ->orderBy('hari')
+            ->orderBy('jam_mulai')
+            ->get();
+
+        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+
+        $slotRanges = [
+            ['index' => 1, 'start' => '07:15', 'end' => '07:55'],
+            ['index' => 2, 'start' => '07:55', 'end' => '08:35'],
+            ['index' => 3, 'start' => '08:35', 'end' => '09:15'],
+            ['index' => 4, 'start' => '09:15', 'end' => '09:55'],
+            ['index' => 5, 'start' => '10:25', 'end' => '11:05'],
+            ['index' => 6, 'start' => '11:05', 'end' => '11:45'],
+            ['index' => 7, 'start' => '11:45', 'end' => '12:25'],
+            ['index' => 8, 'start' => '12:25', 'end' => '13:05'],
+        ];
+
+        $toMinutes = function (string $time): int {
+            $parts = explode(':', $time);
+            return ((int) $parts[0] * 60) + (int) $parts[1];
+        };
+
+        $slotRanges = collect($slotRanges)->map(function ($slot) use ($toMinutes) {
+            return array_merge($slot, [
+                'start_minutes' => $toMinutes($slot['start']),
+                'end_minutes' => $toMinutes($slot['end']),
+            ]);
+        })->values();
+
+        $slotBuckets = [];
+        $outsideSchedules = [];
+
+        foreach ($schedules as $schedule) {
+            $day = $schedule->hari;
+            $startMinutes = $toMinutes(substr($schedule->jam_mulai, 0, 5));
+            $endMinutes = $toMinutes(substr($schedule->jam_selesai, 0, 5));
+            $matched = false;
+
+            foreach ($slotRanges as $slot) {
+                if ($day === 'Jumat' && $slot['index'] > 5) {
+                    continue;
+                }
+
+                if ($startMinutes < $slot['end_minutes'] && $endMinutes > $slot['start_minutes']) {
+                    $slotBuckets[$day][$slot['index']][] = $schedule;
+                    $matched = true;
+                }
+            }
+
+            if (!$matched) {
+                $outsideSchedules[$day][] = $schedule;
+            }
+        }
+
+        $summary = [
+            'total' => $schedules->count(),
+            'teachers' => $schedules->pluck('user_id')->unique()->count(),
+            'classes' => $schedules->pluck('class_group_id')->unique()->count(),
+        ];
+
+        $academicYears = AcademicYear::orderByDesc('start_date')->get();
+
+        return view('admin.schedules.index', compact(
+            'teachers',
+            'classGroups',
+            'subjects',
+            'schedules',
+            'days',
+            'slotRanges',
+            'slotBuckets',
+            'outsideSchedules',
+            'summary',
+            'academicYears',
+            'activeYear',
+            'selectedYear'
+        ));
     }
 
     public function showByTeacher($id)
@@ -43,15 +134,22 @@ class AdminScheduleController extends Controller
         $selectedGuruId = $request->guru_id;
 
         $tahunAktif = AcademicYear::where('is_active', true)->first();
+        $selectedYear = $request->tahun_ajaran ?? $tahunAktif?->id;
 
         // Ambil semua mapel dan semua kelas (tanpa filter jenis)
         $subjects = Subject::all();
-        $classGroups = ClassGroup::where('academic_year_id', $tahunAktif?->id)->get();
+        $classGroups = ClassGroup::where('academic_year_id', $selectedYear)->get();
 
         $academicYears = AcademicYear::orderByDesc('start_date')->get();
 
         return view('admin.schedules.create', compact(
-            'teachers', 'subjects', 'classGroups', 'selectedGuruId', 'academicYears', 'tahunAktif'
+            'teachers',
+            'subjects',
+            'classGroups',
+            'selectedGuruId',
+            'academicYears',
+            'tahunAktif',
+            'selectedYear'
         ));
     }
 

@@ -11,16 +11,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('absensi_lokasis', function (Blueprint $table) {
-            $table->decimal('radius', 8, 2)->default(0.2); // dalam kilometer
-        });
+        if (!Schema::hasColumn('absensi_lokasis', 'radius')) {
+            Schema::table('absensi_lokasis', function (Blueprint $table) {
+                $table->decimal('radius', 8, 2)->default(0.2); // dalam kilometer
+            });
+        }
     }
 
     public function down()
     {
-        Schema::table('absensi_lokasis', function (Blueprint $table) {
-            $table->dropColumn('radius');
-        });
+        if (Schema::hasColumn('absensi_lokasis', 'radius')) {
+            Schema::table('absensi_lokasis', function (Blueprint $table) {
+                $table->dropColumn('radius');
+            });
+        }
     }
 
 };

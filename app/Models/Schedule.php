@@ -34,6 +34,11 @@ class Schedule extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function sessions()
+    {
+        return $this->hasMany(ScheduleSession::class);
+    }
+
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);

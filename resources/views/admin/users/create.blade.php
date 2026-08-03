@@ -1,9 +1,5 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="flex">
+<x-app-shell>
+<div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
                 <button onclick="window.history.back();"
@@ -12,35 +8,36 @@
                 </button>
             </div>
 
-            <div class="bg-[#8D9382] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
-                <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Create User</h1>
+            <div class="bg-[var(--sabira-neutral-strong)] shadow rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
+                <h1 class="text-2xl font-bold text-[var(--sabira-ink)] mb-4">Create User</h1>
 
                 <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
                     <div>
-                        <label class="block text-[#1C1E17]">Nama</label>
+                        <label class="block text-[var(--sabira-ink)]">Nama</label>
                         <input type="text" name="name"
-                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('name') border-red-500 @enderror"
+                            class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]"
                             value="{{ old('name') }}" required>
                         @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-[#1C1E17]">Email</label>
+                        <label class="block text-[var(--sabira-ink)]">Email</label>
                         <input type="email" name="email"
-                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('email') border-red-500 @enderror"
+                            class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]"
                             value="{{ old('email') }}" required>
                         @error('email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-[#1C1E17]">Role</label>
+                        <label class="block text-[var(--sabira-ink)]">Role</label>
                         <select name="role" id="roleSelect"
-                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('role') border-red-500 @enderror"
+                            class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]"
                             required>
                             <option value="">-- Pilih Role --</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                            @if(auth()->user()->isSuperAdmin())<option value="super_admin" {{ old('role') == 'super_admin' ? 'selected' : '' }}>Superadmin</option>@endif
                             <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                             <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru</option>
                             <option value="organisasi" {{ old('role') == 'organisasi' ? 'selected' : '' }}>Organisasi</option>
@@ -49,21 +46,21 @@
                     </div>
 
                     <div>
-                        <label class="block text-[#1C1E17]">Password</label>
+                        <label class="block text-[var(--sabira-ink)]">Password</label>
                         <input type="password" name="password"
-                            class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('password') border-red-500 @enderror"
+                            class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]"
                             required>
                         @error('password') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- FORM KARYAWAN --}}
                     <div id="karyawanFields" style="display: none;" class="border-t pt-4 space-y-4">
-                        <h3 class="text-lg font-semibold text-[#1C1E17]">Data Karyawan</h3>
+                        <h3 class="text-lg font-semibold text-[var(--sabira-ink)]">Data Karyawan</h3>
 
                         <div id="guruFields" style="display: none;">
-                            <label class="block text-[#1C1E17]">Jenis Guru</label>
+                            <label class="block text-[var(--sabira-ink)]">Jenis Guru</label>
                             <select name="jenis_guru"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('jenis_guru') border-red-500 @enderror">
+                                class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]">
                                 <option value="">-- Pilih Jenis Guru --</option>
                                 <option value="formal" {{ old('jenis_guru') == 'formal' ? 'selected' : '' }}>Formal</option>
                                 <option value="muadalah" {{ old('jenis_guru') == 'muadalah' ? 'selected' : '' }}>Muadalah</option>
@@ -72,9 +69,9 @@
                         </div>
 
                         <div id="divisiField">
-                            <label class="block text-[#1C1E17]">Divisi</label>
+                            <label class="block text-[var(--sabira-ink)]">Divisi</label>
                             <select name="divisi_id"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('divisi_id') border-red-500 @enderror">
+                                class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]">
                                 <option value="">-- Pilih Divisi --</option>
                                 @foreach($divisis as $divisi)
                                     <option value="{{ $divisi->id }}" data-nama="{{ strtolower($divisi->nama) }}"
@@ -87,30 +84,30 @@
                         </div>
 
                         <div>
-                            <label class="block text-[#1C1E17]">Alamat</label>
+                            <label class="block text-[var(--sabira-ink)]">Alamat</label>
                             <textarea name="alamat"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
+                                class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]">{{ old('alamat') }}</textarea>
                             @error('alamat') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-[#1C1E17]">No HP</label>
+                            <label class="block text-[var(--sabira-ink)]">No HP</label>
                             <input type="text" name="no_hp"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('no_hp') border-red-500 @enderror"
+                                class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]"
                                 value="{{ old('no_hp') }}">
                             @error('no_hp') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-[#1C1E17]">Foto</label>
+                            <label class="block text-[var(--sabira-ink)]">Foto</label>
                             <input type="file" name="foto"
-                                class="w-full rounded bg-[#EEF3E9] border-gray-300 text-[#1C1E17] @error('foto') border-red-500 @enderror">
+                                class="w-full rounded bg-[var(--sabira-surface)] border-gray-300 text-[var(--sabira-ink)]">
                             @error('foto') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <button type="submit"
-                        class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                        class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                         <i class="bi bi-save mr-1"></i> Simpan
                     </button>
                 </form>
@@ -161,4 +158,4 @@
             }
         });
     </script>
-</x-app-layout>
+</x-app-shell>

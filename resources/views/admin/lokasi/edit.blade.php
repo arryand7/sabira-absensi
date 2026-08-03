@@ -1,16 +1,12 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div x-data="{ sidebarOpen: false }" class="flex h-full">
+<x-app-shell>
+<div x-data="{ sidebarOpen: false }" class="flex h-full">
         <div class="flex-1 flex flex-col overflow-hidden">
             <main class="flex-1 overflow-x-hidden overflow-y-auto p-1">
-                <h2 class="font-semibold text-2xl text-[#1C1E17] mb-3">
+                <h2 class="font-semibold text-2xl text-[var(--sabira-ink)] mb-3">
                     Edit Lokasi Absen
                 </h2>
 
-                <div class="max-w-xl mx-auto bg-[#8D9382] text-[#1C1E17] p-6 rounded-2xl shadow-md">
+                <div class="max-w-xl mx-auto bg-[var(--sabira-neutral-strong)] text-[var(--sabira-ink)] p-6 rounded-2xl shadow-md">
                     @if(session('success'))
                         <div class="mb-4 p-4 bg-green-100 text-green-800 rounded">
                             {{ session('success') }}
@@ -26,7 +22,7 @@
                                 Latitude
                             </label>
                             <input type="text" name="latitude" id="latitude"
-                                class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] p-2 shadow-sm"
+                                class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] p-2 shadow-sm"
                                 value="{{ old('latitude', $lokasi->latitude) }}" required>
                         </div>
 
@@ -35,7 +31,7 @@
                                 Longitude
                             </label>
                             <input type="text" name="longitude" id="longitude"
-                                class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] p-2 shadow-sm"
+                                class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] p-2 shadow-sm"
                                 value="{{ old('longitude', $lokasi->longitude) }}" required>
                         </div>
 
@@ -44,13 +40,13 @@
                                 Radius (KM)
                             </label>
                             <input type="number" step="0.01" name="radius" id="radius"
-                                class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] p-2 shadow-sm"
+                                class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] p-2 shadow-sm"
                                 value="{{ old('radius', $lokasi->radius) }}" required>
                         </div>
 
                         <div class="mb-4">
                             <button type="button" id="detectLocation"
-                                class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 shadow">
+                                class="px-4 py-2 bg-[var(--sabira-primary)] text-white rounded-md text-sm hover:bg-[var(--sabira-primary-active)] shadow">
                                 Gunakan Lokasi Saat Ini
                             </button>
                             <small class="text-sm block mt-1 text-[#EEF3E9]">
@@ -63,7 +59,7 @@
 
                         <div>
                             <button type="submit"
-                                class="bg-[#8E412E] hover:bg-[#BA6F4D] text-white text-sm px-4 py-2 rounded-md shadow">
+                                class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white text-sm px-4 py-2 rounded-md shadow">
                                 <i class="bi bi-check-circle mr-1"></i> Simpan Lokasi
                             </button>
                         </div>
@@ -147,4 +143,4 @@
         });
     </script>
 
-</x-app-layout>
+</x-app-shell>

@@ -12,7 +12,7 @@ return new class extends Migration
         if ($driver === 'mysql') {
             DB::statement("ALTER TABLE class_groups MODIFY jenis_kelas ENUM('formal','muadalah','tambahan') NOT NULL");
         } elseif ($driver === 'pgsql') {
-            DB::statement("ALTER TABLE class_groups DROP CONSTRAINT IF EXISTS class_groups_jenis_kelas_check");
+            DB::statement('ALTER TABLE class_groups DROP CONSTRAINT IF EXISTS class_groups_jenis_kelas_check');
             DB::statement("ALTER TABLE class_groups ADD CONSTRAINT class_groups_jenis_kelas_check CHECK (jenis_kelas IN ('formal','muadalah','tambahan'))");
         }
     }
@@ -28,7 +28,7 @@ return new class extends Migration
         if ($driver === 'mysql') {
             DB::statement("ALTER TABLE class_groups MODIFY jenis_kelas ENUM('formal','muadalah') NOT NULL");
         } elseif ($driver === 'pgsql') {
-            DB::statement("ALTER TABLE class_groups DROP CONSTRAINT IF EXISTS class_groups_jenis_kelas_check");
+            DB::statement('ALTER TABLE class_groups DROP CONSTRAINT IF EXISTS class_groups_jenis_kelas_check');
             DB::statement("ALTER TABLE class_groups ADD CONSTRAINT class_groups_jenis_kelas_check CHECK (jenis_kelas IN ('formal','muadalah'))");
         }
     }

@@ -2,174 +2,137 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
+use App\Http\Requests\StoreAttendanceCorrectionRequest;
+use App\Models\AcademicYear;
+use App\Models\AttendanceCorrection;
 use App\Models\Schedule;
 use App\Models\ScheduleSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class TeacherHistoryController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
+        $activeYear = AcademicYear::where('is_active', true)->first();
 
-        // Ambil tahun ajaran aktif
-        $activeYear = \App\Models\AcademicYear::where('is_active', true)->first();
-
-        // Handle jika tidak ada tahun ajaran aktif
-        if (!$activeYear) {
+        if (! $activeYear) {
             return back()->withErrors(['Tahun ajaran aktif tidak ditemukan.']);
         }
+
+        $ownedSessions = fn ($query) => $query
+            ->where('academic_year_id', $activeYear->id)
+            ->where(function ($teacherQuery) use ($user) {
+                $teacherQuery->where('scheduled_teacher_id', $user->id)
+                    ->orWhere('actual_teacher_id', $user->id)
+                    ->orWhereHas('schedule', fn ($schedule) => $schedule->where('user_id', $user->id));
+            });
 
         $query = ScheduleSession::with([
             'schedule.subject',
             'schedule.classGroup',
             'attendances:id,schedule_session_id,materi',
-        ])
-            ->whereHas('schedule', function ($q) use ($user, $activeYear) {
-                $q->where('user_id', $user->id)
-                    ->where('academic_year_id', $activeYear->id);
-            });
+            'corrections' => fn ($corrections) => $corrections->latest(),
+        ])->where($ownedSessions);
 
-        // Filter berdasarkan request (kelas / mapel)
         if ($request->filled('kelas')) {
-            $query->whereHas('schedule.classGroup', function ($q) use ($request) {
-                $q->where('nama_kelas', $request->kelas);
-            });
+            $query->whereHas('schedule.classGroup', fn ($q) => $q->where('nama_kelas', $request->kelas));
         }
 
         if ($request->filled('mapel')) {
-            $query->whereHas('schedule.subject', function ($q) use ($request) {
-                $q->where('nama_mapel', $request->mapel);
-            });
+            $query->whereHas('schedule.subject', fn ($q) => $q->where('nama_mapel', $request->mapel));
         }
 
-        $sessions = $query->orderBy('date', 'desc')->get();
+        $sessions = $query->orderByDesc('date')->paginate(20)->withQueryString();
 
-        // List kelas & mapel hanya dari jadwal di tahun ajaran aktif
-        $kelasList = \App\Models\Schedule::where('user_id', $user->id)
-            ->where('academic_year_id', $activeYear->id)
-            ->with('classGroup')
-            ->get()
-            ->pluck('classGroup.nama_kelas')
-            ->unique()
-            ->sort();
-
-        $mapelList = \App\Models\Schedule::where('user_id', $user->id)
-            ->where('academic_year_id', $activeYear->id)
-            ->with('subject')
-            ->get()
-            ->pluck('subject.nama_mapel')
-            ->unique()
-            ->sort();
+        $scheduleIds = ScheduleSession::query()->where($ownedSessions)->pluck('schedule_id');
+        $teacherSchedules = Schedule::whereIn('id', $scheduleIds)->with(['classGroup', 'subject'])->get();
+        $kelasList = $teacherSchedules->pluck('classGroup.nama_kelas')->filter()->unique()->sort();
+        $mapelList = $teacherSchedules->pluck('subject.nama_mapel')->filter()->unique()->sort();
 
         return view('guru.history.index', compact('sessions', 'kelasList', 'mapelList'));
     }
 
-    public function detail($scheduleId, $pertemuan)
+    public function detail(ScheduleSession $session)
     {
-        $schedule = $this->resolveOwnedSchedule($scheduleId);
-        $session = ScheduleSession::where('schedule_id', $schedule->id)
-            ->where('meeting_no', $pertemuan)
-            ->first();
+        $this->ensureTeacherCanAccess($session);
 
-        $absensiQuery = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup']);
-        if ($session) {
-            $absensiQuery->where('schedule_session_id', $session->id);
-        } else {
-            $absensiQuery->where('schedule_id', $schedule->id)
-                ->where('pertemuan', $pertemuan);
-        }
-
-        $absensi = $absensiQuery->get();
-
-        return view('guru.history.detail', compact('absensi'));
-    }
-
-    public function edit($scheduleId, $pertemuan)
-    {
-        $schedule = $this->resolveOwnedSchedule($scheduleId);
-        $session = ScheduleSession::where('schedule_id', $schedule->id)
-            ->where('meeting_no', $pertemuan)
-            ->first();
-
-        $absensiQuery = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup']);
-        if ($session) {
-            $absensiQuery->where('schedule_session_id', $session->id);
-        } else {
-            $absensiQuery->where('schedule_id', $schedule->id)
-                ->where('pertemuan', $pertemuan);
-        }
-
-        $absensi = $absensiQuery->get();
-
-        return view('guru.history.edit', compact('absensi'));
-    }
-
-    public function update(Request $request, $scheduleId, $pertemuan)
-    {
-        $schedule = $this->resolveOwnedSchedule($scheduleId);
-        $session = ScheduleSession::where('schedule_id', $schedule->id)
-            ->where('meeting_no', $pertemuan)
-            ->first();
-
-        $data = $request->validate([
-            'materi' => 'required|string',
-            'pertemuan' => 'required|integer|min:1',
-            'attendance' => 'required|array',
+        $session->load([
+            'schedule.subject',
+            'schedule.classGroup',
+            'scheduledTeacher',
+            'actualTeacher',
+            'attendances.student',
+            'corrections.requester',
+            'corrections.reviewer',
         ]);
 
-        $newPertemuan = $data['pertemuan'];
+        return view('guru.history.detail', compact('session'));
+    }
 
-        if ($newPertemuan != $pertemuan) {
-            $exists = ScheduleSession::where('subject_id', $schedule->subject_id)
-                ->where('class_group_id', $schedule->class_group_id)
-                ->where('academic_year_id', $schedule->academic_year_id)
-                ->where('meeting_no', $newPertemuan)
-                ->exists();
+    public function requestCorrection(StoreAttendanceCorrectionRequest $request, ScheduleSession $session)
+    {
+        $this->ensureTeacherCanAccess($session);
+        $session->load('attendances');
 
-            if ($exists) {
-                return back()->withErrors(['pertemuan' => 'Nomor pertemuan sudah ada untuk mata pelajaran dan kelas ini di tahun ajaran tersebut.'])->withInput();
-            }
-
-            if ($session) {
-                $session->update(['meeting_no' => $newPertemuan]);
-            }
-        }
-
-        // Update materi dan pertemuan (jika berubah)
-        foreach ($data['attendance'] as $studentId => $status) {
-            $attendanceQuery = Attendance::where('student_id', $studentId);
-            if ($session) {
-                $attendanceQuery->where('schedule_session_id', $session->id);
-            } else {
-                $attendanceQuery->where('schedule_id', $scheduleId)
-                    ->where('pertemuan', $pertemuan);
-            }
-
-            $attendanceQuery->update([
-                'status' => $status,
-                'materi' => $data['materi'],
-                'pertemuan' => $newPertemuan,
+        if ($session->status !== 'completed') {
+            throw ValidationException::withMessages([
+                'reason' => 'Koreksi hanya dapat diajukan untuk sesi yang sudah selesai.',
             ]);
         }
 
-        return redirect()->route('guru.history.index')->with('success', 'Absensi berhasil diperbarui.');
-    }
-
-    private function resolveOwnedSchedule($scheduleId): Schedule
-    {
-        $user = Auth::user();
-
-        $schedule = Schedule::where('id', $scheduleId)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$schedule) {
-            abort(403, 'Anda tidak memiliki akses ke jadwal ini.');
+        if ($session->corrections()->where('status', 'pending')->exists()) {
+            throw ValidationException::withMessages([
+                'reason' => 'Masih ada permintaan koreksi yang menunggu peninjauan.',
+            ]);
         }
 
-        return $schedule;
+        $validated = $request->validated();
+        $expectedStudentIds = $session->attendances->pluck('student_id')->map(fn ($id) => (string) $id)->sort()->values();
+        $submittedStudentIds = collect(array_keys($validated['attendance']))->map(fn ($id) => (string) $id)->sort()->values();
+
+        if ($expectedStudentIds->all() !== $submittedStudentIds->all()) {
+            throw ValidationException::withMessages([
+                'attendance' => 'Data kehadiran harus mencakup seluruh siswa pada sesi ini.',
+            ]);
+        }
+
+        $currentMaterial = $session->attendances->first()?->materi;
+        AttendanceCorrection::create([
+            'schedule_session_id' => $session->id,
+            'requested_by' => $request->user()->id,
+            'reason' => $validated['reason'],
+            'before_payload' => [
+                'materi' => $currentMaterial,
+                'classroom_condition' => $session->classroom_condition,
+                'teacher_notes' => $session->teacher_notes,
+                'attendance' => $session->attendances->pluck('status', 'student_id')->all(),
+            ],
+            'proposed_payload' => [
+                'materi' => $validated['materi'],
+                'classroom_condition' => $validated['classroom_condition'] ?? null,
+                'teacher_notes' => $validated['teacher_notes'] ?? null,
+                'attendance' => $validated['attendance'],
+            ],
+        ]);
+
+        return redirect()->route('guru.history.detail', $session)
+            ->with('success', 'Permintaan koreksi dikirim dan menunggu peninjauan admin.');
+    }
+
+    private function ensureTeacherCanAccess(ScheduleSession $session): void
+    {
+        $userId = Auth::id();
+        $session->loadMissing('schedule:id,user_id');
+
+        $allowed = in_array($userId, [
+            $session->scheduled_teacher_id,
+            $session->actual_teacher_id,
+            $session->schedule?->user_id,
+        ], true);
+
+        abort_unless($allowed, 403, 'Anda tidak memiliki akses ke sesi ini.');
     }
 }

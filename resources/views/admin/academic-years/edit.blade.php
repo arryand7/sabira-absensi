@@ -1,10 +1,6 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="bg-[#8D9382] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
-        <h2 class="text-2xl font-bold text-[#292D22] mb-6">Edit Tahun Ajaran</h2>
+<x-app-shell>
+<div class="bg-[var(--sabira-neutral-strong)] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[var(--sabira-ink)]">
+        <h2 class="text-2xl font-bold text-[var(--sabira-ink)] mb-6">Edit Tahun Ajaran</h2>
 
         @if ($errors->any())
             <div class="mb-4 text-red-600">
@@ -47,18 +43,18 @@
 
             {{-- <div class="flex justify-end">
                 <a href="{{ route('academic-years.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded shadow">Batal</a>
-                <button type="submit" class="ml-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow">Simpan Perubahan</button>
+                <button type="submit" class="ml-2 px-4 py-2 bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white rounded shadow">Simpan Perubahan</button>
             </div> --}}
             <div class="flex gap-4 mt-6">
                         <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                             <i class="bi bi-save"></i> Simpan Perubahan
                         </button>
                         <a href="{{ route('academic-years.index') }}"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow inline-flex items-center">
                             <i class="bi bi-x-circle"></i> Batal
                         </a>
                     </div>
         </form>
     </div>
-</x-app-layout>
+</x-app-shell>

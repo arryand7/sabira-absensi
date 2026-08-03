@@ -3,6 +3,12 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+use App\Models\Schedule;
+use App\Models\ScheduleConflict;
+use App\Models\ScheduleTimeSlot;
+use App\Policies\ScheduleConflictPolicy;
+use App\Policies\SchedulePolicy;
+use App\Policies\ScheduleTimeSlotPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -13,7 +19,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        Schedule::class => SchedulePolicy::class,
+        ScheduleConflict::class => ScheduleConflictPolicy::class,
+        ScheduleTimeSlot::class => ScheduleTimeSlotPolicy::class,
     ];
 
     /**

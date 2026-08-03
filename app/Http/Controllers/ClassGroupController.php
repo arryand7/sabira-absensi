@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\ClassGroup;
 use App\Models\Guru;
-use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
 
 class ClassGroupController extends Controller
 {
@@ -26,12 +25,11 @@ class ClassGroupController extends Controller
         return view('admin.class-groups.index', compact('classGroups', 'academicYears'));
     }
 
-
-
     public function create()
     {
         $gurus = Guru::with('user')->get();
         $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
         return view('admin.class-groups.create', compact('gurus', 'academicYears'));
     }
 
@@ -56,11 +54,11 @@ class ClassGroupController extends Controller
         return redirect()->route('admin.class-groups.index')->with('success', 'Kelas berhasil ditambahkan');
     }
 
-
     public function edit(ClassGroup $classGroup)
     {
         $gurus = Guru::with('user')->get();
         $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
         return view('admin.class-groups.edit', compact('classGroup', 'gurus', 'academicYears'));
     }
 
@@ -90,12 +88,14 @@ class ClassGroupController extends Controller
     public function destroy(ClassGroup $classGroup)
     {
         $classGroup->delete();
+
         return redirect()->route('admin.class-groups.index')->with('success', 'Kelas berhasil dihapus');
     }
 
     public function duplicateForm()
     {
         $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
         return view('admin.class-groups.duplicate', compact('academicYears'));
     }
 
@@ -122,6 +122,4 @@ class ClassGroupController extends Controller
 
         return redirect()->route('admin.class-groups.index')->with('success', 'Kelas berhasil diduplikat ke tahun ajaran baru.');
     }
-
-
 }

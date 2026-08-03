@@ -2,22 +2,27 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEvents
+class LaporanKaryawanExport implements FromArray, WithEvents, WithStyles, WithTitle
 {
     protected $divisi;
+
     protected $jenisGuru;
+
     protected $start_date;
+
     protected $end_date;
+
     protected $statusMatrix = [];
 
     public function __construct($divisi, $jenisGuru, $start_date, $end_date)
@@ -27,7 +32,6 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
         $this->start_date = Carbon::parse($start_date)->startOfDay();
         $this->end_date = Carbon::parse($end_date)->endOfDay();
     }
-
 
     public function array(): array
     {
@@ -43,9 +47,9 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
 
         $data = [
             ['Absensi Karyawan'],
-            ['Divisi: ' . $this->getDivisiLabel()],
-            ['Periode: ' . $this->start_date->format('d M Y') . ' s.d ' . $this->end_date->format('d M Y')],
-            $header
+            ['Divisi: '.$this->getDivisiLabel()],
+            ['Periode: '.$this->start_date->format('d M Y').' s.d '.$this->end_date->format('d M Y')],
+            $header,
         ];
 
         $users = User::with([
@@ -53,20 +57,20 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
             'guru',
             'absensis' => function ($q) {
                 $q->whereBetween('waktu_absen', [$this->start_date, $this->end_date]);
-            }
+            },
         ])
-        ->whereNotIn('role', ['admin', 'organisasi'])
-        ->when($this->jenisGuru, function ($q) {
-            $q->whereHas('guru', function ($query) {
-                $query->where(DB::raw('LOWER(jenis)'), strtolower($this->jenisGuru));
-            });
-        })
-        ->when($this->divisi, function ($q) {
-            $q->whereHas('karyawan.divisi', function ($query) {
-                $query->where(DB::raw('LOWER(nama)'), strtolower($this->divisi));
-            });
-        })
-        ->get();
+            ->whereNotIn('role', ['admin', 'organisasi'])
+            ->when($this->jenisGuru, function ($q) {
+                $q->whereHas('guru', function ($query) {
+                    $query->where(DB::raw('LOWER(jenis)'), strtolower($this->jenisGuru));
+                });
+            })
+            ->when($this->divisi, function ($q) {
+                $q->whereHas('karyawan.divisi', function ($query) {
+                    $query->where(DB::raw('LOWER(nama)'), strtolower($this->divisi));
+                });
+            })
+            ->get();
 
         $no = 1;
 
@@ -118,19 +122,16 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
         return $data;
     }
 
-
     protected function getDivisiLabel()
     {
         if ($this->jenisGuru) {
-            return 'Divisi: Guru (' . ucfirst($this->jenisGuru) . ')';
+            return 'Divisi: Guru ('.ucfirst($this->jenisGuru).')';
         } elseif ($this->divisi) {
-            return 'Divisi: ' . ucfirst($this->divisi);
+            return 'Divisi: '.ucfirst($this->divisi);
         }
 
         return 'Divisi: Semua Karyawan';
     }
-
-
 
     public function styles(Worksheet $sheet)
     {
@@ -161,7 +162,7 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
                     foreach ($statusList as $c => $status) {
                         $colIndex = $c + 3; // Karena No = A (1), Nama = B (2), Tanggal mulai dari kolom ke-3
                         $rowIndex = $startRow + $r;
-                        $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex) . $rowIndex;
+                        $cell = Coordinate::stringFromColumnIndex($colIndex).$rowIndex;
 
                         $color = match ($status) {
                             'hadir' => 'C6EFCE',
@@ -178,7 +179,7 @@ class LaporanKaryawanExport implements FromArray, WithStyles, WithTitle, WithEve
                         }
                     }
                 }
-            }
+            },
         ];
     }
 }

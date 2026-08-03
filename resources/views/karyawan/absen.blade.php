@@ -1,10 +1,10 @@
-<x-user-layout>
+<x-app-shell>
     {{-- @section('pageTitle', $pageTitle ?? 'Absen Karyawan') --}}
     <div class="py-2 px-2 md:px-6 max-w-4xl mx-auto">
         <!-- Map -->
         <div class="mb-4">
             <a href="{{ route('dashboard') }}"
-               class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+               class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[var(--sabira-primary-active)] transition">
                 ← Kembali
             </a>
         </div>
@@ -58,7 +58,7 @@
                 <input type="hidden" id="longitude_checkin" name="longitude">
                 <input type="hidden" id="device_hash" name="device_hash">
 
-                <button type="submit" id="checkin-button" disabled class="w-full py-3 bg-green-600 text-white rounded-md font-semibold opacity-50">
+                <button type="submit" id="checkin-button" disabled class="w-full py-3 bg-[var(--sabira-primary)] text-white rounded-md font-semibold opacity-50">
                     Loading device...
                 </button>
             </form>
@@ -94,8 +94,6 @@
                 localStorage.setItem('device_hash', deviceHash);
             }
             deviceInput.value = deviceHash;
-
-            console.log('Device Hash:', deviceHash);
 
             // Aktifkan tombol saat siap
             checkinButton.disabled = false;
@@ -141,5 +139,4 @@
         });
     </script>
 
-</x-user-layout>
-
+</x-app-shell>

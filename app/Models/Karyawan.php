@@ -26,8 +26,6 @@ class Karyawan extends Model
 
     public function divisi()
     {
-        return $this->belongsTo(\App\Models\Divisi::class);
+        return $this->belongsTo(Divisi::class);
     }
-
-
 }

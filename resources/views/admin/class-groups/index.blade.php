@@ -1,32 +1,27 @@
-<x-app-layout>
-    <h2 class="font-semibold text-xl text-[#292D22]">
+<x-app-shell>
+    <h2 class="font-semibold text-xl text-[var(--sabira-ink)]">
         {{ __('Manajemen Kelas') }}
     </h2>
-
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
             <div class="mb-4 flex flex-wrap gap-3">
                 <a href="{{ route('admin.class-groups.create') }}"
-                class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow">
+                class="inline-flex items-center gap-1 bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white font-medium px-4 py-2 rounded shadow">
                     <i class="bi bi-plus-circle-fill"></i> Tambah Kelas
                 </a>
                 <button
                     onclick="document.getElementById('formDuplikat').classList.toggle('hidden')"
-                    class="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded shadow"
+                    class="inline-flex items-center gap-1 bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white font-medium px-4 py-2 rounded shadow"
                 >
                     <i class="bi bi-files"></i> Duplikat Kelas
                 </button>
             </div>
-            <div id="formDuplikat" class="hidden bg-white p-4 rounded-xl shadow-md border border-[#D6D8D2] w-full mt-1 mb-2">
+            <div id="formDuplikat" class="hidden bg-white p-4 rounded-xl shadow-md border border-[var(--sabira-border)] w-full mt-1 mb-2">
                 <form method="POST" action="{{ route('admin.class-groups.duplicate') }}" class="flex flex-wrap items-end gap-4">
                     @csrf
                     <div>
-                        <label class="block text-sm font-medium text-[#44483B] mb-1">Tahun Ajaran Asal</label>
-                        <select name="source_year" class="rounded-lg border-[#BFC2B8] shadow-sm focus:ring-[#C6D2B2] focus:border-[#C6D2B2]">
+                        <label class="block text-sm font-medium text-[var(--sabira-body)] mb-1">Tahun Ajaran Asal</label>
+                        <select name="source_year" class="rounded-lg border-[var(--sabira-border)] shadow-sm focus:ring-[#C6D2B2] focus:border-[var(--sabira-border)]">
                             @foreach($academicYears as $year)
                                 <option value="{{ $year->id }}">{{ $year->name }}</option>
                             @endforeach
@@ -34,8 +29,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-[#44483B] mb-1">Tahun Ajaran Tujuan</label>
-                        <select name="target_year" class="rounded-lg border-[#BFC2B8] shadow-sm focus:ring-[#C6D2B2] focus:border-[#C6D2B2]">
+                        <label class="block text-sm font-medium text-[var(--sabira-body)] mb-1">Tahun Ajaran Tujuan</label>
+                        <select name="target_year" class="rounded-lg border-[var(--sabira-border)] shadow-sm focus:ring-[#C6D2B2] focus:border-[var(--sabira-border)]">
                             @foreach($academicYears as $year)
                                 <option value="{{ $year->id }}">{{ $year->name }}</option>
                             @endforeach
@@ -43,7 +38,7 @@
                     </div>
 
                     <div>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+                        <button type="submit" class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white px-4 py-2 rounded shadow">
                             Duplikat Sekarang
                         </button>
                     </div>
@@ -51,8 +46,8 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table id="kelasTable" class="w-full text-sm text-left text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table id="kelasTable" class="w-full text-sm text-left text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Nama Kelas</th>
                             <th class="px-4 py-3">Jenis Kelas</th>
@@ -64,7 +59,7 @@
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @if ($classGroups->count() > 0)
                             @foreach ($classGroups as $group)
-                                <tr class="hover:bg-[#BEC1B7] transition">
+                                <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                     <td class="px-4 py-3">{{ $group->nama_kelas }}</td>
                                     <td class="px-4 py-3">
                                         @if ($group->jenis_kelas == 'formal')
@@ -107,49 +102,4 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.querySelectorAll('.delete-form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-
-                    Swal.fire({
-                        title: 'Yakin ingin menghapus?',
-                        text: "Data yang dihapus tidak bisa dikembalikan!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
-
-            @if ($classGroups->count() > 0)
-                $('#kelasTable').DataTable({
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ entri",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                        paginate: {
-                            first: "Pertama",
-                            last: "Terakhir",
-                            next: "›",
-                            previous: "‹"
-                        },
-                        zeroRecords: "Tidak ditemukan data yang sesuai",
-                    },
-                    responsive: true,
-                    pageLength: 20,
-                    ordering: true,
-                    order: [[0, 'asc']],
-                });
-            @endif
-        </script>
-    @endpush
-</x-app-layout>
+</x-app-shell>

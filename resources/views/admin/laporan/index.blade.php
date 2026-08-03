@@ -1,14 +1,9 @@
-<x-app-layout>
+<x-app-shell>
     <div class="sm:px-6 lg:px-8">
         <x-page-title title="LAPORAN ABSENSI KARYAWAN" />
     </div>
-
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
             {{-- Filter --}}
             <form action="{{ route('laporan.karyawan') }}" method="GET" id="filterForm" class="mb-6 flex flex-wrap items-end gap-4">
                 {{-- Divisi --}}
@@ -49,7 +44,7 @@
                 {{-- Tombol --}}
                 <div class="flex gap-2 mt-1">
                     <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] flex items-center gap-2 shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
 
@@ -59,7 +54,7 @@
                         'start_date' => request('start_date'),
                         'end_date' => request('end_date'),
                     ]) }}"
-                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 shadow">
+                    class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                     </a>
                     <a href="{{ route('laporan.karyawan.export.pdf', [
@@ -68,7 +63,7 @@
                         'start_date' => request('start_date'),
                         'end_date' => request('end_date'),
                     ]) }}"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 shadow">
+                    class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
                     </a>
 
@@ -81,8 +76,8 @@
 
             {{-- Table --}}
             <div class="overflow-x-auto">
-                <table id="laporanTable" class="w-full text-sm text-left text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table id="laporanTable" class="w-full text-sm text-left text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Nama</th>
                             <th class="px-4 py-3">Email</th>
@@ -94,14 +89,14 @@
                     <tbody class="divide-y divide-[#D6D8D2]">
                         {{-- Karyawan --}}
                         @foreach($laporanKaryawan as $row)
-                            <tr class="hover:bg-[#BEC1B7] transition">
+                            <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                 <td class="px-4 py-3">{{ $row['user']->name }}</td>
                                 <td class="px-4 py-3">{{ $row['user']->email }}</td>
                                 <td class="px-4 py-3">{{ $row['user']->karyawan->divisi->nama ?? '-' }}</td>
                                 <td class="px-4 py-3 text-center">{{ $row['hadir'] }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <a href="{{ route('laporan.karyawan.detail', $row['user']->id) }}"
-                                        class="inline-flex items-center gap-1 px-3 py-1 bg-[#8E412E] text-white rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                                        class="inline-flex items-center gap-1 px-3 py-1 bg-[var(--sabira-primary)] text-white rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                                         <i class="bi bi-eye-fill"></i> Lihat absen
                                     </a>
                                 </td>
@@ -112,19 +107,19 @@
                         @foreach($laporanGuru as $jenis => $rows)
                             @if(count($rows) > 0)
                                 {{-- Baris kategori, ditandai pakai class dan data-ignore agar di-skip --}}
-                                <tr class="bg-[#D6D8D2] text-[#292D22] font-semibold" data-ignore="true">
+                                <tr class="bg-[var(--sabira-surface-strong)] text-[var(--sabira-ink)] font-semibold" data-ignore="true">
                                     <td colspan="5" class="px-4 py-2 uppercase">Guru {{ ucfirst($jenis) }}</td>
                                 </tr>
                             @endif
                             @foreach($rows as $row)
-                                <tr class="hover:bg-[#BEC1B7] transition">
+                                <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                     <td class="px-4 py-3">{{ $row['user']->name }}</td>
                                     <td class="px-4 py-3">{{ $row['user']->email }}</td>
                                     <td class="px-4 py-3">Guru {{ ucfirst($jenis) }}</td>
                                     <td class="px-4 py-3 text-center">{{ $row['hadir'] }}</td>
                                     <td class="px-4 py-3 text-center">
                                         <a href="{{ route('laporan.karyawan.detail', $row['user']->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 bg-[#8E412E] text-white rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                                            class="inline-flex items-center gap-1 px-3 py-1 bg-[var(--sabira-primary)] text-white rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                                             <i class="bi bi-eye-fill"></i> Lihat absen
                                         </a>
                                     </td>
@@ -150,29 +145,9 @@
                 document.getElementById('filterForm').submit();
             });
 
-            // Hapus baris kategori guru sebelum datatable inisialisasi
-            $('#laporanTable tbody tr[data-ignore="true"]').remove();
-
-            $('#laporanTable').DataTable({
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ entri",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                    paginate: {
-                        first: "Pertama",
-                        last: "Terakhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    zeroRecords: "Tidak ditemukan data yang sesuai",
-                },
-                responsive: true,
-                pageLength: 10,
-                ordering: true,
-                order: [[0, 'asc']]
-            });
+            document.querySelectorAll('#laporanTable tbody tr[data-ignore="true"]').forEach((row) => row.remove());
         });
     </script>
 @endpush
 
-</x-app-layout>
+</x-app-shell>

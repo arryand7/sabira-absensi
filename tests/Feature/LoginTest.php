@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
@@ -50,7 +50,7 @@ class LoginTest extends TestCase
             ->assertViewIs('karyawan.dashboard');
     }
 
-    public function test_guru_redirected_to_dashboard_karyawan()
+    public function test_guru_redirected_to_dashboard_guru()
     {
         $user = User::factory()->create([
             'email' => 'guru@example.com',
@@ -67,7 +67,7 @@ class LoginTest extends TestCase
 
         $this->followingRedirects()
             ->get('/redirect-after-login')
-            ->assertViewIs('karyawan.dashboard');
+            ->assertViewIs('guru.dashboard');
     }
 
     public function test_organisasi_redirected_to_asrama_index()

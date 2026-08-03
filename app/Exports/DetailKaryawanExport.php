@@ -5,17 +5,18 @@ namespace App\Exports;
 use App\Models\AbsensiKaryawan;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-// use Maatwebsite\Excel\Concerns\WithTitle;
 
+// use Maatwebsite\Excel\Concerns\WithTitle;
 
 class DetailKaryawanExport implements FromCollection, WithStyles
 {
     protected $userId;
+
     protected $bulan;
+
     protected $tahun;
 
     public function __construct($userId, $bulan, $tahun)
@@ -35,8 +36,8 @@ class DetailKaryawanExport implements FromCollection, WithStyles
         $data->push(['Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status']);
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
-            ->when($this->bulan, fn($q) => $q->whereMonth('waktu_absen', $this->bulan))
-            ->when($this->tahun, fn($q) => $q->whereYear('waktu_absen', $this->tahun))
+            ->when($this->bulan, fn ($q) => $q->whereMonth('waktu_absen', $this->bulan))
+            ->when($this->tahun, fn ($q) => $q->whereYear('waktu_absen', $this->tahun))
             ->orderBy('waktu_absen')
             ->get();
 
@@ -68,9 +69,10 @@ class DetailKaryawanExport implements FromCollection, WithStyles
         $data->push(['Total Hadir', (string) $totalHadir]);
         $data->push(['Total Terlambat', (string) $totalTelat]);
         $data->push(['Total Tidak Hadir', (string) $totalTidakHadir]);
-        
+
         return $data;
     }
+
     public function styles(Worksheet $sheet)
     {
         // Bold untuk judul
@@ -82,11 +84,9 @@ class DetailKaryawanExport implements FromCollection, WithStyles
         // Cari baris terakhir untuk bold bagian total
         $lastRow = $sheet->getHighestRow();
         $sheet->getStyle("A{$lastRow}:B{$lastRow}")->getFont()->setBold(true);
-        $sheet->getStyle("A" . ($lastRow - 1) . ":B" . ($lastRow - 1))->getFont()->setBold(true);
-        $sheet->getStyle("A" . ($lastRow - 2) . ":B" . ($lastRow - 2))->getFont()->setBold(true);
+        $sheet->getStyle('A'.($lastRow - 1).':B'.($lastRow - 1))->getFont()->setBold(true);
+        $sheet->getStyle('A'.($lastRow - 2).':B'.($lastRow - 2))->getFont()->setBold(true);
 
         return [];
     }
-
-
 }

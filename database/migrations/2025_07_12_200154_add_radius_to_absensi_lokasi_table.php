@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up()
     {
-        if (!Schema::hasColumn('absensi_lokasis', 'radius')) {
+        if (! Schema::hasColumn('absensi_lokasis', 'radius')) {
             Schema::table('absensi_lokasis', function (Blueprint $table) {
                 $table->decimal('radius', 8, 2)->default(0.2); // dalam kilometer
             });
@@ -26,5 +26,4 @@ return new class extends Migration
             });
         }
     }
-
 };

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\AbsensiKaryawan;
 use App\Models\AbsensiLokasi;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AbsensiCheckinTest extends TestCase
 {
@@ -73,7 +73,7 @@ class AbsensiCheckinTest extends TestCase
     }
 
     /** @test */
-    public function Checkin_gagal_karena_lokasi_terlalu_jauh()
+    public function checkin_gagal_karena_lokasi_terlalu_jauh()
     {
         Carbon::setTestNow(Carbon::createFromTime(7, 10));
 

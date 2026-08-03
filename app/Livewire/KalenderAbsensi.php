@@ -2,14 +2,15 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\Auth;
 use App\Models\AbsensiKaryawan;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class KalenderAbsensi extends Component
 {
     public $bulan;
+
     public $tahun;
 
     public function mount($bulan, $tahun)
@@ -32,7 +33,7 @@ class KalenderAbsensi extends Component
         $absens = AbsensiKaryawan::where('user_id', $user->id)
             ->whereBetween('waktu_absen', [$startOfMonth, $endOfMonth])
             ->get()
-            ->keyBy(fn($a) => Carbon::parse($a->waktu_absen)->toDateString());
+            ->keyBy(fn ($a) => Carbon::parse($a->waktu_absen)->toDateString());
 
         $absensiMap = [];
 

@@ -1,14 +1,9 @@
-<x-app-layout>
+<x-app-shell>
     <div class="sm:px-6 lg:px-8">
         <x-page-title title="PENGATURAN APLIKASI" />
     </div>
-
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
             <form action="{{ route('admin.settings.app.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @method('PUT')
@@ -44,7 +39,7 @@
                             @endphp
                             <img src="{{ $logoUrl }}" alt="Logo" class="h-14 w-14 rounded-full object-cover border border-gray-200">
                             <input type="file" name="app_logo" accept=".jpg,.jpeg,.png,.webp"
-                                   class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8E412E] file:text-white hover:file:bg-[#BA6F4D]">
+                                   class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--sabira-primary)] file:text-white hover:file:hover:bg-[var(--sabira-primary-active)]">
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Format PNG/JPG/WEBP, maksimal 2MB.</p>
                         @error('app_logo')
@@ -62,7 +57,7 @@
                             @endphp
                             <img src="{{ $faviconUrl }}" alt="Favicon" class="h-12 w-12 rounded-md object-cover border border-gray-200">
                             <input type="file" name="app_favicon" accept=".jpg,.jpeg,.png,.webp,.ico"
-                                   class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8E412E] file:text-white hover:file:bg-[#BA6F4D]">
+                                   class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--sabira-primary)] file:text-white hover:file:hover:bg-[var(--sabira-primary-active)]">
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Format ICO/PNG/JPG, maksimal 512KB.</p>
                         @error('app_favicon')
@@ -73,11 +68,11 @@
 
                 <div class="flex items-center gap-3">
                     <button type="submit"
-                            class="bg-[#8E412E] text-white px-5 py-2 rounded-md hover:bg-[#BA6F4D] shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-5 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow">
                         <i class="bi bi-save2-fill"></i> Simpan Pengaturan
                     </button>
                 </div>
             </form>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

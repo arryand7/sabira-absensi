@@ -2,25 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Student;
-use App\Models\Attendance;
-use App\Models\ClassGroup;
-use App\Models\Subject;
-use App\Models\AcademicYear;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LaporanKelasExport;
 use App\Exports\LaporanSiswaExport;
-
+use App\Exports\RekapMapelExport;
+use App\Models\AcademicYear;
+use App\Models\Attendance;
+use App\Models\ClassGroup;
+use App\Models\Student;
+use App\Models\Subject;
+use App\Services\StudentProgressReportService;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 
 class LaporanMuridController extends Controller
 {
-    public function dashboard()
-    {
-        return view('admin.laporan.murid.dashboard');
-    }
-
     public function index(Request $request)
     {
         $activeYear = AcademicYear::where('is_active', true)->first();
@@ -28,7 +24,7 @@ class LaporanMuridController extends Controller
 
         $academicYears = AcademicYear::orderByDesc('start_date')->get();
 
-        $kelasList = ClassGroup::when($selectedYear, fn($q) => $q->where('academic_year_id', $selectedYear))
+        $kelasList = ClassGroup::when($selectedYear, fn ($q) => $q->where('academic_year_id', $selectedYear))
             ->pluck('nama_kelas')
             ->sort()
             ->unique();
@@ -43,34 +39,63 @@ class LaporanMuridController extends Controller
                 $query->whereRaw('class_group_student.academic_year_id = ?', [$selectedYear]);
             }
         })
-        ->with(['classGroups' => function ($query) use ($selectedYear) {
-            if ($selectedYear) {
-                $query->whereRaw('class_group_student.academic_year_id = ?', [$selectedYear]);
-            }
-        }])
-        ->orderBy('nama_lengkap')
-        ->get()
-        ->map(function ($student) use ($selectedYear) {
-            $groups = $student->classGroups;
-            if ($selectedYear) {
-                $groups = $groups->filter(function ($group) use ($selectedYear) {
-                    return (int) $group->pivot->academic_year_id === (int) $selectedYear;
-                });
-            }
+            ->with(['classGroups' => function ($query) use ($selectedYear) {
+                if ($selectedYear) {
+                    $query->whereRaw('class_group_student.academic_year_id = ?', [$selectedYear]);
+                }
+            }])
+            ->orderBy('nama_lengkap')
+            ->paginate(20)
+            ->withQueryString()
+            ->through(function ($student) use ($selectedYear) {
+                $groups = $student->classGroups;
+                if ($selectedYear) {
+                    $groups = $groups->filter(function ($group) use ($selectedYear) {
+                        return (int) $group->pivot->academic_year_id === (int) $selectedYear;
+                    });
+                }
 
-            $kelasAktif = $groups->pluck('nama_kelas')->join(', ');
+                $kelasAktif = $groups->pluck('nama_kelas')->join(', ');
 
-            return (object)[
-                'id' => $student->id,
-                'nama_lengkap' => $student->nama_lengkap,
-                'nis' => $student->nis,
-                'kelas' => $kelasAktif,
-            ];
-        });
+                return (object) [
+                    'id' => $student->id,
+                    'nama_lengkap' => $student->nama_lengkap,
+                    'nis' => $student->nis,
+                    'kelas' => $kelasAktif,
+                ];
+            });
 
         return view('admin.laporan.murid.index', compact('students', 'kelasList', 'academicYears', 'activeYear', 'selectedYear'));
     }
 
+    public function show(Student $student, Request $request, StudentProgressReportService $service)
+    {
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        $selectedYear = (int) ($request->tahun_ajaran ?? $activeYear?->id);
+        $academicYears = AcademicYear::orderByDesc('start_date')->get();
+        $summary = $service->getStudentSummary($student->id, $selectedYear ?: null);
+
+        $memberships = $student->classGroups()
+            ->when($selectedYear, fn ($query) => $query->where('class_group_student.academic_year_id', $selectedYear))
+            ->with('educationProgram')
+            ->get();
+
+        $timeline = Attendance::with(['schedule.subject', 'schedule.classGroup', 'session'])
+            ->where('student_id', $student->id)
+            ->when($selectedYear, fn ($query) => $query->whereHas('schedule', fn ($schedule) => $schedule->where('academic_year_id', $selectedYear)))
+            ->orderByDesc('tanggal')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.laporan.murid.show', compact(
+            'student',
+            'summary',
+            'memberships',
+            'timeline',
+            'academicYears',
+            'selectedYear'
+        ));
+    }
 
     public function download(Student $student, Request $request)
     {
@@ -97,7 +122,7 @@ class LaporanMuridController extends Controller
         $tahunLabel = AcademicYear::find($tahunAjaranId)?->name ?? 'Semua Tahun';
         $rekap = $this->buildStudentRekap($student, $tahunAjaranId);
 
-        $filename = 'laporan_absensi_' . str()->slug($student->nama_lengkap) . '.xlsx';
+        $filename = 'laporan_absensi_'.str()->slug($student->nama_lengkap).'.xlsx';
 
         return Excel::download(
             new LaporanSiswaExport($rekap, $student->nama_lengkap, $student->nis, $tahunLabel),
@@ -107,7 +132,7 @@ class LaporanMuridController extends Controller
 
     public function exportKelasPdf(Request $request)
     {
-        if (!$request->kelas) {
+        if (! $request->kelas) {
             return redirect()->back()->with('error', 'Pilih kelas terlebih dahulu.');
         }
 
@@ -116,7 +141,7 @@ class LaporanMuridController extends Controller
 
         [$classGroup, $rows, $totalPertemuan] = $this->buildClassRekap($request->kelas, $tahunAjaranId);
 
-        if (!$classGroup) {
+        if (! $classGroup) {
             return redirect()->back()->with('error', 'Kelas tidak ditemukan untuk tahun ajaran tersebut.');
         }
 
@@ -136,7 +161,7 @@ class LaporanMuridController extends Controller
 
     public function exportKelasExcel(Request $request)
     {
-        if (!$request->kelas) {
+        if (! $request->kelas) {
             return redirect()->back()->with('error', 'Pilih kelas terlebih dahulu.');
         }
 
@@ -145,11 +170,11 @@ class LaporanMuridController extends Controller
 
         [$classGroup, $rows, $totalPertemuan] = $this->buildClassRekap($request->kelas, $tahunAjaranId);
 
-        if (!$classGroup) {
+        if (! $classGroup) {
             return redirect()->back()->with('error', 'Kelas tidak ditemukan untuk tahun ajaran tersebut.');
         }
 
-        $filename = 'laporan_absensi_kelas_' . str()->slug($classGroup->nama_kelas) . '.xlsx';
+        $filename = 'laporan_absensi_kelas_'.str()->slug($classGroup->nama_kelas).'.xlsx';
 
         return Excel::download(
             new LaporanKelasExport($rows, $classGroup->nama_kelas, $tahunLabel, $totalPertemuan),
@@ -168,21 +193,19 @@ class LaporanMuridController extends Controller
 
         if ($request->filled(['jenis', 'kelas', 'mapel', 'tahun_ajaran'])) {
             $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
-                ->whereHas('schedule.subject', fn($q) =>
-                    $q->where('jenis_mapel', $request->jenis)
+                ->whereHas('schedule.subject', fn ($q) => $q->where('jenis_mapel', $request->jenis)
                     ->where('nama_mapel', $request->mapel)
                 )
-                ->whereHas('schedule.classGroup', fn($q) =>
-                    $q->where('nama_kelas', $request->kelas)
+                ->whereHas('schedule.classGroup', fn ($q) => $q->where('nama_kelas', $request->kelas)
                     ->where('jenis_kelas', $request->jenis)
                 )
-                ->whereHas('schedule.academicYear', fn($q) =>
-                    $q->where('id', $selectedTahun)
+                ->whereHas('schedule.academicYear', fn ($q) => $q->where('id', $selectedTahun)
                 )
                 ->get();
 
             $rekapMapel = $absensi->groupBy('student_id')->map(function ($item) {
                 $first = $item->first();
+
                 return [
                     'nama' => $first->student->nama_lengkap ?? '-',
                     'nis' => $first->student->nis ?? '-',
@@ -220,34 +243,32 @@ class LaporanMuridController extends Controller
         ));
     }
 
-
     public function downloadMapel(Request $request)
     {
         $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
-            ->whereHas('schedule.subject', fn($q) =>
-                $q->where('jenis_mapel', $request->jenis)
+            ->whereHas('schedule.subject', fn ($q) => $q->where('jenis_mapel', $request->jenis)
                 ->where('nama_mapel', $request->mapel)
             )
-            ->whereHas('schedule.classGroup', fn($q) =>
-                $q->where('nama_kelas', $request->kelas)
+            ->whereHas('schedule.classGroup', fn ($q) => $q->where('nama_kelas', $request->kelas)
                 ->where('jenis_kelas', $request->jenis)
             )
-            ->whereHas('schedule.academicYear', fn($q) =>
-                $q->where('id', $request->tahun_ajaran)
+            ->whereHas('schedule.academicYear', fn ($q) => $q->where('id', $request->tahun_ajaran)
             )
             ->get();
 
         $totalPertemuan = $absensi
             ->unique(function ($item) {
                 if ($item->schedule_session_id) {
-                    return 's-' . $item->schedule_session_id;
+                    return 's-'.$item->schedule_session_id;
                 }
-                return 'p-' . $item->schedule_id . '-' . $item->pertemuan;
+
+                return 'p-'.$item->schedule_id.'-'.$item->pertemuan;
             })
             ->count();
 
         $rekapMapel = $absensi->groupBy('student_id')->map(function ($items) {
             $first = $items->first();
+
             return [
                 'nama' => $first->student->nama_lengkap ?? '-',
                 'nis' => $first->student->nis ?? '-',
@@ -266,13 +287,13 @@ class LaporanMuridController extends Controller
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled' => true,
         ])
-        ->loadView('admin.laporan.murid.pdf-mapel', [
-            'rekapMapel' => $rekapMapel,
-            'kelas' => $kelasLabel,
-            'mapel' => $request->mapel,
-            'tahun' => $tahun,
-            'totalPertemuan' => $totalPertemuan,
-        ]);
+            ->loadView('admin.laporan.murid.pdf-mapel', [
+                'rekapMapel' => $rekapMapel,
+                'kelas' => $kelasLabel,
+                'mapel' => $request->mapel,
+                'tahun' => $tahun,
+                'totalPertemuan' => $totalPertemuan,
+            ]);
 
         return $pdf->stream("laporan_mapel_{$request->kelas}_{$request->mapel}.pdf");
     }
@@ -280,30 +301,29 @@ class LaporanMuridController extends Controller
     public function exportExcel(Request $request)
     {
         $absensi = Attendance::with(['student', 'schedule.subject', 'schedule.classGroup'])
-            ->whereHas('schedule.subject', fn($q) =>
-                $q->where('jenis_mapel', $request->jenis)
-                    ->where('nama_mapel', $request->mapel)
+            ->whereHas('schedule.subject', fn ($q) => $q->where('jenis_mapel', $request->jenis)
+                ->where('nama_mapel', $request->mapel)
             )
-            ->whereHas('schedule.classGroup', fn($q) =>
-                $q->where('nama_kelas', $request->kelas)
-                    ->where('jenis_kelas', $request->jenis)
+            ->whereHas('schedule.classGroup', fn ($q) => $q->where('nama_kelas', $request->kelas)
+                ->where('jenis_kelas', $request->jenis)
             )
-            ->whereHas('schedule.academicYear', fn($q) =>
-                $q->where('id', $request->tahun_ajaran)
+            ->whereHas('schedule.academicYear', fn ($q) => $q->where('id', $request->tahun_ajaran)
             )
             ->get();
 
         $totalPertemuan = $absensi
             ->unique(function ($item) {
                 if ($item->schedule_session_id) {
-                    return 's-' . $item->schedule_session_id;
+                    return 's-'.$item->schedule_session_id;
                 }
-                return 'p-' . $item->schedule_id . '-' . $item->pertemuan;
+
+                return 'p-'.$item->schedule_id.'-'.$item->pertemuan;
             })
             ->count();
 
         $rekapMapel = $absensi->groupBy('student_id')->map(function ($items) {
             $first = $items->first();
+
             return [
                 'nama' => $first->student->nama_lengkap ?? '-',
                 'nis' => $first->student->nis ?? '-',
@@ -318,8 +338,8 @@ class LaporanMuridController extends Controller
         $mapel = $request->mapel ?? 'Semua';
         $tahun = AcademicYear::find($request->tahun_ajaran)?->name ?? 'Tanpa Tahun';
 
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RekapMapelExport($rekapMapel, $kelas, $mapel, $tahun, $totalPertemuan),
+        return Excel::download(
+            new RekapMapelExport($rekapMapel, $kelas, $mapel, $tahun, $totalPertemuan),
             'rekap-absensi.xlsx'
         );
     }
@@ -334,13 +354,13 @@ class LaporanMuridController extends Controller
                 });
             })
             ->get()
-            ->filter(fn($absen) => $absen->schedule && $absen->schedule->subject)
-            ->groupBy(fn($absen) => $absen->schedule->subject->jenis_mapel);
+            ->filter(fn ($absen) => $absen->schedule && $absen->schedule->subject)
+            ->groupBy(fn ($absen) => $absen->schedule->subject->jenis_mapel);
 
         $rekap = [];
 
         foreach ($grouped as $jenis => $absensiPerJenis) {
-            foreach ($absensiPerJenis->groupBy(fn($a) => $a->schedule->subject->nama_mapel) as $mapel => $absensi) {
+            foreach ($absensiPerJenis->groupBy(fn ($a) => $a->schedule->subject->nama_mapel) as $mapel => $absensi) {
                 $rekap[$jenis][$mapel] = [
                     'H' => $absensi->where('status', 'hadir')->count(),
                     'I' => $absensi->where('status', 'izin')->count(),
@@ -356,10 +376,10 @@ class LaporanMuridController extends Controller
     private function buildClassRekap(string $kelas, ?int $tahunAjaranId): array
     {
         $classGroup = ClassGroup::where('nama_kelas', $kelas)
-            ->when($tahunAjaranId, fn($q) => $q->where('academic_year_id', $tahunAjaranId))
+            ->when($tahunAjaranId, fn ($q) => $q->where('academic_year_id', $tahunAjaranId))
             ->first();
 
-        if (!$classGroup) {
+        if (! $classGroup) {
             return [null, [], 0];
         }
 
@@ -375,9 +395,10 @@ class LaporanMuridController extends Controller
         $totalPertemuan = $absensi
             ->unique(function ($item) {
                 if ($item->schedule_session_id) {
-                    return 's-' . $item->schedule_session_id;
+                    return 's-'.$item->schedule_session_id;
                 }
-                return 'p-' . $item->schedule_id . '-' . $item->pertemuan;
+
+                return 'p-'.$item->schedule_id.'-'.$item->pertemuan;
             })
             ->count();
 
@@ -394,6 +415,7 @@ class LaporanMuridController extends Controller
 
         $rows = $students->map(function ($student) use ($attendanceByStudent) {
             $items = $attendanceByStudent->get($student->id, collect());
+
             return [
                 'nama' => $student->nama_lengkap,
                 'nis' => $student->nis,
@@ -406,5 +428,4 @@ class LaporanMuridController extends Controller
 
         return [$classGroup, $rows, $totalPertemuan];
     }
-
 }

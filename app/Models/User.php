@@ -19,6 +19,14 @@ class User extends Authenticatable
         'status',
         'sso_sub',
         'sso_synced_at',
+        'gate_user_uuid',
+        'username',
+        'type',
+        'application_role',
+        'auth_source',
+        'gate_photo_checksum',
+        'suspended_at',
+        'suspension_reason',
     ];
 
     protected $hidden = [
@@ -33,7 +41,12 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['super_admin', 'admin'], true);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
     }
 
     public function isGuru()
@@ -53,7 +66,7 @@ class User extends Authenticatable
 
     public function absensis()
     {
-        return $this->hasMany(\App\Models\AbsensiKaryawan::class, 'user_id');
+        return $this->hasMany(AbsensiKaryawan::class, 'user_id');
     }
 
     public function guru()
@@ -65,7 +78,4 @@ class User extends Authenticatable
     {
         return $this->status === 'aktif';
     }
-
-
-
 }

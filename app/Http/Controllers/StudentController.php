@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Student;
-use App\Models\ClassGroup;
+use App\Imports\StudentsImport;
 use App\Models\AcademicYear;
+use App\Models\ClassGroup;
+use App\Models\Student;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
-use App\Imports\StudentsImport;
 
 class StudentController extends Controller
 {
@@ -52,7 +52,7 @@ class StudentController extends Controller
         $muadalahClasses = ClassGroup::where('jenis_kelas', 'muadalah')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
-        
+
         $tambahanClasses = ClassGroup::where('jenis_kelas', 'tambahan')
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
@@ -79,16 +79,15 @@ class StudentController extends Controller
         return view('admin.students.create', compact('academicClasses', 'muadalahClasses', 'tambahanClasses'));
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
-            'nama_lengkap'    => 'required',
-            'nis'             => 'required|unique:students,nis',
-            'jenis_kelamin'   => 'required|in:L,P',
-            'kelas_formal'  => 'nullable|exists:class_groups,id',
-            'kelas_muadalah'  => 'nullable|exists:class_groups,id',
-            'kelas_tambahan'  => 'nullable|exists:class_groups,id',
+            'nama_lengkap' => 'required',
+            'nis' => 'required|unique:students,nis',
+            'jenis_kelamin' => 'required|in:L,P',
+            'kelas_formal' => 'nullable|exists:class_groups,id',
+            'kelas_muadalah' => 'nullable|exists:class_groups,id',
+            'kelas_tambahan' => 'nullable|exists:class_groups,id',
         ]);
 
         $student = Student::create($request->only(['nama_lengkap', 'nis', 'jenis_kelamin']));
@@ -140,20 +139,19 @@ class StudentController extends Controller
         $kelasTambahanId = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id;
 
         return view('admin.students.edit', compact(
-            'student', 'academicClasses', 'muadalahClasses', 'tambahanClasses','kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
+            'student', 'academicClasses', 'muadalahClasses', 'tambahanClasses', 'kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
         ));
     }
-
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_lengkap'    => 'required',
-            'nis'             => 'required|unique:students,nis,' . $id,
-            'jenis_kelamin'   => 'required|in:L,P',
-            'kelas_formal'  => 'nullable|exists:class_groups,id',
-            'kelas_muadalah'  => 'nullable|exists:class_groups,id',
-            'kelas_tambahan'  => 'nullable|exists:class_groups,id',
+            'nama_lengkap' => 'required',
+            'nis' => 'required|unique:students,nis,'.$id,
+            'jenis_kelamin' => 'required|in:L,P',
+            'kelas_formal' => 'nullable|exists:class_groups,id',
+            'kelas_muadalah' => 'nullable|exists:class_groups,id',
+            'kelas_tambahan' => 'nullable|exists:class_groups,id',
         ]);
 
         $student = Student::findOrFail($id);
@@ -197,17 +195,19 @@ class StudentController extends Controller
 
         try {
             Excel::import(new StudentsImport, $request->file('file'));
+
             return back()->with('success', 'Data murid berhasil diimpor!');
         } catch (ValidationException $e) {
             $failures = $e->failures();
 
             $messages = collect($failures)->map(function ($failure) {
-                return "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                return "Baris {$failure->row()}: ".implode(', ', $failure->errors());
             });
 
             return back()->withErrors($messages)->withInput();
         } catch (\Throwable $e) {
-            Log::error('Excel import error: ' . $e->getMessage());
+            Log::error('Excel import error: '.$e->getMessage());
+
             return back()->withErrors(['file' => 'Terjadi kesalahan saat mengimpor file. Pastikan format file sesuai.'])->withInput();
         }
     }
@@ -215,12 +215,12 @@ class StudentController extends Controller
     public function bulkDelete(Request $request)
     {
         \Log::info('Bulk delete request:', [
-            'data' => $request->all()
+            'data' => $request->all(),
         ]);
 
         $ids = json_decode($request->student_ids_json, true);
 
-        if (!is_array($ids) || empty($ids)) {
+        if (! is_array($ids) || empty($ids)) {
             return redirect()->back()->withErrors(['Tidak ada murid yang dipilih untuk dihapus.']);
         }
 
@@ -228,6 +228,4 @@ class StudentController extends Controller
 
         return redirect()->route('admin.students.index')->with('success', 'Murid yang dipilih berhasil dihapus.');
     }
-
-
 }

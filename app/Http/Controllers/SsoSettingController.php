@@ -28,7 +28,7 @@ class SsoSettingController extends Controller
         ]);
 
         /** @var AppSetting $setting */
-        $setting = AppSetting::query()->first() ?? new AppSetting();
+        $setting = AppSetting::query()->first() ?? new AppSetting;
 
         $baseUrl = trim((string) ($validated['sso_base_url'] ?? ''));
         $setting->sso_base_url = $baseUrl !== '' ? rtrim($baseUrl, '/') : null;
@@ -42,7 +42,7 @@ class SsoSettingController extends Controller
         $scopes = trim((string) ($validated['sso_scopes'] ?? ''));
         $setting->sso_scopes = $scopes !== '' ? $scopes : null;
 
-        if (!empty($validated['sso_client_secret'])) {
+        if (! empty($validated['sso_client_secret'])) {
             $setting->sso_client_secret = trim((string) $validated['sso_client_secret']);
         }
 

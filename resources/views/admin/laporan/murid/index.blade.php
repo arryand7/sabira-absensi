@@ -1,10 +1,6 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+<x-app-shell>
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
             {{-- Filter --}}
             <form method="GET" id="filterForm" class="mb-6 flex flex-wrap items-end gap-4">
                 <div>
@@ -31,17 +27,17 @@
 
                 <div class="flex gap-2 mt-1 flex-wrap">
                     <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] flex items-center gap-2 shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
 
                     @if(request('kelas'))
                         <a href="{{ route('laporan.murid.kelas.export.pdf', request()->only('kelas', 'tahun_ajaran')) }}"
-                           class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 shadow">
+                           class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                             <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Kelas
                         </a>
                         <a href="{{ route('laporan.murid.kelas.export.excel', request()->only('kelas', 'tahun_ajaran')) }}"
-                           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 shadow">
+                           class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                             <i class="bi bi-file-earmark-excel-fill"></i> Download Excel Kelas
                         </a>
                     @endif
@@ -55,8 +51,8 @@
 
             {{-- Table --}}
             <div class="overflow-x-auto">
-                <table id="laporanTable" class="w-full text-sm text-left text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table id="laporanTable" class="w-full text-sm text-left text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Nama</th>
                             <th class="px-4 py-3">NIS</th>
@@ -67,18 +63,22 @@
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @if ($students->count() > 0)
                             @foreach($students as $student)
-                                <tr class="hover:bg-[#BEC1B7] transition">
+                                <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                     <td class="px-4 py-3">{{ $student->nama_lengkap }}</td>
                                     <td class="px-4 py-3">{{ $student->nis }}</td>
                                     <td class="px-4 py-3">{{ $student->kelas }}</td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
+                                            <a href="{{ route('laporan.murid.show', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
+                                               class="inline-flex items-center gap-1 px-3 py-1 bg-[var(--sabira-primary)] text-white rounded-md text-xs hover:bg-[var(--sabira-primary)] shadow">
+                                                <i class="bi bi-eye-fill"></i> Detail
+                                            </a>
                                             <a href="{{ route('laporan.murid.download', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
-                                               class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-md text-xs hover:bg-green-700 shadow">
+                                               class="inline-flex items-center gap-1 px-3 py-1 bg-[var(--sabira-primary)] text-white rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                                                 <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                                             </a>
                                             <a href="{{ route('laporan.murid.download.excel', ['student' => $student->id, 'tahun_ajaran' => request('tahun_ajaran')]) }}"
-                                               class="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700 shadow">
+                                               class="inline-flex items-center gap-1 px-3 py-1 bg-[var(--sabira-primary)] text-white rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                                                 <i class="bi bi-file-earmark-excel-fill"></i> Excel
                                             </a>
                                         </div>
@@ -95,41 +95,16 @@
                     </tbody>
                 </table>
             </div>
+            <div class="mt-4">{{ $students->links() }}</div>
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            $(document).ready(function () {
-                $('#kelas').on('change', function () {
-                    $('#filterForm').submit();
-                });
-
-                $('#tahun_ajaran').on('change', function () {
-                    $('#filterForm').submit();
-                });
-                
-                @if ($students->count() > 0)
-                    $('#laporanTable').DataTable({
-                        responsive: true,
-                        language: {
-                            search: "Cari:",
-                            lengthMenu: "Tampilkan _MENU_ entri",
-                            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                            paginate: {
-                                first: "Pertama",
-                                last: "Terakhir",
-                                next: "›",
-                                previous: "‹"
-                            },
-                            zeroRecords: "Tidak ditemukan data yang sesuai",
-                        },
-                        pageLength: 10,
-                        ordering: true,
-                        order: [[0, 'asc']],
-                    });
-                @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('filterForm');
+            ['kelas', 'tahun_ajaran'].forEach((id) => {
+                document.getElementById(id)?.addEventListener('change', () => form?.requestSubmit());
             });
-        </script>
-    @endpush
-</x-app-layout>
+        });
+    </script>
+</x-app-shell>

@@ -28,7 +28,7 @@ class AppSettingController extends Controller
         ]);
 
         /** @var AppSetting $setting */
-        $setting = AppSetting::query()->first() ?? new AppSetting();
+        $setting = AppSetting::query()->first() ?? new AppSetting;
 
         $setting->app_name = trim($validated['app_name']);
         $setting->app_description = isset($validated['app_description'])

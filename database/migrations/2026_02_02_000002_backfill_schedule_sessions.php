@@ -19,7 +19,7 @@ return new class extends Migration
         foreach ($groups as $group) {
             $schedule = DB::table('schedules')->where('id', $group->schedule_id)->first();
 
-            if (!$schedule) {
+            if (! $schedule) {
                 continue;
             }
 
@@ -32,7 +32,7 @@ return new class extends Migration
                 $sessionId = $existing->id;
             } else {
                 $meetingNo = $group->pertemuan;
-                if (!is_null($meetingNo)) {
+                if (! is_null($meetingNo)) {
                     $duplicateMeeting = DB::table('schedule_sessions')
                         ->where('class_group_id', $schedule->class_group_id)
                         ->where('subject_id', $schedule->subject_id)
@@ -97,7 +97,7 @@ return new class extends Migration
                 }
 
                 $rowToUpdate = $rows->firstWhere('schedule_session_id', null);
-                if (!$rowToUpdate) {
+                if (! $rowToUpdate) {
                     continue;
                 }
 

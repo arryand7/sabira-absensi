@@ -1,17 +1,13 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
+<x-app-shell>
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
 
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
-
-            <h2 class="text-xl font-semibold text-[#292D22] mb-4">Daftar Divisi</h2>
+            <h2 class="text-xl font-semibold text-[var(--sabira-ink)] mb-4">Daftar Divisi</h2>
 
             {{-- Tombol Tambah --}}
             <div class="mb-4">
                 <a href="{{ route('divisis.create') }}"
-                   class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 shadow">
+                   class="inline-flex items-center gap-2 bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow">
                     <i class="bi bi-plus-circle-fill"></i> Tambah Divisi
                 </a>
             </div>
@@ -25,8 +21,8 @@
 
             {{-- Tabel --}}
             <div class="overflow-x-auto">
-                <table class="w-full table-auto text-left text-sm text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table class="w-full table-auto text-left text-sm text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">No</th>
                             <th class="px-4 py-3">Nama</th>
@@ -35,7 +31,7 @@
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @forelse($divisis as $divisi)
-                            <tr class="hover:bg-[#BEC1B7] transition">
+                            <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                 <td class="px-4 py-2">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2">{{ $divisi->nama }}</td>
                                 <td class="px-4 py-2 space-x-2">
@@ -64,4 +60,4 @@
         </div>
     </div>
 
-</x-app-layout>
+</x-app-shell>

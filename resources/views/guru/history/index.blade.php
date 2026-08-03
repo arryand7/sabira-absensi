@@ -1,4 +1,4 @@
-<x-user-layout>
+<x-app-shell>
     
     <div class="px-2 py-2">
         <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
@@ -8,21 +8,21 @@
 
     <div class="p-4 max-w-6xl mx-auto">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-[#292D22]">
+            <h2 class="text-xl font-bold text-[var(--sabira-ink)]">
                 Riwayat Absensi Murid
             </h2>
 
             <a href="{{ route('dashboard') }}"
-            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[#7A3827] transition">
+            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-[var(--sabira-primary-active)] transition">
                 ← Kembali
             </a>
         </div>
 
-        <div class="bg-[#5C644C] p-4 rounded-xl shadow mb-6">
+        <div class="bg-[var(--sabira-primary)] p-4 rounded-xl shadow mb-6">
             <form method="GET" class="grid gap-4 sm:grid-cols-3">
                 <div>
                     <label class="block text-sm font-medium text-[#F7F7F6]">Kelas</label>
-                    <select name="kelas" class="mt-1 w-full border border-[#D6D8D2] rounded p-2 bg-white text-[#1C1E17]">
+                    <select name="kelas" class="mt-1 w-full border border-[var(--sabira-border)] rounded p-2 bg-white text-[var(--sabira-ink)]">
                         <option value="">Semua</option>
                         @foreach ($kelasList as $kelas)
                             <option value="{{ $kelas }}" {{ request('kelas') == $kelas ? 'selected' : '' }}>{{ $kelas }}</option>
@@ -32,7 +32,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-[#F7F7F6]">Mata Pelajaran</label>
-                    <select name="mapel" class="mt-1 w-full border border-[#D6D8D2] rounded p-2 bg-white text-[#1C1E17]">
+                    <select name="mapel" class="mt-1 w-full border border-[var(--sabira-border)] rounded p-2 bg-white text-[var(--sabira-ink)]">
                         <option value="">Semua</option>
                         @foreach ($mapelList as $mapel)
                             <option value="{{ $mapel }}" {{ request('mapel') == $mapel ? 'selected' : '' }}>{{ $mapel }}</option>
@@ -41,16 +41,16 @@
                 </div>
 
                 <div class="flex items-end">
-                    <button type="submit" class="bg-[#292D22] hover:bg-[#292D22] text-white px-4 py-2 rounded w-full sm:w-auto">
+                    <button type="submit" class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary)] text-white px-4 py-2 rounded w-full sm:w-auto">
                         Filter
                     </button>
                 </div>
             </form>
         </div>
 
-        <div class="overflow-x-auto bg-[#F7F7F6] rounded-xl shadow">
+        <div class="overflow-x-auto bg-[var(--sabira-surface-soft)] rounded-xl shadow">
             <table class="min-w-full text-sm">
-                <thead class="bg-[#5C644C] text-[#F7F7F6]">
+                <thead class="bg-[var(--sabira-primary)] text-[#F7F7F6]">
                     <tr>
                         <th class="px-4 py-3 text-left">Mapel</th>
                         <th class="px-4 py-3 text-left">Kelas</th>
@@ -60,12 +60,12 @@
                         <th class="px-4 py-3 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="bg-[#EFF0ED] text-[#1C1E17] divide-y divide-[#D6D8D2]">
+                <tbody class="bg-[var(--sabira-surface-soft)] text-[var(--sabira-ink)] divide-y divide-[#D6D8D2]">
                     @forelse ($sessions as $session)
                         @php
                             $materi = $session->attendances->first()?->materi;
                         @endphp
-                        <tr class="hover:bg-[#D6D8D2] transition">
+                        <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                             <td class="px-4 py-2">{{ $session->schedule->subject->nama_mapel }}</td>
                             <td class="px-4 py-2">{{ $session->schedule->classGroup->nama_kelas }}</td>
                             <td class="px-4 py-2">{{ $session->meeting_no ?? '-' }}</td>
@@ -73,26 +73,30 @@
                             <td class="px-4 py-2">{{ $materi ?? '-' }}</td>
                             <td class="px-4 py-2 text-center space-x-2">
                                 @if ($session->meeting_no)
-                                    <a href="{{ route('guru.history.detail', [$session->schedule_id, $session->meeting_no]) }}"
-                                       class="text-[#5C644C] hover:text-[#373C2E]" title="Lihat Absensi">
+                                    <a href="{{ route('guru.history.detail', $session) }}"
+                                       class="text-[var(--sabira-muted)] hover:text-[var(--sabira-body)]" title="Lihat Absensi">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('guru.history.edit', [$session->schedule_id, $session->meeting_no]) }}"
-                                       class="text-[#8D9382] hover:text-[#5C644C]" title="Edit Absensi">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                    @php($latestCorrection = $session->corrections->first())
+                                    @if($latestCorrection)
+                                        <span class="ml-2 text-xs {{ $latestCorrection->status === 'pending' ? 'text-amber-700' : ($latestCorrection->status === 'approved' ? 'text-green-700' : 'text-red-700') }}">
+                                            Koreksi {{ $latestCorrection->status }}
+                                        </span>
+                                    @endif
                                 @else
-                                    <span class="text-[#8D9382] text-xs">Tidak tersedia</span>
+                                    <span class="text-[var(--sabira-muted)] text-xs">Tidak tersedia</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-4 text-center text-[#8D9382]">Belum ada riwayat mengajar.</td>
+                            <td colspan="6" class="px-4 py-4 text-center text-[var(--sabira-muted)]">Belum ada riwayat mengajar.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        <div class="mt-4">{{ $sessions->links() }}</div>
     </div>
-</x-user-layout>
+</x-app-shell>

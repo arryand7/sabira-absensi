@@ -1,4 +1,6 @@
-<x-guest-layout>
+<x-app-shell guest header-title="Reset Password" header-subtitle="SABIRA ABSENSI">
+    <section class="sabira-card w-full">
+        <h1 class="mb-6 text-2xl font-semibold text-[var(--sabira-ink)]">Buat password baru</h1>
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 
@@ -36,4 +38,5 @@
             </x-primary-button>
         </div>
     </form>
-</x-guest-layout>
+    </section>
+</x-app-shell>

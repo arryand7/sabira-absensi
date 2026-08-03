@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\AbsensiKaryawan;
+use App\Models\AbsensiLokasi;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AbsensiCheckoutTest extends TestCase
@@ -20,6 +20,12 @@ class AbsensiCheckoutTest extends TestCase
 
         $this->user = User::factory()->create([
             'role' => 'karyawan',
+        ]);
+
+        AbsensiLokasi::create([
+            'latitude' => -7.31,
+            'longitude' => 112.72,
+            'radius' => 0.2,
         ]);
     }
 

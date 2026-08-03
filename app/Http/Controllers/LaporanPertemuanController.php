@@ -8,6 +8,7 @@ use App\Models\ClassGroup;
 use App\Models\ScheduleSession;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\TeacherTeachingReportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -71,6 +72,23 @@ class LaporanPertemuanController extends Controller
         );
     }
 
+    public function teacherDetail(User $teacher, Request $request, TeacherTeachingReportService $service)
+    {
+        abort_unless($teacher->role === 'guru', 404);
+
+        $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->end_date ?? Carbon::now()->endOfMonth()->format('Y-m-d');
+        $summary = $service->getTeacherSummary($teacher->id, $startDate, $endDate);
+        $sessions = ScheduleSession::with(['schedule.subject', 'schedule.classGroup', 'teachingAttendance'])
+            ->where(fn ($query) => $query->where('scheduled_teacher_id', $teacher->id)->orWhere('actual_teacher_id', $teacher->id))
+            ->whereBetween('date', [$startDate, $endDate])
+            ->latest('date')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.laporan.pertemuan.teacher', compact('teacher', 'summary', 'sessions', 'startDate', 'endDate'));
+    }
+
     private function buildReportData(Request $request): array
     {
         $activeYear = AcademicYear::where('is_active', true)->first();
@@ -80,21 +98,26 @@ class LaporanPertemuanController extends Controller
         $endDate = $request->end_date ?? Carbon::now()->endOfMonth()->format('Y-m-d');
 
         $query = ScheduleSession::with([
-                'schedule.user',
-                'schedule.subject',
-                'schedule.classGroup',
-            ])
-            ->when($selectedYear, fn($q) => $q->where('academic_year_id', $selectedYear))
-            ->when($request->guru_id, fn($q) => $q->whereHas('schedule', fn($q2) => $q2->where('user_id', $request->guru_id)))
-            ->when($request->kelas_id, fn($q) => $q->where('class_group_id', $request->kelas_id))
-            ->when($request->mapel_id, fn($q) => $q->where('subject_id', $request->mapel_id))
-            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
+            'schedule.user',
+            'schedule.subject',
+            'schedule.classGroup',
+            'scheduledTeacher',
+            'actualTeacher',
+        ])
+            ->when($selectedYear, fn ($q) => $q->where('academic_year_id', $selectedYear))
+            ->when($request->guru_id, fn ($q) => $q->where(function ($teacherQuery) use ($request) {
+                $teacherQuery->where('scheduled_teacher_id', $request->guru_id)
+                    ->orWhere('actual_teacher_id', $request->guru_id);
+            }))
+            ->when($request->kelas_id, fn ($q) => $q->where('class_group_id', $request->kelas_id))
+            ->when($request->mapel_id, fn ($q) => $q->where('subject_id', $request->mapel_id))
+            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn ($q) => $q->whereDate('date', '<=', $endDate))
             ->withCount([
-                'attendances as hadir_count' => fn($q) => $q->where('status', 'hadir'),
-                'attendances as izin_count' => fn($q) => $q->where('status', 'izin'),
-                'attendances as sakit_count' => fn($q) => $q->where('status', 'sakit'),
-                'attendances as alpa_count' => fn($q) => $q->where('status', 'alpa'),
+                'attendances as hadir_count' => fn ($q) => $q->where('status', 'hadir'),
+                'attendances as izin_count' => fn ($q) => $q->where('status', 'izin'),
+                'attendances as sakit_count' => fn ($q) => $q->where('status', 'sakit'),
+                'attendances as alpa_count' => fn ($q) => $q->where('status', 'alpa'),
                 'attendances as total_count',
             ])
             ->orderBy('date', 'desc')

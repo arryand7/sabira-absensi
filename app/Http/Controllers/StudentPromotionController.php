@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AcademicYear;
 use App\Models\ClassGroup;
 use App\Models\ClassGroupStudent;
 use App\Models\Student;
@@ -14,7 +13,7 @@ class StudentPromotionController extends Controller
     {
         $students = Student::orderBy('nama_lengkap')->get();
 
-        $toClasses = ClassGroup::whereHas('academicYear', fn($q) => $q->where('is_active', true))->get();
+        $toClasses = ClassGroup::whereHas('academicYear', fn ($q) => $q->where('is_active', true))->get();
 
         return view('admin.promotion.index', [
             'students' => $students,
@@ -41,20 +40,22 @@ class StudentPromotionController extends Controller
             if ($alreadyInSameClass) {
                 $student = Student::find($studentId);
                 $errors[] = "{$student->nama_lengkap} sudah ada di kelas {$class->nama_kelas}.";
+
                 continue;
             }
 
             $alreadyInSameJenis = ClassGroupStudent::where('student_id', $studentId)
                 ->whereHas('classGroup', function ($q) use ($class) {
                     $q->where('academic_year_id', $class->academic_year_id)
-                    ->where('jenis_kelas', $class->jenis_kelas)
-                    ->where('id', '!=', $class->id);
+                        ->where('jenis_kelas', $class->jenis_kelas)
+                        ->where('id', '!=', $class->id);
                 })
                 ->exists();
 
             if ($alreadyInSameJenis) {
                 $student = Student::find($studentId);
                 $errors[] = "{$student->nama_lengkap} sudah ada di kelas lain dengan jenis {$class->jenis_kelas}.";
+
                 continue;
             }
 
@@ -70,18 +71,16 @@ class StudentPromotionController extends Controller
         if ($inserted > 0 && empty($errors)) {
             // Semua berhasil, tampilkan pesan sukses saja
             session()->flash('success', "$inserted siswa berhasil dipindahkan.");
-        } elseif ($inserted === 0 && !empty($errors)) {
+        } elseif ($inserted === 0 && ! empty($errors)) {
             // Semua gagal, tampilkan pesan error saja
             session()->flash('error', implode('<br>', $errors));
-        } elseif ($inserted > 0 && !empty($errors)) {
+        } elseif ($inserted > 0 && ! empty($errors)) {
             // Sebagian berhasil, tampilkan info ringkas (atau bisa hanya error)
             session()->flash('success', "$inserted siswa berhasil dipindahkan.");
             // ATAU: kalau kamu hanya ingin tampilkan sukses, hapus baris bawah ini
             // session()->flash('error', implode('<br>', $errors));
         }
 
-
         return back();
     }
-
 }

@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="font-semibold text-xl text-[#292D22]">
+        <h2 class="font-semibold text-xl text-[var(--sabira-ink)]">
             {{ __('Profile Information') }}
         </h2>
 
@@ -27,20 +27,20 @@
             <div class="mt-2 flex items-center gap-4">
                 <img src="{{ $fotoUrl }}" alt="Foto Profil" class="h-16 w-16 rounded-full object-cover border border-gray-200">
                 <input id="foto" name="foto" type="file" accept=".jpg,.jpeg,.png,.webp"
-                       class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8E412E] file:text-white hover:file:bg-[#BA6F4D]">
+                       class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--sabira-primary)] file:text-white hover:file:hover:bg-[var(--sabira-primary-active)]">
             </div>
             <x-input-error class="mt-2" :messages="$errors->get('foto')" />
         </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-text-input id="name" name="name" type="text" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input id="email" name="email" type="email" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
@@ -64,14 +64,14 @@
 
         <div>
             <x-input-label for="no_hp" :value="__('No HP')" />
-            <x-text-input id="no_hp" name="no_hp" type="text" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17]" :value="old('no_hp', $user->karyawan->no_hp ?? '')" autocomplete="tel" />
+            <x-text-input id="no_hp" name="no_hp" type="text" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" :value="old('no_hp', $user->karyawan->no_hp ?? '')" autocomplete="tel" />
             <x-input-error class="mt-2" :messages="$errors->get('no_hp')" />
         </div>
 
         <div>
             <x-input-label for="alamat" :value="__('Alamat')" />
             <textarea id="alamat" name="alamat" rows="3"
-                class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17]">{{ old('alamat', $user->karyawan->alamat ?? '') }}</textarea>
+                class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]">{{ old('alamat', $user->karyawan->alamat ?? '') }}</textarea>
             <x-input-error class="mt-2" :messages="$errors->get('alamat')" />
         </div>
 

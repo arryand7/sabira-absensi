@@ -2,13 +2,14 @@
 
 namespace App\Exports;
 
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
 
 class LaporanPertemuanExport implements FromArray
 {
     protected $sessions;
+
     protected $summary;
+
     protected $filters;
 
     public function __construct($sessions, array $summary, array $filters)
@@ -23,7 +24,7 @@ class LaporanPertemuanExport implements FromArray
         $data = [];
 
         $data[] = ['Laporan Pertemuan Guru'];
-        $data[] = ['Periode', $this->filters['start_date'] . ' s.d ' . $this->filters['end_date']];
+        $data[] = ['Periode', $this->filters['start_date'].' s.d '.$this->filters['end_date']];
         $data[] = ['Total Pertemuan', $this->summary['total_sessions']];
         $data[] = ['Total Hadir', $this->summary['hadir']];
         $data[] = ['Total Izin', $this->summary['izin']];
@@ -40,7 +41,7 @@ class LaporanPertemuanExport implements FromArray
                 $session->schedule->user->name ?? '-',
                 $session->schedule->subject->nama_mapel ?? '-',
                 $session->schedule->classGroup->nama_kelas ?? '-',
-                $session->start_time . ' - ' . $session->end_time,
+                $session->start_time.' - '.$session->end_time,
                 $session->hadir_count,
                 $session->izin_count,
                 $session->sakit_count,

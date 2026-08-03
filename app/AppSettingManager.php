@@ -22,7 +22,7 @@ class AppSettingManager
             'app_favicon' => null,
         ];
 
-        if (!Schema::hasTable('app_settings')) {
+        if (! Schema::hasTable('app_settings')) {
             return new AppSetting($defaults);
         }
 
@@ -31,7 +31,7 @@ class AppSettingManager
             return AppSetting::query()->first();
         });
 
-        if (!$setting) {
+        if (! $setting) {
             $setting = new AppSetting($defaults);
         }
 
@@ -46,7 +46,7 @@ class AppSettingManager
 
     public static function refreshCache(): void
     {
-        if (!Schema::hasTable('app_settings')) {
+        if (! Schema::hasTable('app_settings')) {
             return;
         }
 

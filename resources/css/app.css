@@ -1,3 +1,649 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --sabira-primary: #ff385c;
+        --sabira-primary-active: #e00b41;
+        --sabira-primary-disabled: #ffd1da;
+        --sabira-canvas: #ffffff;
+        --sabira-surface: #ffffff;
+        --sabira-surface-soft: #f7f7f7;
+        --sabira-surface-strong: #f2f2f2;
+        --sabira-ink: #222222;
+        --sabira-body: #3f3f3f;
+        --sabira-muted: #6a6a6a;
+        --sabira-muted-soft: #929292;
+        --sabira-border: #dddddd;
+        --sabira-border-soft: #ebebeb;
+        --sabira-border-strong: #c1c1c1;
+        --sabira-neutral-strong: #3f3f3f;
+        --sabira-success: #147d64;
+        --sabira-warning: #a15c00;
+        --sabira-danger: #c13515;
+        --sabira-info: #3461c1;
+        --radius-xs: 4px;
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --radius-xl: 32px;
+        --radius-full: 9999px;
+        --sabira-shadow: rgba(0, 0, 0, 0.02) 0 0 0 1px,
+            rgba(0, 0, 0, 0.04) 0 2px 6px,
+            rgba(0, 0, 0, 0.10) 0 4px 8px;
+    }
+
+    [data-theme='dark'] {
+        --sabira-primary: #ff385c;
+        --sabira-primary-active: #e00b41;
+        --sabira-primary-disabled: #5c2733;
+        --sabira-canvas: #111214;
+        --sabira-surface: #18191c;
+        --sabira-surface-soft: #202126;
+        --sabira-surface-strong: #292a2f;
+        --sabira-ink: #f7f7f7;
+        --sabira-body: #dedee3;
+        --sabira-muted: #a1a1aa;
+        --sabira-muted-soft: #71717a;
+        --sabira-border: #34363c;
+        --sabira-border-soft: #282a2f;
+        --sabira-border-strong: #4b4d54;
+        --sabira-neutral-strong: #34363c;
+        --sabira-success: #4fcca8;
+        --sabira-warning: #f3b45b;
+        --sabira-danger: #ff8068;
+        --sabira-info: #8ca8ff;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    html {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--sabira-canvas);
+        color: var(--sabira-body);
+    }
+
+    body {
+        min-width: 320px;
+        background: var(--sabira-canvas);
+        color: var(--sabira-body);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    :focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--sabira-primary) 45%, transparent);
+        outline-offset: 2px;
+    }
+
+    input,
+    select,
+    textarea {
+        border-color: var(--sabira-border-strong) !important;
+        border-radius: var(--radius-sm) !important;
+        background: var(--sabira-surface) !important;
+        color: var(--sabira-ink) !important;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--sabira-ink) !important;
+        box-shadow: 0 0 0 1px var(--sabira-ink) !important;
+        --tw-ring-color: transparent !important;
+    }
+}
+
+@layer components {
+    .sabira-body {
+        @apply min-h-full antialiased;
+        background: var(--sabira-canvas);
+        color: var(--sabira-body);
+    }
+
+    .sabira-app-shell {
+        @apply min-h-screen lg:grid;
+        grid-template-columns: 272px minmax(0, 1fr);
+        background: var(--sabira-canvas);
+    }
+
+    .sabira-main-column {
+        @apply flex min-h-screen min-w-0 flex-col;
+    }
+
+    .sabira-main-content {
+        @apply mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+    }
+
+    .sabira-sidebar {
+        @apply flex h-full min-h-0 flex-col;
+        background: var(--sabira-surface);
+        color: var(--sabira-body);
+        border-right: 1px solid var(--sabira-border-soft);
+    }
+
+    .sabira-sidebar-desktop {
+        @apply sticky top-0 hidden h-screen lg:flex;
+    }
+
+    .sabira-sidebar-mobile {
+        @apply h-full w-full;
+    }
+
+    .sabira-brand {
+        @apply flex min-h-20 items-center justify-between gap-3 px-5 py-4;
+        border-bottom: 1px solid var(--sabira-border-soft);
+    }
+
+    .sabira-brand-link {
+        @apply flex min-w-0 items-center gap-3 no-underline;
+        color: var(--sabira-ink);
+    }
+
+    .sabira-brand-link > span:last-child {
+        @apply min-w-0;
+    }
+
+    .sabira-brand-link strong {
+        @apply block truncate text-sm font-semibold tracking-tight;
+    }
+
+    .sabira-brand-link small {
+        @apply mt-0.5 block truncate text-[11px] font-normal;
+        color: var(--sabira-muted);
+    }
+
+    .sabira-brand-mark {
+        @apply flex h-10 w-10 shrink-0 items-center justify-center text-base text-white;
+        border-radius: var(--radius-md);
+        background: var(--sabira-primary);
+    }
+
+    .sabira-sidebar-context {
+        @apply flex items-center justify-between gap-3 px-5 py-3 text-[11px];
+        color: var(--sabira-muted);
+        border-bottom: 1px solid var(--sabira-border-soft);
+    }
+
+    .sabira-role-badge {
+        @apply truncate px-2 py-1 text-[11px] font-semibold capitalize;
+        color: var(--sabira-ink);
+        background: var(--sabira-surface-strong);
+        border-radius: var(--radius-full);
+    }
+
+    .sabira-navigation {
+        @apply flex-1 space-y-2 overflow-y-auto px-3 py-4;
+    }
+
+    .sabira-nav-group {
+        @apply space-y-1;
+    }
+
+    .sabira-nav-group-trigger {
+        @apply flex min-h-10 w-full items-center justify-between gap-2 px-3 text-left text-xs font-semibold;
+        color: var(--sabira-muted);
+        border-radius: var(--radius-sm);
+    }
+
+    .sabira-nav-group-trigger:hover {
+        background: var(--sabira-surface-soft);
+        color: var(--sabira-ink);
+    }
+
+    .sabira-nav-group-trigger i {
+        @apply text-[9px] transition-transform;
+    }
+
+    .sabira-nav-items {
+        @apply space-y-1;
+    }
+
+    .sabira-nav-link {
+        @apply flex min-h-11 items-center gap-3 px-3 text-sm font-normal no-underline transition-colors;
+        color: var(--sabira-body);
+        border-radius: var(--radius-sm);
+    }
+
+    .sabira-nav-link:hover {
+        background: var(--sabira-surface-soft);
+        color: var(--sabira-ink);
+    }
+
+    .sabira-nav-link.is-active {
+        background: color-mix(in srgb, var(--sabira-primary) 10%, var(--sabira-surface));
+        color: var(--sabira-primary-active);
+        font-weight: 600;
+    }
+
+    .sabira-nav-link > i {
+        @apply w-5 shrink-0 text-center text-sm;
+    }
+
+    .sabira-nav-badge {
+        @apply ml-auto px-2 py-0.5 text-[11px] font-semibold;
+        border-radius: var(--radius-full);
+        background: var(--sabira-surface-strong);
+    }
+
+    .sabira-sidebar-user {
+        @apply flex items-center gap-3 px-5 py-4;
+        border-top: 1px solid var(--sabira-border-soft);
+    }
+
+    .sabira-sidebar-user > span:last-child {
+        @apply min-w-0;
+    }
+
+    .sabira-sidebar-user strong,
+    .sabira-sidebar-user small {
+        @apply block truncate;
+    }
+
+    .sabira-sidebar-user strong {
+        @apply text-xs font-semibold;
+        color: var(--sabira-ink);
+    }
+
+    .sabira-sidebar-user small {
+        @apply text-[11px];
+        color: var(--sabira-muted);
+    }
+
+    .sabira-avatar {
+        @apply inline-flex shrink-0 items-center justify-center font-semibold;
+        border-radius: var(--radius-full);
+        color: var(--sabira-primary-active);
+        background: color-mix(in srgb, var(--sabira-primary) 12%, var(--sabira-surface));
+        border: 1px solid color-mix(in srgb, var(--sabira-primary) 24%, var(--sabira-border));
+    }
+
+    .sabira-mobile-navigation {
+        @apply fixed inset-0 z-50 lg:hidden;
+    }
+
+    .sabira-mobile-navigation-backdrop {
+        @apply absolute inset-0 bg-black/50;
+    }
+
+    .sabira-mobile-navigation-panel {
+        @apply relative h-full w-[min(88vw,320px)];
+        box-shadow: var(--sabira-shadow);
+    }
+
+    .sabira-topbar {
+        @apply sticky top-0 z-30 flex min-h-20 items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8;
+        background: color-mix(in srgb, var(--sabira-surface) 94%, transparent);
+        border-bottom: 1px solid var(--sabira-border-soft);
+        backdrop-filter: blur(12px);
+    }
+
+    .sabira-topbar-leading,
+    .sabira-topbar-actions {
+        @apply flex min-w-0 items-center gap-3;
+    }
+
+    .sabira-page-title {
+        @apply text-xl font-bold leading-tight sm:text-[28px];
+        color: var(--sabira-ink);
+    }
+
+    .sabira-page-subtitle {
+        @apply mt-0.5 hidden text-[13px] sm:block;
+        color: var(--sabira-muted);
+    }
+
+    .sabira-breadcrumb {
+        @apply mb-1 hidden items-center gap-2 text-[11px] md:flex;
+        color: var(--sabira-muted);
+    }
+
+    .sabira-breadcrumb a:hover {
+        color: var(--sabira-primary-active);
+    }
+
+    .sabira-breadcrumb i {
+        @apply text-[8px];
+    }
+
+    .sabira-icon-button {
+        @apply inline-flex h-11 w-11 shrink-0 items-center justify-center border-0 bg-transparent text-sm;
+        border-radius: var(--radius-full);
+        color: var(--sabira-body);
+    }
+
+    .sabira-icon-button:hover {
+        background: var(--sabira-surface-strong);
+        color: var(--sabira-ink);
+    }
+
+    .sabira-theme-switcher {
+        @apply flex items-center gap-1 p-1;
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-full);
+        background: var(--sabira-surface-soft);
+    }
+
+    .sabira-theme-option {
+        @apply inline-flex min-h-9 min-w-9 items-center justify-center gap-1.5 px-2 text-xs font-medium;
+        border-radius: var(--radius-full);
+        color: var(--sabira-muted);
+    }
+
+    .sabira-theme-option.is-active {
+        background: var(--sabira-surface);
+        color: var(--sabira-ink);
+        box-shadow: 0 0 0 1px var(--sabira-border-soft);
+    }
+
+    .sabira-user-menu-trigger {
+        @apply flex min-h-11 items-center gap-2 p-1 pr-2;
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-full);
+        color: var(--sabira-body);
+        background: var(--sabira-surface);
+    }
+
+    .sabira-user-menu-trigger strong,
+    .sabira-user-menu-trigger small {
+        @apply block max-w-40 truncate;
+    }
+
+    .sabira-user-menu-trigger strong {
+        @apply text-xs font-semibold;
+        color: var(--sabira-ink);
+    }
+
+    .sabira-user-menu-trigger small {
+        @apply text-[11px] capitalize;
+        color: var(--sabira-muted);
+    }
+
+    .sabira-user-menu {
+        @apply absolute right-0 mt-2 w-52 overflow-hidden p-1;
+        z-index: 60;
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-md);
+        background: var(--sabira-surface);
+        box-shadow: var(--sabira-shadow);
+    }
+
+    .sabira-user-menu-item {
+        @apply flex min-h-11 items-center gap-3 px-3 text-left text-sm no-underline;
+        border-radius: var(--radius-sm);
+        color: var(--sabira-body);
+    }
+
+    .sabira-user-menu-item:hover {
+        background: var(--sabira-surface-soft);
+        color: var(--sabira-ink);
+    }
+
+    .sabira-footer {
+        @apply px-4 py-4 text-center text-xs sm:px-6 lg:px-8;
+        color: var(--sabira-muted);
+        border-top: 1px solid var(--sabira-border-soft);
+        background: var(--sabira-surface);
+    }
+
+    .sabira-footer-content {
+        @apply mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-1 sm:flex-row sm:flex-wrap sm:gap-2;
+    }
+
+    .sabira-alert {
+        @apply mb-6 flex items-start gap-3 px-4 py-3 text-sm;
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-md);
+        background: var(--sabira-surface-soft);
+    }
+
+    .sabira-alert-success { color: var(--sabira-success); }
+    .sabira-alert-warning { color: var(--sabira-warning); }
+    .sabira-alert-danger { color: var(--sabira-danger); }
+    .sabira-alert-info { color: var(--sabira-info); }
+
+    .sabira-guest-shell {
+        @apply flex min-h-screen flex-col;
+        background: var(--sabira-canvas);
+    }
+
+    .sabira-guest-header {
+        @apply flex min-h-20 items-center justify-between gap-4 px-4 sm:px-8;
+        border-bottom: 1px solid var(--sabira-border-soft);
+        background: var(--sabira-surface);
+    }
+
+    .sabira-guest-content {
+        @apply mx-auto flex w-full max-w-md flex-1 items-center px-4 py-10;
+    }
+
+    .sabira-card {
+        @apply p-4 sm:p-6;
+        border: 1px solid var(--sabira-border-soft);
+        border-radius: var(--radius-md);
+        background: var(--sabira-surface);
+    }
+
+    .sabira-button {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-medium no-underline transition-colors disabled:cursor-not-allowed;
+        border-radius: var(--radius-sm);
+    }
+
+    .sabira-button-primary {
+        color: white;
+        background: var(--sabira-primary);
+    }
+
+    .sabira-button-primary:hover { background: var(--sabira-primary-active); }
+    .sabira-button-primary:disabled { background: var(--sabira-primary-disabled); }
+
+    .sabira-button-secondary {
+        color: var(--sabira-ink);
+        background: var(--sabira-surface);
+        border: 1px solid var(--sabira-border-strong);
+    }
+
+    .sabira-button-secondary:hover { background: var(--sabira-surface-soft); }
+
+    .sabira-button-danger {
+        color: white;
+        background: var(--sabira-danger);
+    }
+
+    .sabira-button-tertiary {
+        color: var(--sabira-ink);
+        background: transparent;
+    }
+
+    .sabira-button-tertiary:hover { text-decoration: underline; }
+
+    .sabira-data-table {
+        @apply w-full text-left text-sm;
+        color: var(--sabira-body);
+    }
+
+    .sabira-data-table th {
+        @apply px-4 py-3 text-xs font-semibold;
+        color: var(--sabira-muted);
+        background: var(--sabira-surface-soft);
+        border-bottom: 1px solid var(--sabira-border);
+    }
+
+    .sabira-data-table td {
+        @apply px-4 py-3 align-middle;
+        border-bottom: 1px solid var(--sabira-border-soft);
+    }
+
+    .sabira-data-table tbody tr:hover { background: var(--sabira-surface-soft); }
+
+    .sabira-content-header,
+    .sabira-card-header {
+        @apply mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .sabira-content-header h1 {
+        @apply text-[28px] font-bold leading-tight;
+        color: var(--sabira-ink);
+    }
+
+    .sabira-content-header p,
+    .sabira-card-subtitle {
+        @apply mt-1 text-[13px];
+        color: var(--sabira-muted);
+    }
+
+    .sabira-card-title {
+        @apply text-base font-semibold;
+        color: var(--sabira-ink);
+    }
+
+    .sabira-page-actions,
+    .sabira-filter-bar,
+    .sabira-date-range {
+        @apply flex flex-wrap items-center gap-3;
+    }
+
+    .sabira-filter-bar {
+        @apply mb-5 p-3 sm:p-4;
+        border: 1px solid var(--sabira-border-soft);
+        border-radius: var(--radius-md);
+        background: var(--sabira-surface-soft);
+    }
+
+    .sabira-table-wrap {
+        @apply w-full overflow-x-auto;
+        border: 1px solid var(--sabira-border-soft);
+        border-radius: var(--radius-md);
+    }
+
+    .sabira-pagination {
+        @apply mt-5;
+    }
+
+    .sabira-form-field > label {
+        @apply mb-1.5 block text-sm font-medium;
+        color: var(--sabira-body);
+    }
+
+    .sabira-field-hint {
+        @apply mt-1 text-[13px];
+        color: var(--sabira-muted);
+    }
+
+    .sabira-input,
+    .sabira-select,
+    .sabira-textarea {
+        @apply block min-h-11 w-full px-3 text-sm;
+        color: var(--sabira-ink);
+        background: var(--sabira-surface);
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-sm);
+    }
+
+    .sabira-textarea { @apply min-h-28 py-2.5; }
+
+    .sabira-modal-panel {
+        @apply overflow-hidden;
+        color: var(--sabira-body);
+        background: var(--sabira-surface);
+        border: 1px solid var(--sabira-border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--sabira-shadow);
+    }
+
+    .sabira-empty-state {
+        @apply flex flex-col items-center justify-center p-8 text-center;
+        color: var(--sabira-body);
+        background: var(--sabira-surface-soft);
+        border: 1px dashed var(--sabira-border);
+        border-radius: var(--radius-md);
+    }
+
+    .sabira-empty-state-icon {
+        @apply mb-4 flex h-16 w-16 items-center justify-center text-2xl;
+        color: var(--sabira-muted);
+        background: var(--sabira-surface-strong);
+        border-radius: var(--radius-full);
+    }
+
+    .sabira-empty-state h4 { @apply text-base font-semibold; color: var(--sabira-ink); }
+    .sabira-empty-state p { @apply mt-1 max-w-sm text-sm; color: var(--sabira-muted); }
+
+    .sabira-stat-card {
+        @apply relative overflow-hidden p-5;
+        background: var(--sabira-surface);
+        border: 1px solid var(--sabira-border-soft);
+        border-radius: var(--radius-md);
+    }
+
+    .sabira-stat-label {
+        @apply text-[11px] font-semibold;
+        color: var(--sabira-muted);
+    }
+
+    .sabira-stat-value { @apply mt-1 text-2xl font-bold tracking-tight; color: var(--sabira-ink); }
+    .sabira-stat-subtitle { @apply mt-1 text-xs; color: var(--sabira-muted); }
+
+    .sabira-stat-icon {
+        @apply flex h-11 w-11 items-center justify-center text-lg;
+        color: var(--sabira-info);
+        background: var(--sabira-surface-soft);
+        border-radius: var(--radius-sm);
+    }
+
+    .sabira-stat-card.is-success .sabira-stat-icon { color: var(--sabira-success); }
+    .sabira-stat-card.is-warning .sabira-stat-icon { color: var(--sabira-warning); }
+    .sabira-stat-card.is-danger .sabira-stat-icon { color: var(--sabira-danger); }
+
+    .sabira-inline-link {
+        @apply inline-flex items-center text-xs font-semibold;
+        color: var(--sabira-primary-active);
+    }
+
+    .sabira-progress-label {
+        @apply mb-1.5 flex items-center justify-between text-[13px];
+        color: var(--sabira-body);
+    }
+
+    .sabira-progress-track {
+        @apply h-2 overflow-hidden;
+        background: var(--sabira-surface-strong);
+        border-radius: var(--radius-full);
+    }
+
+    .sabira-progress-track > span {
+        @apply block h-full;
+        background: var(--sabira-primary);
+        border-radius: inherit;
+    }
+
+    .sabira-timeline {
+        @apply space-y-4 border-l pl-5;
+        border-color: var(--sabira-border);
+    }
+
+    .sabira-main-content .shadow-md,
+    .sabira-main-content .shadow-sm {
+        box-shadow: none;
+    }
+
+    [data-theme='dark'] .sabira-main-content .bg-white,
+    [data-theme='dark'] .sabira-main-content [class*='bg-gray-50'],
+    [data-theme='dark'] .sabira-main-content [class*='bg-gray-100'],
+    [data-theme='dark'] .sabira-main-content [class*='bg-gray-200'] {
+        background-color: var(--sabira-surface) !important;
+    }
+
+    [data-theme='dark'] .sabira-main-content [class*='text-gray-'],
+    [data-theme='dark'] .sabira-main-content [class*='text-slate-'] {
+        color: var(--sabira-body) !important;
+    }
+
+    [data-theme='dark'] .sabira-main-content [class*='border-gray-'],
+    [data-theme='dark'] .sabira-main-content [class*='border-slate-'] {
+        border-color: var(--sabira-border) !important;
+    }
+}

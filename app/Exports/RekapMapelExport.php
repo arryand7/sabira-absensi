@@ -7,8 +7,11 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 class RekapMapelExport implements FromCollection
 {
     protected $rekapMapel;
+
     protected $kelas;
+
     protected $mapel;
+
     protected $tahun;
 
     public function __construct($rekapMapel, $kelas, $mapel, $tahun, $totalPertemuan)

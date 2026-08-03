@@ -1,17 +1,12 @@
-<x-app-layout>
+<x-app-shell>
     <div class="sm:px-6 lg:px-8">
         <x-page-title title="LAPORAN PERTEMUAN GURU" />
     </div>
-
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-[#EFF0ED] border border-[#D6D8D2] rounded-xl p-4">
-                <p class="text-xs uppercase tracking-wide text-[#8D9382]">Total Pertemuan</p>
-                <p class="mt-2 text-2xl font-semibold text-[#1C1E17]">{{ $summary['total_sessions'] }}</p>
+            <div class="bg-[var(--sabira-surface-soft)] border border-[var(--sabira-border)] rounded-xl p-4">
+                <p class="text-xs uppercase tracking-wide text-[var(--sabira-muted)]">Total Pertemuan</p>
+                <p class="mt-2 text-2xl font-semibold text-[var(--sabira-ink)]">{{ $summary['total_sessions'] }}</p>
             </div>
             <div class="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-4">
                 <p class="text-xs uppercase tracking-wide text-[#065F46]">Total Hadir</p>
@@ -31,7 +26,7 @@
             </div>
         </div>
 
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
             <form action="{{ route('laporan.pertemuan') }}" method="GET" class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Tahun Ajaran</label>
@@ -88,15 +83,15 @@
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit"
-                        class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] flex items-center gap-2 shadow">
+                        class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
                     <a href="{{ route('laporan.pertemuan.export.pdf', request()->only('tahun_ajaran', 'guru_id', 'kelas_id', 'mapel_id', 'start_date', 'end_date')) }}"
-                        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 shadow">
+                        class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
                     </a>
                     <a href="{{ route('laporan.pertemuan.export.excel', request()->only('tahun_ajaran', 'guru_id', 'kelas_id', 'mapel_id', 'start_date', 'end_date')) }}"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 shadow">
+                        class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] flex items-center gap-2 shadow">
                         <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                     </a>
                     <a href="{{ route('laporan.pertemuan') }}"
@@ -107,8 +102,8 @@
             </form>
 
             <div class="overflow-x-auto">
-                <table id="pertemuanTable" class="w-full text-sm text-left text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table id="pertemuanTable" class="w-full text-sm text-left text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Tanggal</th>
                             <th class="px-4 py-3">Pertemuan</th>
@@ -124,10 +119,14 @@
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @forelse($sessions as $session)
-                            <tr class="hover:bg-[#BEC1B7] transition">
+                            <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                 <td class="px-4 py-3">{{ \Carbon\Carbon::parse($session->date)->format('d M Y') }}</td>
                                 <td class="px-4 py-3">{{ $session->meeting_no ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $session->schedule->user->name ?? '-' }}</td>
+                                <td class="px-4 py-3">
+                                    <a href="{{ route('laporan.pertemuan.teacher', ['teacher' => $session->actual_teacher_id ?? $session->scheduled_teacher_id ?? $session->schedule->user_id, 'start_date' => $startDate, 'end_date' => $endDate]) }}" class="text-[#8E412E] hover:underline">
+                                        {{ $session->actualTeacher?->name ?? $session->scheduledTeacher?->name ?? $session->schedule->user->name ?? '-' }}
+                                    </a>
+                                </td>
                                 <td class="px-4 py-3">{{ $session->schedule->subject->nama_mapel ?? '-' }}</td>
                                 <td class="px-4 py-3">{{ $session->schedule->classGroup->nama_kelas ?? '-' }}</td>
                                 <td class="px-4 py-3">{{ $session->start_time }} - {{ $session->end_time }}</td>
@@ -138,7 +137,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-4 py-6 text-center text-[#8D9382]">Belum ada data pertemuan.</td>
+                                <td colspan="10" class="px-4 py-6 text-center text-[var(--sabira-muted)]">Belum ada data pertemuan.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -147,28 +146,4 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                $('#pertemuanTable').DataTable({
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ entri",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                        paginate: {
-                            first: "Pertama",
-                            last: "Terakhir",
-                            next: "›",
-                            previous: "‹"
-                        },
-                        zeroRecords: "Tidak ditemukan data yang sesuai",
-                    },
-                    responsive: true,
-                    pageLength: 10,
-                    ordering: true,
-                    order: [[0, 'desc']]
-                });
-            });
-        </script>
-    @endpush
-</x-app-layout>
+</x-app-shell>

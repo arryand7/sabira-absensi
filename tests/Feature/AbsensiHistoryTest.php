@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\AbsensiKaryawan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class AbsensiHistoryTest extends TestCase
 {
@@ -37,12 +36,9 @@ class AbsensiHistoryTest extends TestCase
 
         $response = $this->actingAs($this->user)->get('/history-absensi');
 
-        $response->dump(); // DEBUG: Tampilkan seluruh konten response
-
         $response->assertStatus(200);
         $response->assertSee('Juni');
         $response->assertSee('Hadir');
-
     }
 
     /** @test */

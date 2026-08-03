@@ -2,36 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Divisi;
+use App\Models\Guru;
+use App\Models\Karyawan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Karyawan;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Divisi;
-use App\Models\Guru;
-
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index()
     {
         $users = User::with(['karyawan.divisi', 'guru'])->get();
+
         return view('admin.users.index', compact('users'));
     }
-
 
     public function create()
     {
         $divisis = Divisi::all(); // ambil semua data divisi
+
         return view('admin.users.create', compact('divisis'));
     }
 
     public function store(Request $request)
     {
+        $allowedRoles = auth()->user()->isSuperAdmin()
+            ? ['super_admin', 'admin', 'karyawan', 'guru', 'organisasi']
+            : ['admin', 'karyawan', 'guru', 'organisasi'];
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users',
-            'role' => 'required|in:admin,karyawan,guru,organisasi',
+            'role' => ['required', Rule::in($allowedRoles)],
             'password' => 'required|min:6',
             // 'nama_lengkap' => 'nullable|string|max:255',
             'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
@@ -48,7 +53,6 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'status' => 'aktif',
         ]);
-
 
         if (in_array($user->role, ['karyawan', 'guru'])) {
             $fotoPath = null;
@@ -77,25 +81,31 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dibuat!');
     }
 
-
-
     public function edit($id)
     {
         $user = User::with(['karyawan', 'guru'])->findOrFail($id);
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat mengubah akun superadmin.');
+        }
         $divisis = Divisi::all();
+
         return view('admin.users.edit', compact('user', 'divisis'));
     }
-
-
 
     public function update(Request $request, $id)
     {
         $user = User::with('karyawan', 'guru')->findOrFail($id);
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat mengubah akun superadmin.');
+        }
+        $allowedRoles = auth()->user()->isSuperAdmin()
+            ? ['super_admin', 'admin', 'karyawan', 'guru', 'organisasi']
+            : ['admin', 'karyawan', 'guru', 'organisasi'];
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,karyawan,guru,organisasi',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'role' => ['required', Rule::in($allowedRoles)],
             'password' => 'nullable|min:6',
             // 'nama_lengkap' => 'nullable|string|max:255',
             'divisi_id' => $request->role === 'karyawan' ? 'required|exists:divisis,id' : 'nullable',
@@ -119,8 +129,8 @@ class UserController extends Controller
             $fotoPath = $user->karyawan->foto ?? null;
 
             if ($request->hasFile('foto')) {
-                if ($fotoPath && Storage::exists('public/' . $fotoPath)) {
-                    Storage::delete('public/' . $fotoPath);
+                if ($fotoPath && Storage::exists('public/'.$fotoPath)) {
+                    Storage::delete('public/'.$fotoPath);
                 }
                 $fotoPath = $request->file('foto')->store('foto_karyawan', 'public');
             }
@@ -145,24 +155,30 @@ class UserController extends Controller
             $user->guru()->delete();
         }
 
-
         // Auto logout if user deactivates self
         if ($user->id == auth()->id() && $user->status !== 'aktif') {
             auth()->logout();
+
             return redirect()->route('login')->withErrors(['email' => 'Akun Anda telah dinonaktifkan.']);
         }
 
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }
 
-
-
     public function destroy(User $user)
     {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Akun yang sedang digunakan tidak dapat dihapus.');
+        }
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat menghapus akun superadmin.');
+        }
+
+        $photoPath = $user->karyawan?->foto;
         $user->delete();
 
-        if ($user->karyawan && $user->karyawan->foto) {
-            Storage::delete('public/' . $user->karyawan->foto);
+        if ($photoPath) {
+            Storage::delete('public/'.$photoPath);
         }
 
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus!');

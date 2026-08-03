@@ -10,6 +10,7 @@ class DivisiController extends Controller
     public function index()
     {
         $divisis = Divisi::all();
+
         return view('admin.divisi.index', compact('divisis'));
     }
 
@@ -48,6 +49,7 @@ class DivisiController extends Controller
     public function destroy(Divisi $divisi)
     {
         $divisi->delete();
+
         return redirect()->route('divisis.index')->with('success', 'Divisi berhasil dihapus.');
     }
 }

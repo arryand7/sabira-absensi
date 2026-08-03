@@ -1,9 +1,5 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <h2 class="font-semibold text-xl text-[#292D22] mb-6">
+<x-app-shell>
+<h2 class="font-semibold text-xl text-[var(--sabira-ink)] mb-6">
         Duplikat Kelas ke Tahun Ajaran Baru
     </h2>
 
@@ -28,9 +24,9 @@
                 </select>
             </div>
 
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <button type="submit" class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded hover:bg-[var(--sabira-primary-active)]">
                 Duplikat Sekarang
             </button>
         </form>
     </div>
-</x-app-layout>
+</x-app-shell>

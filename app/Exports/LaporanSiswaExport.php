@@ -7,8 +7,11 @@ use Maatwebsite\Excel\Concerns\FromArray;
 class LaporanSiswaExport implements FromArray
 {
     protected $rekap;
+
     protected $nama;
+
     protected $nis;
+
     protected $tahun;
 
     public function __construct(array $rekap, string $nama, string $nis, string $tahun)
@@ -33,6 +36,7 @@ class LaporanSiswaExport implements FromArray
 
         if (empty($this->rekap)) {
             $data[] = ['Tidak ada data absensi'];
+
             return $data;
         }
 

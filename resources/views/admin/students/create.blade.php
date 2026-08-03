@@ -1,12 +1,8 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="flex">
+<x-app-shell>
+<div class="flex">
         <div class="mt-2 w-full sm:px-6 lg:px-8 space-y-6">
 
-            <div class="bg-[#8D9382] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
+            <div class="bg-[var(--sabira-neutral-strong)] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[var(--sabira-ink)]">
                 <h1 class="text-2xl font-bold mb-4">Tambah Murid</h1>
 
                 <form action="{{ route('admin.students.store') }}" method="POST" class="space-y-4">
@@ -15,7 +11,7 @@
                     <div>
                         <label for="nama_lengkap" class="block font-medium mb-1">Nama Lengkap</label>
                         <input type="text" name="nama_lengkap" id="nama_lengkap"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('nama_lengkap') border-red-500 @enderror"
                             value="{{ old('nama_lengkap') }}" required>
                         @error('nama_lengkap')
@@ -26,7 +22,7 @@
                     <div>
                         <label for="nis" class="block font-medium mb-1">NIS</label>
                         <input type="text" name="nis" id="nis"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('nis') border-red-500 @enderror"
                             value="{{ old('nis') }}" required>
                         @error('nis')
@@ -37,7 +33,7 @@
                     <div>
                         <label for="jenis_kelamin" class="block font-medium mb-1">Jenis Kelamin</label>
                         <select name="jenis_kelamin" id="jenis_kelamin"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('jenis_kelamin') border-red-500 @enderror" required>
                             <option value="">Pilih</option>
                             <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
@@ -51,7 +47,7 @@
                     <div>
                         <label for="kelas_formal" class="block font-medium mb-1">Kelas Reguler</label>
                         <select name="kelas_formal" id="kelas_formal"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('kelas_formal') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($academicClasses as $class)
@@ -68,7 +64,7 @@
                     <div>
                         <label for="kelas_muadalah" class="block font-medium mb-1">Kelas Non-Reguler</label>
                         <select name="kelas_muadalah" id="kelas_muadalah"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('kelas_muadalah') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($muadalahClasses as $class)
@@ -85,7 +81,7 @@
                     <div>
                         <label for="kelas_tambahan" class="block font-medium mb-1">Kelas Tambahan</label>
                         <select name="kelas_tambahan" id="kelas_tambahan"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('kelas_tambahan') border-red-500 @enderror">
                             <option value="">Tidak Ada</option>
                             @foreach($tambahanClasses as $class)
@@ -101,11 +97,11 @@
 
                     <div class="flex gap-4 mt-6">
                         <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                             <i class="bi bi-save"></i> Simpan
                         </button>
                         <a href="{{ route('admin.students.index') }}"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow inline-flex items-center">
                             <i class="bi bi-x-circle"></i> Batal
                         </a>
                     </div>
@@ -113,4 +109,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

@@ -1,13 +1,9 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
+<x-app-shell>
+<div class="w-full sm:px-6 lg:px-8 mt-6 space-y-6">
+        <h2 class="font-semibold text-xl text-[var(--sabira-ink)]">Detail Absensi </h2>
 
-    <div class="w-full sm:px-6 lg:px-8 mt-6 space-y-6">
-        <h2 class="font-semibold text-xl text-[#292D22]">Detail Absensi </h2>
-
-        <div class="bg-[#EEF3E9] border border-[#D6D8D2] shadow-md rounded-2xl p-6">
-            <p class="text-lg font-semibold text-[#292D22] mb-4">Data Absensi: {{ $user->name }}</p>
+        <div class="bg-[var(--sabira-surface)] border border-[var(--sabira-border)] shadow-md rounded-2xl p-6">
+            <p class="text-lg font-semibold text-[var(--sabira-ink)] mb-4">Data Absensi: {{ $user->name }}</p>
 
             <form method="GET" action="{{ route('laporan.karyawan.detail', $user->id) }}" class="mb-6 w-full">
                 <div class="flex flex-wrap items-end justify-between gap-4 w-full">
@@ -38,13 +34,13 @@
 
                         {{-- Tampilkan --}}
                         <button type="submit"
-                                class="bg-[#8E412E] text-white px-4 py-2 rounded-md hover:bg-[#BA6F4D] shadow flex items-center gap-2">
+                                class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow flex items-center gap-2">
                             <i class="bi bi-funnel-fill"></i> Tampilkan
                         </button>
 
                         {{-- Download Excel --}}
                         <a href="{{ route('laporan.karyawan.detail.export', ['id' => $user->id, 'bulan' => request('bulan'), 'tahun' => request('tahun')]) }}"
-                        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 shadow flex items-center gap-2">
+                        class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow flex items-center gap-2">
                             <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                         </a>
                     </div>
@@ -60,8 +56,8 @@
             </form>
 
             <div class="overflow-x-auto rounded-lg">
-                <table class="min-w-full text-sm text-left text-[#292D22]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table class="min-w-full text-sm text-left text-[var(--sabira-ink)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-2">Tanggal</th>
                             <th class="px-4 py-2">Jam Hadir</th>
@@ -71,7 +67,7 @@
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @forelse($absensi as $a)
-                            <tr class="hover:bg-[#BEC1B7] transition">
+                            <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                 <td class="px-4 py-2">{{ $a->tanggal }}</td>
                                 <td class="px-4 py-2">{{ $a->jam }}</td>
                                 <td class="px-4 py-2">{{ $a->check_out ?? '-' }}</td>
@@ -90,7 +86,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-4 text-center text-[#6B7280] italic">Belum ada data absensi</td>
+                                <td colspan="3" class="px-4 py-4 text-center text-[var(--sabira-muted)] italic">Belum ada data absensi</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -98,4 +94,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

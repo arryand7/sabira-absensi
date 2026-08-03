@@ -1,21 +1,21 @@
-<x-user-layout>
+<x-app-shell>
 
     <div class="py-4 max-w-5xl mx-auto sm:px-6 lg:px-4">
         <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold text-[#292D22]">History Absen Sholat</h1>
+            <h1 class="text-2xl font-bold text-[var(--sabira-ink)]">History Absen Sholat</h1>
 
             <a href="{{ route('asrama.index') }}"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-[#5C644C] hover:bg-[#535A44] text-white rounded-md text-sm shadow transition">
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white rounded-md text-sm shadow transition">
                 <i class="bi bi-arrow-left-circle"></i> Kembali
             </a>
         </div>
-        <div class="bg-[#EFF0ED] shadow rounded-xl p-6 overflow-x-auto border border-[#D6D8D2]">
+        <div class="bg-[var(--sabira-surface-soft)] shadow rounded-xl p-6 overflow-x-auto border border-[var(--sabira-border)]">
             <!-- Filter Bulan dan Tahun -->
             <form method="GET" action="{{ route('asrama.sholat.history') }}" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="bulan" class="block text-sm text-[#3C3F33] mb-1">Bulan</label>
+                    <label for="bulan" class="block text-sm text-[var(--sabira-body)] mb-1">Bulan</label>
                     <select name="bulan" id="bulan"
-                        class="w-full border border-[#C8CEC0] rounded px-3 py-2 bg-white focus:ring-2 focus:ring-[#5C644C]">
+                        class="w-full border border-[var(--sabira-border)] rounded px-3 py-2 bg-white focus:ring-2 focus:ring-[#5C644C]">
                         @foreach(range(1, 12) as $bln)
                             <option value="{{ $bln }}" {{ $bulan == $bln ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::create()->month($bln)->translatedFormat('F') }}
@@ -25,9 +25,9 @@
                 </div>
 
                 <div>
-                    <label for="tahun" class="block text-sm text-[#3C3F33] mb-1">Tahun</label>
+                    <label for="tahun" class="block text-sm text-[var(--sabira-body)] mb-1">Tahun</label>
                     <select name="tahun" id="tahun"
-                        class="w-full border border-[#C8CEC0] rounded px-3 py-2 bg-white focus:ring-2 focus:ring-[#5C644C]">
+                        class="w-full border border-[var(--sabira-border)] rounded px-3 py-2 bg-white focus:ring-2 focus:ring-[#5C644C]">
                         @foreach(range(now()->year - 5, now()->year + 1) as $thn)
                             <option value="{{ $thn }}" {{ $tahun == $thn ? 'selected' : '' }}>
                                 {{ $thn }}
@@ -38,7 +38,7 @@
 
                 <div class="flex items-end">
                     <button type="submit"
-                        class="bg-[#5C644C] hover:bg-[#4A5240] text-white font-semibold px-4 py-2 rounded w-full transition">
+                        class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary)] text-white font-semibold px-4 py-2 rounded w-full transition">
                         Tampilkan
                     </button>
                 </div>
@@ -48,4 +48,4 @@
             <livewire:rekap-sholat :bulan="$bulan" :tahun="$tahun" />
         </div>
     </div>
-</x-user-layout>
+</x-app-shell>

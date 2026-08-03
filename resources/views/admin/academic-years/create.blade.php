@@ -1,11 +1,7 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="flex">
+<x-app-shell>
+<div class="flex">
         <div class="mt-2 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-[#8D9382] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[#1C1E17]">
+            <div class="bg-[var(--sabira-neutral-strong)] shadow-md rounded-xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto text-[var(--sabira-ink)]">
                 <h1 class="text-2xl font-bold mb-4">
                     {{ isset($academicYear) ? 'Edit' : 'Tambah' }} Tahun Ajaran
                 </h1>
@@ -33,7 +29,7 @@
                     <div>
                         <label for="name" class="block font-medium mb-1">Nama Tahun Ajaran</label>
                         <input type="text" name="name" id="name"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('name') border-red-500 @enderror"
                             value="{{ old('name', $academicYear->name ?? '') }}" required>
                         @error('name')
@@ -44,7 +40,7 @@
                     <div>
                         <label for="start_date" class="block font-medium mb-1">Tanggal Mulai</label>
                         <input type="date" name="start_date" id="start_date"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('start_date') border-red-500 @enderror"
                             value="{{ old('start_date', $academicYear->start_date ?? '') }}" required>
                         @error('start_date')
@@ -55,7 +51,7 @@
                     <div>
                         <label for="end_date" class="block font-medium mb-1">Tanggal Selesai</label>
                         <input type="date" name="end_date" id="end_date"
-                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[#EEF3E9]
+                            class="w-full rounded border border-gray-300 px-3 py-2 bg-[var(--sabira-surface)]
                                    @error('end_date') border-red-500 @enderror"
                             value="{{ old('end_date', $academicYear->end_date ?? '') }}" required>
                         @error('end_date')
@@ -71,11 +67,11 @@
 
                     <div class="flex gap-4 mt-6">
                         <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow">
                             <i class="bi bi-save"></i> {{ isset($academicYear) ? 'Update' : 'Simpan' }}
                         </button>
                         <a href="{{ route('academic-years.index') }}"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow inline-flex items-center">
                             <i class="bi bi-x-circle"></i> Batal
                         </a>
                     </div>
@@ -83,4 +79,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

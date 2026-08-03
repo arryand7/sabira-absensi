@@ -32,4 +32,3 @@ class AbsensiAsrama extends Model
         return $this->belongsTo(JadwalKegiatanAsrama::class, 'jadwal_kegiatan_asrama_id');
     }
 }
-

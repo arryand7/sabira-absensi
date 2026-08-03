@@ -1,11 +1,8 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-    <div class="flex">
+<x-app-shell>
+<div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-[#8D9382] shadow-md rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
-                <h1 class="text-2xl font-bold text-[#1C1E17] mb-4">Tambah Mata Pelajaran</h1>
+            <div class="bg-[var(--sabira-neutral-strong)] shadow-md rounded-2xl p-6 max-h-[calc(100vh-100px)] overflow-y-auto">
+                <h1 class="text-2xl font-bold text-[var(--sabira-ink)] mb-4">Tambah Mata Pelajaran</h1>
 
                 @if ($errors->any())
                     <div class="bg-red-100 text-red-800 p-4 rounded mb-4">
@@ -22,25 +19,25 @@
                     @csrf
 
                     <div>
-                        <label for="nama_mapel" class="block text-sm font-medium text-[#1C1E17]">Nama Mapel</label>
+                        <label for="nama_mapel" class="block text-sm font-medium text-[var(--sabira-ink)]">Nama Mapel</label>
                         <input type="text" name="nama_mapel" id="nama_mapel"
-                            class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm focus:ring focus:ring-orange-200 @error('nama_mapel') border-red-500 @enderror"
+                            class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] shadow-sm focus:ring focus:ring-orange-200"
                             value="{{ old('nama_mapel') }}" required>
                         @error('nama_mapel') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="kode_mapel" class="block text-sm font-medium text-[#1C1E17]">Kode Mapel</label>
+                        <label for="kode_mapel" class="block text-sm font-medium text-[var(--sabira-ink)]">Kode Mapel</label>
                         <input type="text" name="kode_mapel" id="kode_mapel"
-                            class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm focus:ring focus:ring-orange-200 @error('kode_mapel') border-red-500 @enderror"
+                            class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] shadow-sm focus:ring focus:ring-orange-200"
                             value="{{ old('kode_mapel') }}" required>
                         @error('kode_mapel') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="jenis_mapel" class="block text-sm font-medium text-[#1C1E17]">Jenis Mapel</label>
+                        <label for="jenis_mapel" class="block text-sm font-medium text-[var(--sabira-ink)]">Jenis Mapel</label>
                         <select name="jenis_mapel" id="jenis_mapel"
-                            class="w-full rounded-md border-gray-300 bg-[#EEF3E9] text-[#1C1E17] shadow-sm focus:ring focus:ring-orange-200 @error('jenis_mapel') border-red-500 @enderror"
+                            class="w-full rounded-md border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)] shadow-sm focus:ring focus:ring-orange-200"
                             required>
                             <option value="">-- Pilih Jenis --</option>
                             <option value="formal" {{ old('jenis_mapel') == 'formal' ? 'selected' : '' }}>Reguler</option>
@@ -51,11 +48,11 @@
 
                     <div class="flex gap-4 mt-6">
                         <button type="submit"
-                            class="bg-[#8E412E] text-white px-4 py-2 rounded-md text-xs hover:bg-[#BA6F4D] shadow inline-flex items-center gap-2">
+                            class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-primary-active)] shadow inline-flex items-center gap-2">
                             <i class="bi bi-save"></i> Simpan
                         </button>
                         <a href="{{ route('subjects.index') }}"
-                            class="bg-[#D9D9D9] text-[#1C1E17] px-4 py-2 rounded-md text-xs hover:bg-[#BFBFBF] shadow inline-flex items-center gap-2">
+                            class="bg-[var(--sabira-surface-strong)] text-[var(--sabira-ink)] px-4 py-2 rounded-md text-xs hover:bg-[var(--sabira-surface-strong)] shadow inline-flex items-center gap-2">
                             <i class="bi bi-x-circle"></i> Batal
                         </a>
                     </div>
@@ -63,4 +60,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

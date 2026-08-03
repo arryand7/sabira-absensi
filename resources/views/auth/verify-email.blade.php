@@ -1,4 +1,6 @@
-<x-guest-layout>
+<x-app-shell guest header-title="Verifikasi Email" header-subtitle="SABIRA ABSENSI">
+    <section class="sabira-card w-full">
+        <h1 class="mb-2 text-2xl font-semibold text-[var(--sabira-ink)]">Verifikasi email Anda</h1>
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
     </div>
@@ -28,4 +30,5 @@
             </button>
         </form>
     </div>
-</x-guest-layout>
+    </section>
+</x-app-shell>

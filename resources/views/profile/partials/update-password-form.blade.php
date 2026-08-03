@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="font-semibold text-xl text-[#292D22]">
+        <h2 class="font-semibold text-xl text-[var(--sabira-ink)]">
             {{ __('Update Password') }}
         </h2>
 
@@ -15,19 +15,19 @@
 
         <div>
             <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror" autocomplete="current-password" />
+            <x-text-input id="update_password_current_password" name="current_password" type="password" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" autocomplete="current-password" />
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror" autocomplete="new-password" />
+            <x-text-input id="update_password_password" name="password" type="password" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="w-full rounded border-gray-300 bg-[#EEF3E9] text-[#1C1E17] @error('name') border-red-500 @enderror" autocomplete="new-password" />
+            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="w-full rounded border-gray-300 bg-[var(--sabira-surface)] text-[var(--sabira-ink)]" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 

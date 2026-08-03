@@ -2,24 +2,26 @@
 
 namespace App\Imports;
 
-use App\Models\Schedule;
-use App\Models\User;
-use Carbon\Carbon;
-use App\Models\Subject;
-use App\Models\ClassGroup;
 use App\Models\AcademicYear;
+use App\Models\ClassGroup;
+use App\Models\Schedule;
+use App\Models\Subject;
+use App\Models\User;
+use App\Services\ScheduleConflictService;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ScheduleImport implements ToCollection, WithHeadingRow
 {
     public $failures = [];
+
     public $successRows = [];
 
     protected $activeYear;
 
-    public function __construct()
+    public function __construct(private readonly ScheduleConflictService $conflictService)
     {
         $this->activeYear = AcademicYear::where('is_active', true)->first();
     }
@@ -30,31 +32,35 @@ class ScheduleImport implements ToCollection, WithHeadingRow
 
         // Cek kolom hanya sekali di baris pertama
         $firstRow = $rows->first();
-        if (!$firstRow || collect($requiredColumns)->diff(array_keys($firstRow->toArray()))->isNotEmpty()) {
-            $this->failures[] = "Format file tidak sesuai. Pastikan kolom: guru, mapel, kelas, hari, jam_mulai, jam_selesai tersedia.";
+        if (! $firstRow || collect($requiredColumns)->diff(array_keys($firstRow->toArray()))->isNotEmpty()) {
+            $this->failures[] = 'Format file tidak sesuai. Pastikan kolom: guru, mapel, kelas, hari, jam_mulai, jam_selesai tersedia.';
+
             return;
         }
-        
+
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2;
 
             $guru = User::where('name', $row['guru'])->first();
-            if (!$guru) {
+            if (! $guru) {
                 $this->addFailure($rowNumber, "Guru '{$row['guru']}' tidak ditemukan.");
+
                 continue;
             }
 
             $subject = Subject::where('nama_mapel', $row['mapel'])->first();
-            if (!$subject) {
+            if (! $subject) {
                 $this->addFailure($rowNumber, "Mapel '{$row['mapel']}' tidak ditemukan.");
+
                 continue;
             }
 
             $class = ClassGroup::where('nama_kelas', $row['kelas'])
                 ->where('academic_year_id', $this->activeYear->id)
                 ->first();
-            if (!$class) {
+            if (! $class) {
                 $this->addFailure($rowNumber, "Kelas '{$row['kelas']}' tidak ditemukan.");
+
                 continue;
             }
 
@@ -62,36 +68,19 @@ class ScheduleImport implements ToCollection, WithHeadingRow
             $jamMulai = $this->parseExcelTime($row['jam_mulai']);
             $jamSelesai = $this->parseExcelTime($row['jam_selesai']);
 
-            if (!$jamMulai || !$jamSelesai) {
-                $this->addFailure($rowNumber, "Format jam tidak valid.");
+            if (! $jamMulai || ! $jamSelesai) {
+                $this->addFailure($rowNumber, 'Format jam tidak valid.');
+
                 continue;
             }
 
             if ($jamSelesai <= $jamMulai) {
-                $this->addFailure($rowNumber, "Jam selesai harus setelah jam mulai.");
+                $this->addFailure($rowNumber, 'Jam selesai harus setelah jam mulai.');
+
                 continue;
             }
 
-            // Cek bentrok
-            $conflict = Schedule::where('user_id', $guru->id)
-                ->where('hari', ucfirst($row['hari']))
-                ->where('academic_year_id', $this->activeYear->id)
-                ->where(function ($q) use ($jamMulai, $jamSelesai) {
-                    $q->whereBetween('jam_mulai', [$jamMulai, $jamSelesai])
-                        ->orWhereBetween('jam_selesai', [$jamMulai, $jamSelesai])
-                        ->orWhere(function ($q2) use ($jamMulai, $jamSelesai) {
-                            $q2->where('jam_mulai', '<=', $jamMulai)
-                                ->where('jam_selesai', '>=', $jamSelesai);
-                        });
-                })
-                ->first();
-
-            if ($conflict) {
-                $this->addFailure($rowNumber, "Jadwal bentrok dengan jadwal lain.");
-                continue;
-            }
-
-            Schedule::create([
+            $schedule = Schedule::create([
                 'user_id' => $guru->id,
                 'subject_id' => $subject->id,
                 'class_group_id' => $class->id,
@@ -99,9 +88,13 @@ class ScheduleImport implements ToCollection, WithHeadingRow
                 'jam_mulai' => $jamMulai,
                 'jam_selesai' => $jamSelesai,
                 'academic_year_id' => $this->activeYear->id,
+                'semester' => AcademicYear::currentSemester(),
             ]);
 
-            $this->successRows[] = "Baris {$rowNumber}: Jadwal untuk {$guru->name} berhasil ditambahkan.";
+            $conflictCount = $this->conflictService->refreshFor($schedule)->count();
+
+            $suffix = $conflictCount > 0 ? " ({$conflictCount} benturan perlu verifikasi admin)" : '';
+            $this->successRows[] = "Baris {$rowNumber}: Jadwal untuk {$guru->name} berhasil ditambahkan{$suffix}.";
         }
     }
 
@@ -119,14 +112,15 @@ class ScheduleImport implements ToCollection, WithHeadingRow
 
         // Jika waktu dalam bentuk float Excel (misal: 0.5)
         if (is_numeric($value)) {
-            $time = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value);
+            $time = Date::excelToDateTimeObject($value);
+
             return $time->format('H:i:s');
         }
 
         // Jika string seperti "12:00" atau "12:00:00"
         if (preg_match('/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/', $value)) {
             // Tambahkan detik jika belum ada
-            return strlen($value) === 5 ? $value . ':00' : $value;
+            return strlen($value) === 5 ? $value.':00' : $value;
         }
 
         return false;

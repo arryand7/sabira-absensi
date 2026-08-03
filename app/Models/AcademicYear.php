@@ -10,7 +10,7 @@ class AcademicYear extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'start_date', 'end_date', 'is_active'
+        'name', 'start_date', 'end_date', 'is_active',
     ];
 
     public function classGroupStudents()
@@ -27,5 +27,8 @@ class AcademicYear extends Model
         });
     }
 
-
+    public static function currentSemester(): string
+    {
+        return now()->month >= 7 ? 'ganjil' : 'genap';
+    }
 }

@@ -1,15 +1,11 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+<x-app-shell>
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
         <main class="flex-1 max-w-full overflow-x-auto">
             <!-- Tombol Aksi -->
             <div class="flex flex-wrap items-center justify-between mb-4 gap-4">
                 <div class="flex flex-wrap items-center gap-4">
                     <a href="{{ route('admin.students.create') }}"
-                        class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
+                        class="inline-block bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white px-4 py-2 rounded shadow transition">
                         + Tambah Murid
                     </a>
 
@@ -31,14 +27,14 @@
                     <input type="file" name="file" required
                         class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
                     <button type="submit"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+                        class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white px-4 py-2 rounded shadow transition">
                         Import Excel
                     </button>
                 </form>
             </div>
 
             <!-- Table Card -->
-            <div class="bg-[#EEF3E9] shadow rounded-xl p-6 overflow-x-auto">
+            <div class="bg-[var(--sabira-surface)] shadow rounded-xl p-6 overflow-x-auto">
 
                 <!-- Filter -->
                 <form method="GET" action="{{ route('admin.students.index') }}"
@@ -94,7 +90,7 @@
 
                     <div class="flex items-center gap-2">
                         <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow transition">
+                            class="bg-[var(--sabira-primary)] hover:bg-[var(--sabira-primary-active)] text-white px-5 py-2 rounded shadow transition">
                             Filter
                         </button>
                         <a href="{{ route('admin.students.index') }}" class="text-gray-600 hover:underline">Reset</a>
@@ -103,7 +99,7 @@
 
                 <!-- Table -->
                 <table id="studentTable" class="stripe hover w-full text-sm text-left text-gray-800">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-2">
                                 <input type="checkbox" id="select-all" />
@@ -120,7 +116,7 @@
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @if ($students->count() > 0)
                             @foreach ($students as $student)
-                                <tr class="hover:bg-[#BEC1B7] transition">
+                                <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                     <td class="px-4 py-2">
                                         <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="student-checkbox" />
                                     </td>
@@ -160,60 +156,32 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            @if ($students->count() > 0)
-                $('#studentTable').DataTable({
-                    responsive: true,
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ entri",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                        paginate: {
-                            first: "Awal",
-                            last: "Akhir",
-                            next: "→",
-                            previous: "←"
-                        },
-                        emptyTable: "Belum ada data murid."
-                    }
-                });
-            @endif
-
-            // Centang semua checkbox
-            $('#select-all').on('click', function () {
-                $('.student-checkbox').prop('checked', this.checked);
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = Array.from(document.querySelectorAll('.student-checkbox'));
+            document.getElementById('select-all')?.addEventListener('change', (event) => {
+                checkboxes.forEach((checkbox) => checkbox.checked = event.target.checked);
             });
 
-            // Submit bulk delete
-            $('#bulk-delete-form').on('submit', function (e) {
-                const selectedIds = $('.student-checkbox:checked').map(function () {
-                    return this.value;
-                }).get();
-
+            document.getElementById('bulk-delete-form')?.addEventListener('submit', (event) => {
+                const selectedIds = checkboxes.filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
                 if (selectedIds.length === 0) {
-                    e.preventDefault();
+                    event.preventDefault();
                     alert('Pilih minimal satu murid terlebih dahulu.');
-                } else {
-                    $('#student_ids_json').val(JSON.stringify(selectedIds));
+                    return;
                 }
+
+                if (!confirm(`Hapus ${selectedIds.length} murid terpilih?`)) {
+                    event.preventDefault();
+                    return;
+                }
+
+                document.getElementById('student_ids_json').value = JSON.stringify(selectedIds);
             });
 
-            // Konfirmasi sebelum hapus individual
-            $('.delete-form').on('submit', function (e) {
-                e.preventDefault();
-                const form = this;
-                Swal.fire({
-                    title: 'Yakin ingin menghapus?',
-                    text: "Data yang dihapus tidak bisa dikembalikan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
+            document.querySelectorAll('.delete-form').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    if (!confirm('Hapus murid ini? Data yang dihapus tidak dapat dikembalikan.')) {
+                        event.preventDefault();
                     }
                 });
             });
@@ -221,13 +189,12 @@
     </script>
 
     @if($errors->any())
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Terjadi Kesalahan!',
-                html: `{!! implode('<br>', $errors->all()) !!}`,
-                confirmButtonText: 'OK'
-            });
-        </script>
+        <x-alert type="danger" title="Terjadi kesalahan">
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </x-alert>
     @endif
-</x-app-layout>
+</x-app-shell>

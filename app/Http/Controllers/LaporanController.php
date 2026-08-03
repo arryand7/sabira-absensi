@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\AbsensiKaryawan;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DetailKaryawanExport;
 use App\Exports\LaporanKaryawanExport;
+use App\Models\AbsensiKaryawan;
+use App\Models\Divisi;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use PDF;
-
 
 class LaporanController extends Controller
 {
@@ -34,10 +35,14 @@ class LaporanController extends Controller
         $end_date = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
         $label = 'semua';
-        if ($divisi) $label = $divisi;
-        if ($jenisGuru) $label = $jenisGuru;
+        if ($divisi) {
+            $label = $divisi;
+        }
+        if ($jenisGuru) {
+            $label = $jenisGuru;
+        }
 
-        $filename = 'absensi_' . str_replace(' ', '_', strtolower($label)) . '_' . $start_date . '_sampai_' . $end_date . '.xlsx';
+        $filename = 'absensi_'.str_replace(' ', '_', strtolower($label)).'_'.$start_date.'_sampai_'.$end_date.'.xlsx';
 
         return Excel::download(new LaporanKaryawanExport(
             $divisi,
@@ -66,7 +71,6 @@ class LaporanController extends Controller
         return $pdf->stream('laporan_absensi_karyawan.pdf');
     }
 
-
     public function detail($id, Request $request)
     {
         $bulan = $request->bulan;
@@ -75,14 +79,15 @@ class LaporanController extends Controller
         $user = User::with('karyawan')->findOrFail($id);
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
-            ->when($bulan, fn($q) => $q->whereMonth('waktu_absen', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('waktu_absen', $tahun))
+            ->when($bulan, fn ($q) => $q->whereMonth('waktu_absen', $bulan))
+            ->when($tahun, fn ($q) => $q->whereYear('waktu_absen', $tahun))
             ->orderByDesc('waktu_absen')
             ->get()
             ->map(function ($item) {
-                $item->tanggal = \Carbon\Carbon::parse($item->waktu_absen)->format('Y-m-d');
+                $item->tanggal = Carbon::parse($item->waktu_absen)->format('Y-m-d');
                 $item->jam = $item->check_in ?? '-';
                 $item->check_out = $item->check_out ?? '-';
+
                 return $item;
             });
 
@@ -96,10 +101,10 @@ class LaporanController extends Controller
 
         $user = User::findOrFail($id);
 
-        $namaBulan = $bulan ? \Carbon\Carbon::create()->month($bulan)->locale('id')->monthName : 'Semua-Bulan';
-        $filename = 'rekap-' . str()->slug($user->name) . "-{$namaBulan}-{$tahun}.xlsx";
+        $namaBulan = $bulan ? Carbon::create()->month($bulan)->locale('id')->monthName : 'Semua-Bulan';
+        $filename = 'rekap-'.str()->slug($user->name)."-{$namaBulan}-{$tahun}.xlsx";
 
-        return Excel::download(new \App\Exports\DetailKaryawanExport($id, $bulan, $tahun), $filename);
+        return Excel::download(new DetailKaryawanExport($id, $bulan, $tahun), $filename);
     }
 
     private function buildLaporan(Request $request): array
@@ -108,7 +113,7 @@ class LaporanController extends Controller
         $start_date = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
         $end_date = $request->end_date ?? Carbon::now()->endOfMonth()->format('Y-m-d');
         $jenisGuru = $request->jenis_guru;
-        $divisis = \App\Models\Divisi::all();
+        $divisis = Divisi::all();
 
         $users = User::with(['karyawan.divisi', 'guru'])
             ->where('status', 'aktif')
@@ -135,7 +140,7 @@ class LaporanController extends Controller
             $absensi = $user->absensis()
                 ->whereBetween('waktu_absen', [
                     Carbon::parse($start_date)->startOfDay(),
-                    Carbon::parse($end_date)->endOfDay()
+                    Carbon::parse($end_date)->endOfDay(),
                 ])
                 ->get();
 
@@ -158,7 +163,7 @@ class LaporanController extends Controller
 
         $divisiLabel = 'Semua Karyawan';
         if ($jenisGuru) {
-            $divisiLabel = 'Guru (' . ucfirst($jenisGuru) . ')';
+            $divisiLabel = 'Guru ('.ucfirst($jenisGuru).')';
         } elseif ($divisi) {
             $divisiLabel = ucfirst($divisi);
         }

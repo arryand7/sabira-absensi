@@ -7,8 +7,11 @@ use Maatwebsite\Excel\Concerns\FromArray;
 class LaporanKelasExport implements FromArray
 {
     protected $rows;
+
     protected $kelas;
+
     protected $tahun;
+
     protected $totalPertemuan;
 
     public function __construct(array $rows, string $kelas, string $tahun, int $totalPertemuan)

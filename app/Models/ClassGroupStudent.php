@@ -7,13 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class ClassGroupStudent extends Model
 {
     protected $table = 'class_group_student'; // pastikan nama tabel pivot kamu ini
-    public $timestamps = false; // kalau pivot tidak pakai timestamps
 
-    protected $fillable = [
-        'class_group_id',
-        'student_id',
-        'academic_year_id',
-    ];
+    protected $guarded = [];
 
     // Relasi (optional)
     public function student()

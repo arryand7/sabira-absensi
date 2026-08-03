@@ -55,7 +55,7 @@
             </tbody>
         </table>
 
-        <button class="bg-blue-600 text-white mt-3 px-4 py-2 rounded" wire:click="promoteStudents">Pindah Siswa</button>
+        <button class="bg-[var(--sabira-primary)] text-white mt-3 px-4 py-2 rounded" wire:click="promoteStudents">Pindah Siswa</button>
     </div>
 </div>
 

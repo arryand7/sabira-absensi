@@ -16,8 +16,9 @@ class ClassGroupSeeder extends Seeder
         // Ambil tahun ajaran yang aktif
         $activeYear = AcademicYear::where('is_active', true)->first();
 
-        if (!$activeYear) {
+        if (! $activeYear) {
             $this->command->error('Tahun ajaran aktif tidak ditemukan.');
+
             return;
         }
 

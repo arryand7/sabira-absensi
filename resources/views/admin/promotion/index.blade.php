@@ -1,13 +1,9 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <h2 class="font-semibold text-xl text-[#292D22]">Migrasi / Pindah Siswa</h2>
+<x-app-shell>
+<h2 class="font-semibold text-xl text-[var(--sabira-ink)]">Migrasi / Pindah Siswa</h2>
 
     <div class="flex">
         <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+            <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
 
                 {{-- Alert --}}
                 @if(session('success'))
@@ -45,8 +41,8 @@
 
                     {{-- Tabel Siswa --}}
                     <div class="overflow-x-auto mt-4">
-                        <table id="studentsTable" class="w-full table-auto text-left text-sm text-[#373C2E]">
-                            <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                        <table id="studentsTable" class="w-full table-auto text-left text-sm text-[var(--sabira-body)]">
+                            <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                                 <tr>
                                     <th class="px-4 py-3 text-center"><input type="checkbox" id="selectAll"></th>
                                     <th class="px-4 py-3">Nama</th>
@@ -55,7 +51,7 @@
                             </thead>
                             <tbody class="divide-y divide-[#D6D8D2]">
                                 @foreach($students as $student)
-                                    <tr class="hover:bg-[#BEC1B7] transition">
+                                    <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                         <td class="px-4 py-2 text-center">
                                             <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-name="{{ $student->nama_lengkap }}">
                                         </td>
@@ -70,7 +66,7 @@
                     {{-- Tombol --}}
                     <div class="mt-6 flex gap-3">
                         <button type="submit"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 shadow">
+                                class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md text-sm hover:bg-[var(--sabira-primary-active)] shadow">
                             <i class="bi bi-arrow-right-circle"></i> Pindahkan Siswa
                         </button>
                         <a href="{{ route('academic-years.index') }}"
@@ -80,82 +76,45 @@
                     </div>
                 </form>
 
-                {{-- Script --}}
                 <script>
-                    $(document).ready(function () {
-                        let table = $('#studentsTable').DataTable({
-                            pageLength: 10,
-                            order: [[1, 'asc']],
-                            language: {
-                                search: "Cari:",
-                                lengthMenu: "Tampilkan _MENU_ siswa",
-                                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ siswa",
-                                paginate: {
-                                    first: "Awal",
-                                    last: "Akhir",
-                                    next: "Berikutnya",
-                                    previous: "Sebelumnya"
-                                },
-                                zeroRecords: "Tidak ada siswa ditemukan",
-                            }
-                        });
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const selectedBox = document.getElementById('selected-students-box');
+                        const selectedList = document.getElementById('selected-students');
+                        const checkboxes = Array.from(document.querySelectorAll('#studentsTable input[name="student_ids[]"]'));
 
-                        const selectedBox = $('#selected-students-box');
-                        const selectedList = $('#selected-students');
-                        let selectedStudentMap = new Map();
+                        const updateSelectedList = () => {
+                            const selected = checkboxes.filter((checkbox) => checkbox.checked);
+                            selectedList.replaceChildren(...selected.map((checkbox) => {
+                                const item = document.createElement('li');
+                                item.textContent = checkbox.dataset.name;
+                                return item;
+                            }));
+                            selectedBox.classList.toggle('hidden', selected.length === 0);
+                        };
 
-                        function updateSelectedList() {
-                            selectedList.empty();
-                            if (selectedStudentMap.size > 0) {
-                                selectedBox.removeClass('hidden');
-                                selectedStudentMap.forEach(name => selectedList.append(`<li>${name}</li>`));
-                            } else {
-                                selectedBox.addClass('hidden');
-                            }
-                        }
-
-                        $('#studentsTable tbody').on('change', 'input[name="student_ids[]"]', function () {
-                            const id = $(this).val(), name = $(this).data('name');
-                            $(this).is(':checked') ? selectedStudentMap.set(id, name) : selectedStudentMap.delete(id);
+                        checkboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelectedList));
+                        document.getElementById('selectAll')?.addEventListener('change', (event) => {
+                            checkboxes.forEach((checkbox) => checkbox.checked = event.target.checked);
                             updateSelectedList();
                         });
 
-                        $('#selectAll').on('change', function () {
-                            const isChecked = $(this).is(':checked');
-                            $('#studentsTable tbody input[name="student_ids[]"]').each(function () {
-                                const id = $(this).val(), name = $(this).data('name');
-                                $(this).prop('checked', isChecked);
-                                isChecked ? selectedStudentMap.set(id, name) : selectedStudentMap.delete(id);
-                            });
-                            updateSelectedList();
-                        });
+                        document.getElementById('promotion-form')?.addEventListener('submit', (event) => {
+                            const selected = checkboxes.filter((checkbox) => checkbox.checked);
+                            const target = document.querySelector('select[name="to_class_id"]');
+                            const targetName = target?.selectedOptions[0]?.textContent?.trim();
 
-                        table.on('draw', function () {
-                            $('#studentsTable input[name="student_ids[]"]').each(function () {
-                                const id = $(this).val();
-                                $(this).prop('checked', selectedStudentMap.has(id));
-                            });
-                        });
-
-                        $('#promotion-form').on('submit', function (e) {
-                            const kelas = $('select[name="to_class_id"]').find(":selected").text();
-
-                            if (selectedStudentMap.size === 0) {
-                                alert("Pilih minimal satu siswa terlebih dahulu.");
-                                e.preventDefault();
+                            if (selected.length === 0) {
+                                event.preventDefault();
+                                alert('Pilih minimal satu siswa terlebih dahulu.');
                                 return;
                             }
-
-                            if (!kelas || kelas === '-- Pilih Kelas Tujuan --') {
-                                alert("Pilih kelas tujuan terlebih dahulu.");
-                                e.preventDefault();
+                            if (!target?.value) {
+                                event.preventDefault();
+                                alert('Pilih kelas tujuan terlebih dahulu.');
                                 return;
                             }
-
-                            const confirmMsg = `Anda akan memindahkan ${selectedStudentMap.size} siswa ke kelas "${kelas}". Lanjutkan?`;
-                            if (!confirm(confirmMsg)) {
-                                e.preventDefault();
-                                return;
+                            if (!confirm(`Pindahkan ${selected.length} siswa ke kelas "${targetName}"?`)) {
+                                event.preventDefault();
                             }
                         });
                     });
@@ -164,4 +123,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-shell>

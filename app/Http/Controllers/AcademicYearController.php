@@ -10,6 +10,7 @@ class AcademicYearController extends Controller
     public function index()
     {
         $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+
         return view('admin.academic-years.index', compact('academicYears'));
     }
 
@@ -17,6 +18,7 @@ class AcademicYearController extends Controller
     {
         return view('admin.academic-years.create');
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -47,7 +49,6 @@ class AcademicYearController extends Controller
 
         return redirect()->route('academic-years.index')->with('success', 'Tahun ajaran berhasil ditambahkan.');
     }
-
 
     public function edit(AcademicYear $academicYear)
     {
@@ -85,7 +86,7 @@ class AcademicYearController extends Controller
         }
 
         $academicYear->delete();
+
         return redirect()->route('academic-years.index')->with('success', 'Tahun ajaran berhasil dihapus.');
     }
-
 }

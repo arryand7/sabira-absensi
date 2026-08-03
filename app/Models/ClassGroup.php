@@ -2,27 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
 
 class ClassGroup extends Model
 {
     protected $guarded = [];
 
-    // App\Models\ClassGroup.php
+    public function educationProgram()
+    {
+        return $this->belongsTo(EducationProgram::class);
+    }
+
     public function students()
     {
         return $this->belongsToMany(Student::class)
-            ->withPivot('academic_year_id')
-            ->withTimestamps()
-            ->wherePivot('academic_year_id', function ($query) {
-                $query->select('id')
-                    ->from('academic_years')
-                    ->where('is_active', true)
-                    ->limit(1);
-            });
+            ->withPivot('academic_year_id', 'joined_at', 'left_at', 'status', 'enrollment_source')
+            ->withTimestamps();
+    }
+
+    public function activeStudents()
+    {
+        return $this->students()
+            ->wherePivot('status', 'active');
     }
 
     public function schedules()
@@ -39,5 +40,4 @@ class ClassGroup extends Model
     {
         return $this->belongsTo(AcademicYear::class);
     }
-
 }

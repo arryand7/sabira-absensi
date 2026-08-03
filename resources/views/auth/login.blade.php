@@ -1,4 +1,9 @@
-<x-guest-layout>
+<x-app-shell guest header-title="Masuk" header-subtitle="SABIRA ABSENSI">
+    <section class="sabira-card w-full">
+        <div class="mb-6">
+            <h1 class="text-2xl font-semibold text-[var(--sabira-ink)]">Selamat datang</h1>
+            <p class="mt-1 text-sm text-[var(--sabira-muted)]">Masuk untuk melanjutkan ke monitoring kehadiran dan pembelajaran.</p>
+        </div>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -22,8 +27,8 @@
         <!-- Remember Me + Button -->
         <div class="flex items-center justify-between">
             <label class="inline-flex items-center">
-                <input type="checkbox" name="remember" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                <input type="checkbox" name="remember" class="rounded border-[var(--sabira-border)] text-[var(--sabira-primary)] focus:ring-[var(--sabira-primary)]">
+                <span class="ms-2 text-sm text-[var(--sabira-muted)]">{{ __('Remember me') }}</span>
             </label>
 
             <x-primary-button>
@@ -38,7 +43,8 @@
         <span class="h-px flex-1 bg-gray-200"></span>
     </div>
 
-    <a href="{{ route('sso.login') }}" class="inline-flex w-full items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+    <a href="{{ route('sso.login') }}" class="sabira-button sabira-button-secondary w-full">
         Masuk dengan Sabira Connect
     </a>
-</x-guest-layout>
+    </section>
+</x-app-shell>

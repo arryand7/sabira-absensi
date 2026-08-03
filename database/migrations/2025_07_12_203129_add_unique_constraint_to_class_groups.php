@@ -22,5 +22,4 @@ return new class extends Migration
             $table->dropUnique('unique_class_per_year');
         });
     }
-
 };

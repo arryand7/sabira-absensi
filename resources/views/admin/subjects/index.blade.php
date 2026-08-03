@@ -1,27 +1,22 @@
-<x-app-layout>
-    <h2 class="font-semibold text-xl text-[#292D22] leading-tight">
+<x-app-shell>
+    <h2 class="font-semibold text-xl text-[var(--sabira-ink)] leading-tight">
         {{ __('Daftar Mata Pelajaran') }}
     </h2>
-
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
 
             {{-- Tombol Tambah --}}
             <div class="mb-4">
                 <a href="{{ route('subjects.create') }}"
-                   class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow">
+                   class="inline-flex items-center gap-2 bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow">
                     <i class="bi bi-plus-circle-fill"></i> Tambah Mapel
                 </a>
             </div>
 
             {{-- Tabel Mapel --}}
             <div class="overflow-x-auto">
-                <table id="subjectTable" class="w-full table-auto text-left text-sm text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table id="subjectTable" class="w-full table-auto text-left text-sm text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Nama</th>
                             <th class="px-4 py-3">Kode</th>
@@ -32,7 +27,7 @@
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @if ($subjects->count() > 0)
                             @foreach($subjects as $subject)
-                                <tr class="hover:bg-[#BEC1B7] transition">
+                                <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                     <td class="px-4 py-2">{{ $subject->nama_mapel }}</td>
                                     <td class="px-4 py-2">{{ $subject->kode_mapel }}</td>
                                     <td class="px-4 py-2">
@@ -69,48 +64,15 @@
         </div>
     </div>
 
-    {{-- Scripts --}}
     <script>
-        $(document).ready(function () {
-            @if ($subjects->count() > 0)
-                $('#subjectTable').DataTable({
-                    pageLength: 10,
-                    order: [[0, 'asc']],
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ data",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                        paginate: {
-                            first: "Awal",
-                            last: "Akhir",
-                            next: "Berikutnya",
-                            previous: "Sebelumnya"
-                        },
-                        zeroRecords: "Data tidak ditemukan"
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.delete-form').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    if (!confirm('Hapus mata pelajaran ini? Data yang dihapus tidak dapat dikembalikan.')) {
+                        event.preventDefault();
                     }
-                });
-            @endif
-
-            // SweetAlert konfirmasi hapus
-            document.querySelectorAll('.delete-form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'Yakin ingin menghapus?',
-                        text: "Data yang dihapus tidak bisa dikembalikan!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
                 });
             });
         });
     </script>
-</x-app-layout>
+</x-app-shell>

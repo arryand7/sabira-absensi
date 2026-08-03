@@ -10,6 +10,7 @@ class SubjectController extends Controller
     public function index()
     {
         $subjects = Subject::all();
+
         return view('admin.subjects.index', compact('subjects'));
     }
 
@@ -52,6 +53,7 @@ class SubjectController extends Controller
     public function destroy(Subject $subject)
     {
         $subject->delete();
+
         return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil dihapus.');
     }
 }

@@ -3,14 +3,17 @@
 namespace App\Exports;
 
 use App\Models\User;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
-use Carbon\Carbon;
 
 class LaporanKaryawanExport implements FromView
 {
-    protected $divisi, $bulan, $tahun;
+    protected $divisi;
+
+    protected $bulan;
+
+    protected $tahun;
 
     public function __construct($divisi = null, $bulan = null, $tahun = null)
     {
@@ -33,8 +36,8 @@ class LaporanKaryawanExport implements FromView
 
         foreach ($users as $user) {
             $absensi = $user->absensis()
-                ->when($this->bulan, fn($q) => $q->whereMonth('created_at', $this->bulan))
-                ->when($this->tahun, fn($q) => $q->whereYear('created_at', $this->tahun))
+                ->when($this->bulan, fn ($q) => $q->whereMonth('created_at', $this->bulan))
+                ->when($this->tahun, fn ($q) => $q->whereYear('created_at', $this->tahun))
                 ->get();
 
             $hadir = $absensi->whereIn('status', ['Hadir', 'Terlambat'])->count();

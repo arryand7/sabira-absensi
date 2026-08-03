@@ -1,14 +1,10 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
-
-    <div class="p-4">
+<x-app-shell>
+<div class="p-4">
         <main class="mt-6 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- REGULER --}}
-                <div class="bg-[#EEF3E9] p-6 shadow-md rounded-2xl">
-                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Reguler</h3>
+                <div class="bg-[var(--sabira-surface)] p-6 shadow-md rounded-2xl">
+                    <h3 class="text-lg font-semibold mb-4 text-[var(--sabira-body)]">Reguler</h3>
                     <form method="GET" action="{{ route('laporan.murid.mapel') }}" class="space-y-4">
                         <input type="hidden" name="jenis" value="formal">
 
@@ -51,17 +47,17 @@
 
 
                         <div class="flex gap-2">
-                            <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded shadow hover:bg-[#BA6F4D]">
+                            <button type="submit" class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                 <i class="bi bi-eye-fill"></i> Preview
                             </button>
 
                             @if(request('jenis') == 'formal' && request('kelas') && request('mapel'))
                                <a href="{{ route('laporan.murid.mapel.download', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
-                                   class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
+                                   class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
                                 </a>
                                 <a href="{{ route('laporan.murid.mapel.excel', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
-                                class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+                                class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                     <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                                 </a>
                             @endif
@@ -70,8 +66,8 @@
                 </div>
 
                 {{-- NON REGULER --}}
-                <div class="bg-[#EEF3E9] p-6 shadow-md rounded-2xl">
-                    <h3 class="text-lg font-semibold mb-4 text-[#374151]">Non Reguler</h3>
+                <div class="bg-[var(--sabira-surface)] p-6 shadow-md rounded-2xl">
+                    <h3 class="text-lg font-semibold mb-4 text-[var(--sabira-body)]">Non Reguler</h3>
                     <form method="GET" action="{{ route('laporan.murid.mapel') }}" class="space-y-4">
                         <input type="hidden" name="jenis" value="muadalah">
 
@@ -113,17 +109,17 @@
                         </div>
 
                         <div class="flex gap-2">
-                            <button type="submit" class="bg-[#8E412E] text-white px-4 py-2 rounded shadow hover:bg-[#BA6F4D]">
+                            <button type="submit" class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                 <i class="bi bi-eye-fill"></i> Preview
                             </button>
 
                             @if(request('jenis') == 'muadalah' && request('kelas') && request('mapel'))
                                 <a href="{{ route('laporan.murid.mapel.download', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
-                                   class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
+                                   class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
                                 </a>
                                 <a href="{{ route('laporan.murid.mapel.excel', request()->only('jenis', 'kelas', 'mapel', 'tahun_ajaran')) }}"
-                                class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+                                class="bg-[var(--sabira-primary)] text-white px-4 py-2 rounded shadow hover:bg-[var(--sabira-primary-active)]">
                                     <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
                                 </a>
                             @endif
@@ -134,11 +130,11 @@
 
             {{-- TABEL PREVIEW --}}
             @if($rekapMapel)
-                <div class="bg-[#EEF3E9] p-6 rounded-2xl shadow-md">
-                    <h4 class="text-lg font-semibold mb-4 text-[#374151]">Preview Rekap Kehadiran</h4>
+                <div class="bg-[var(--sabira-surface)] p-6 rounded-2xl shadow-md">
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--sabira-body)]">Preview Rekap Kehadiran</h4>
                     <div class="overflow-x-auto max-h-[500px] overflow-y-auto rounded border border-gray-300">
-                        <table id="rekapTable" class="w-full text-sm text-[#373C2E]">
-                            <thead class="bg-[#8D9382] text-white text-xs uppercase font-semibold">
+                        <table id="rekapTable" class="w-full text-sm text-[var(--sabira-body)]">
+                            <thead class="bg-[var(--sabira-neutral-strong)] text-white text-xs uppercase font-semibold">
                                 <tr>
                                     <th class="px-4 py-3">Nama</th>
                                     <th class="px-4 py-3">NIS</th>
@@ -151,7 +147,7 @@
                             </thead>
                             <tbody class="divide-y divide-[#D6D8D2]">
                                 @foreach($rekapMapel as $row)
-                                    <tr class="hover:bg-[#BEC1B7] transition">
+                                    <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                         <td class="px-4 py-2">{{ $row['nama'] }}</td>
                                         <td class="px-4 py-2">{{ $row['nis'] }}</td>
                                         <td class="px-4 py-2">{{ $row['kelas'] }}</td>
@@ -166,28 +162,7 @@
                     </div>
                 </div>
 
-                @push('scripts')
-                    <script>
-                        $(document).ready(function () {
-                            $('#rekapTable').DataTable({
-                                pageLength: 25,
-                                language: {
-                                    search: "Cari:",
-                                    lengthMenu: "Tampilkan _MENU_ entri",
-                                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                                    paginate: {
-                                        first: "Awal",
-                                        last: "Akhir",
-                                        next: "›",
-                                        previous: "‹"
-                                    },
-                                    zeroRecords: "Tidak ditemukan data yang cocok",
-                                }
-                            });
-                        });
-                    </script>
-                @endpush
             @endif
         </main>
     </div>
-</x-app-layout>
+</x-app-shell>

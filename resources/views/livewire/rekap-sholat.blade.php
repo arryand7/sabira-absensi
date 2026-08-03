@@ -1,34 +1,34 @@
 <div class="overflow-x-auto">
-    <table class="min-w-full border border-[#C6C9BD] rounded-lg shadow-sm text-sm text-center bg-white">
+    <table class="min-w-full border border-[var(--sabira-border)] rounded-lg shadow-sm text-sm text-center bg-white">
         <thead>
-            <tr class="bg-[#DDE3D3] text-[#292D22] uppercase">
-                <th rowspan="2" class="border border-[#C6C9BD] p-2 font-semibold">No</th>
-                <th rowspan="2" class="border border-[#C6C9BD] p-2 font-semibold">Nama</th>
-                <th rowspan="2" class="border border-[#C6C9BD] p-2 font-semibold">Waktu</th>
-                <th colspan="{{ $tanggal->count() }}" class="border border-[#C6C9BD] p-2 font-semibold">
+            <tr class="bg-[var(--sabira-surface-strong)] text-[var(--sabira-ink)] uppercase">
+                <th rowspan="2" class="border border-[var(--sabira-border)] p-2 font-semibold">No</th>
+                <th rowspan="2" class="border border-[var(--sabira-border)] p-2 font-semibold">Nama</th>
+                <th rowspan="2" class="border border-[var(--sabira-border)] p-2 font-semibold">Waktu</th>
+                <th colspan="{{ $tanggal->count() }}" class="border border-[var(--sabira-border)] p-2 font-semibold">
                     Tanggal ({{ \Carbon\Carbon::create()->month($bulan)->translatedFormat('F') }})
                 </th>
             </tr>
-            <tr class="bg-[#F0F3EB] text-[#3E4434] text-xs">
+            <tr class="bg-[var(--sabira-surface-soft)] text-[var(--sabira-body)] text-xs">
                 @foreach($tanggal as $tgl)
-                    <th class="border border-[#C6C9BD] p-1 font-medium">{{ $tgl }}</th>
+                    <th class="border border-[var(--sabira-border)] p-1 font-medium">{{ $tgl }}</th>
                 @endforeach
             </tr>
         </thead>
-        <tbody class="text-[#292D22]">
+        <tbody class="text-[var(--sabira-ink)]">
             @php $no = 1; @endphp
             @foreach($students as $student)
                 @foreach($sholatList as $index => $sholat)
-                    <tr class="{{ $loop->parent->even ? 'bg-[#F7F9F4]' : 'bg-white' }}">
+                    <tr class="{{ $loop->parent->even ? 'bg-[var(--sabira-surface-soft)]' : 'bg-white' }}">
                         @if ($loop->first)
-                            <td class="border border-[#D6D8D2] p-2 align-top" rowspan="{{ $sholatList->count() }}">
+                            <td class="border border-[var(--sabira-border)] p-2 align-top" rowspan="{{ $sholatList->count() }}">
                                 {{ $no++ }}
                             </td>
-                            <td class="border border-[#D6D8D2] p-2 text-left align-top" rowspan="{{ $sholatList->count() }}">
+                            <td class="border border-[var(--sabira-border)] p-2 text-left align-top" rowspan="{{ $sholatList->count() }}">
                                 <span class="font-medium">{{ $student->nama_lengkap }}</span>
                             </td>
                         @endif
-                        <td class="border border-[#D6D8D2] p-2">{{ $sholat->nama }}</td>
+                        <td class="border border-[var(--sabira-border)] p-2">{{ $sholat->nama }}</td>
                         @foreach($tanggal as $tgl)
                             @php
                                 $status = $data[$student->id][$sholat->id][$tgl] ?? '-'; 
@@ -47,7 +47,7 @@
                                     default => '-',
                                 };
                             @endphp
-                            <td class="border border-[#D6D8D2] p-1 {{ $bgColor }}">
+                            <td class="border border-[var(--sabira-border)] p-1 {{ $bgColor }}">
                                 {{ $symbol }}
                             </td>
                         @endforeach

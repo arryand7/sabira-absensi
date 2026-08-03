@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsensiKaryawan;
+use App\Models\AbsensiLokasi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\AbsensiKaryawan;
-use Carbon\Carbon;
-use App\Models\AbsensiLokasi;
-
 
 class AbsensiController extends Controller
 {
@@ -21,8 +20,6 @@ class AbsensiController extends Controller
             'lokasi' => $lokasi,
         ]);
     }
-
-
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
     {
@@ -41,7 +38,11 @@ class AbsensiController extends Controller
 
     public function checkin(Request $request)
     {
-        // dd($request->device_hash);
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
         $user = Auth::user();
 
         $deviceHash = $request->device_hash;
@@ -52,7 +53,7 @@ class AbsensiController extends Controller
             ->exists();
 
         if ($deviceUsed) {
-            return back()->with("error", "Perangkat ini sudah digunakan untuk absen akun lain hari ini.");
+            return back()->with('error', 'Perangkat ini sudah digunakan untuk absen akun lain hari ini.');
         }
 
         $alreadyCheckedIn = AbsensiKaryawan::where('user_id', $user->id)
@@ -60,9 +61,8 @@ class AbsensiController extends Controller
             ->exists();
 
         if ($alreadyCheckedIn) {
-            return back()->with("error", "Anda sudah melakukan Check-In hari ini.");
+            return back()->with('error', 'Anda sudah melakukan Check-In hari ini.');
         }
-
 
         $latitude = $request->latitude;
         $longitude = $request->longitude;
@@ -74,7 +74,7 @@ class AbsensiController extends Controller
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
         if ($jarak > ($lokasi?->radius ?? 0.2)) {
-            return back()->with("error", "Gagal Check-In: Lokasi terlalu jauh dari sekolah.");
+            return back()->with('error', 'Gagal Check-In: Lokasi terlalu jauh dari sekolah.');
         }
 
         $now = now();
@@ -86,7 +86,7 @@ class AbsensiController extends Controller
             if ($jamSekarang >= '07:31:00' && $jamSekarang <= '16:00:00') {
                 $status = 'Terlambat';
             } elseif ($jamSekarang > '16:00:00') {
-                return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+                return back()->with('error', 'Absen Gagal: Sudah melewati jam absen.');
             }
         } elseif ($user->role === 'guru') {
             $jenisGuru = optional($user->guru)->jenis;
@@ -95,7 +95,7 @@ class AbsensiController extends Controller
                 if ($jamSekarang >= '07:31:00' && $jamSekarang <= '16:00:00') {
                     $status = 'Terlambat';
                 } elseif ($jamSekarang > '16:00:00') {
-                    return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+                    return back()->with('error', 'Absen Gagal: Sudah melewati jam absen.');
                 }
             } elseif ($jenisGuru === 'muadalah') {
                 if ($jamSekarang >= '15:31:00' && $jamSekarang <= '20:30:00') {
@@ -103,13 +103,13 @@ class AbsensiController extends Controller
                 } elseif ($jamSekarang < '15:30:00') {
                     $status = 'Hadir';
                 } elseif ($jamSekarang > '20:30:00') {
-                    return back()->with("error", "Absen Gagal: Sudah melewati jam absen.");
+                    return back()->with('error', 'Absen Gagal: Sudah melewati jam absen.');
                 }
             } else {
-                return back()->with("error", "Jenis guru tidak dikenali.");
+                return back()->with('error', 'Jenis guru tidak dikenali.');
             }
         } else {
-            return back()->with("error", "Role tidak dikenali.");
+            return back()->with('error', 'Role tidak dikenali.');
         }
 
         AbsensiKaryawan::create([
@@ -125,9 +125,13 @@ class AbsensiController extends Controller
         return back()->with('success', "Check-In berhasil. Status: $status");
     }
 
-
     public function checkout(Request $request)
     {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
         $user = Auth::user();
 
         $latitude = $request->latitude;
@@ -140,14 +144,14 @@ class AbsensiController extends Controller
         $jarak = $this->haversine($latitude, $longitude, $sekolahLat, $sekolahLng);
 
         if ($jarak > ($lokasi?->radius ?? 0.2)) {
-            return back()->with("error", "Gagal Check-Out: Lokasi terlalu jauh dari sekolah.");
+            return back()->with('error', 'Gagal Check-Out: Lokasi terlalu jauh dari sekolah.');
         }
 
         $absensi = AbsensiKaryawan::where('user_id', $user->id)
             ->whereDate('waktu_absen', Carbon::today())
             ->first();
 
-        if (!$absensi) {
+        if (! $absensi) {
             return back()->with('error', 'Gagal Check-Out: Anda belum melakukan Check-In hari ini.');
         }
 
@@ -162,7 +166,6 @@ class AbsensiController extends Controller
         return back()->with('success', 'Berhasil Check-Out!');
     }
 
-
     public function history(Request $request)
     {
         $user = Auth::user();
@@ -176,8 +179,6 @@ class AbsensiController extends Controller
 
         $absensis = $query->orderBy('created_at', 'desc')->get();
 
-
         return view('karyawan.history', compact('absensis', 'bulan', 'tahun'));
     }
-
 }

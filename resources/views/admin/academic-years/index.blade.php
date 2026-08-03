@@ -1,17 +1,13 @@
-<x-app-layout>
-    <x-slot name="sidebar">
-        <x-admin-sidenav />
-    </x-slot>
+<x-app-shell>
+<div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-[var(--sabira-surface)] shadow-md rounded-2xl p-6">
 
-    <div class="mt-6 w-full sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-[#EEF3E9] shadow-md rounded-2xl p-6">
-
-            <h2 class="text-xl font-semibold text-[#292D22] mb-4">Manajemen Tahun Ajaran</h2>
+            <h2 class="text-xl font-semibold text-[var(--sabira-ink)] mb-4">Manajemen Tahun Ajaran</h2>
 
             {{-- Tombol Tambah --}}
             <div class="mb-4">
                 <a href="{{ route('academic-years.create') }}"
-                   class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow">
+                   class="inline-flex items-center gap-2 bg-[var(--sabira-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--sabira-primary-active)] shadow">
                     <i class="bi bi-plus-circle-fill"></i> Tambah Tahun Ajaran
                 </a>
             </div>
@@ -25,8 +21,8 @@
 
             {{-- Tabel Tahun Ajaran --}}
             <div class="overflow-x-auto">
-                <table class="w-full table-auto text-left text-sm text-[#373C2E]">
-                    <thead class="bg-[#8D9382] text-white uppercase text-xs font-semibold">
+                <table class="w-full table-auto text-left text-sm text-[var(--sabira-body)]">
+                    <thead class="bg-[var(--sabira-neutral-strong)] text-white uppercase text-xs font-semibold">
                         <tr>
                             <th class="px-4 py-3">Nama</th>
                             <th class="px-4 py-3">Tanggal Mulai</th>
@@ -37,7 +33,7 @@
                     </thead>
                     <tbody class="divide-y divide-[#D6D8D2]">
                         @forelse ($academicYears as $year)
-                            <tr class="hover:bg-[#BEC1B7] transition">
+                            <tr class="hover:bg-[var(--sabira-surface-strong)] transition">
                                 <td class="px-4 py-2">{{ $year->name }}</td>
                                 <td class="px-4 py-2">{{ $year->start_date }}</td>
                                 <td class="px-4 py-2">{{ $year->end_date }}</td>
@@ -68,39 +64,13 @@
         </div>
     </div>
 
-    {{-- Script SweetAlert --}}
     <script>
         document.querySelectorAll('.delete-form').forEach(form => {
             form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Yakin ingin menghapus?',
-                    text: "Data yang dihapus tidak bisa dikembalikan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
+                if (!confirm('Hapus tahun ajaran ini? Data yang dihapus tidak dapat dikembalikan.')) {
+                    e.preventDefault();
+                }
             });
         });
     </script>
-
-    {{-- SweetAlert Session --}}
-    @if (session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    </script>
-    @endif
-</x-app-layout>
+</x-app-shell>

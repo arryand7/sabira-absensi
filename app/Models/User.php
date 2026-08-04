@@ -11,6 +11,16 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const LOCAL_ROLES = [
+        'super_admin',
+        'admin',
+        'guru',
+        'karyawan',
+        'organisasi',
+        'siswa',
+        'wali',
+    ];
+
     protected $fillable = [
         'name',
         'email',

@@ -30,8 +30,8 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $allowedRoles = auth()->user()->isSuperAdmin()
-            ? ['super_admin', 'admin', 'karyawan', 'guru', 'organisasi']
-            : ['admin', 'karyawan', 'guru', 'organisasi'];
+            ? User::LOCAL_ROLES
+            : array_values(array_diff(User::LOCAL_ROLES, ['super_admin']));
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -99,8 +99,8 @@ class UserController extends Controller
             abort(403, 'Hanya superadmin yang dapat mengubah akun superadmin.');
         }
         $allowedRoles = auth()->user()->isSuperAdmin()
-            ? ['super_admin', 'admin', 'karyawan', 'guru', 'organisasi']
-            : ['admin', 'karyawan', 'guru', 'organisasi'];
+            ? User::LOCAL_ROLES
+            : array_values(array_diff(User::LOCAL_ROLES, ['super_admin']));
 
         $request->validate([
             'name' => 'required|string|max:255',

@@ -103,7 +103,7 @@ Verifikasi statis terakhir sebelum dokumentasi: seluruh literal `route(...)` di 
 | Asrama | Tidak | Tidak | Tidak | Tidak | Ya |
 | Profil sendiri | Ya | Ya | Ya | Ya | Ya |
 
-Role aktual hanya `super_admin`, `admin`, `guru`, `karyawan`, dan `organisasi`. Role `siswa`, `wali_kelas`, `kurikulum`, `kesiswaan`, `kepegawaian`, dan `management` belum ada dalam schema; tidak diklaim tersedia. Fungsi management saat ini dijalankan role admin/superadmin.
+Role aktual adalah `super_admin`, `admin`, `guru`, `karyawan`, `organisasi`, `siswa`, dan `wali`. Role `siswa`/`wali` tersedia untuk identitas hasil provisioning Gate dan profil pribadi; role `wali_kelas`, `kurikulum`, `kesiswaan`, `kepegawaian`, dan `management` belum ada dalam schema. Fungsi management saat ini dijalankan role admin/superadmin.
 
 ## 7. Implementation
 
@@ -159,7 +159,7 @@ Build Vite dan Pint lulus setelah perapian final. Composer audit: tidak ada advi
 
 1. Browser acceptance desktop/mobile belum dapat dijalankan pada sesi ini.
 2. Role organisasi mempunyai automated coverage lebih sedikit dibanding admin/guru/karyawan.
-3. Role management/kurikulum/kesiswaan/kepegawaian/wali kelas/siswa belum dimodelkan; admin/superadmin saat ini menjalankan fungsi management.
+3. Role management/kurikulum/kesiswaan/kepegawaian/wali kelas belum dimodelkan; admin/superadmin saat ini menjalankan fungsi management. Role siswa dan wali sudah dimodelkan untuk identitas Gate, tetapi belum mempunyai dashboard domain khusus selain profil.
 4. Ambang risiko belum configurable dari UI; rule masih berada dalam StudentProgressReportService.
 5. HTML/PDF/Excel laporan siswa masih memiliki beberapa builder terpisah. Signature file dan authorization sudah diuji, tetapi parity seluruh nilai sel belum dibandingkan satu per satu.
 6. PHPUnit XML dan annotation lama menimbulkan deprecation warning; Browserslist database usang.

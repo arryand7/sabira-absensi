@@ -19,6 +19,8 @@ class CanonicalAppShellTest extends TestCase
             ['guru', 'guru.dashboard'],
             ['karyawan', 'karyawan.dashboard'],
             ['organisasi', 'asrama.index'],
+            ['siswa', 'profile.edit'],
+            ['wali', 'profile.edit'],
         ];
 
         foreach ($cases as [$role, $routeName]) {

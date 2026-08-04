@@ -54,6 +54,10 @@ Route::get('/redirect-after-login', function () {
         return redirect()->route('karyawan.dashboard');
     }
 
+    if (in_array($user->role, ['siswa', 'wali'], true)) {
+        return redirect()->route('profile.edit');
+    }
+
     abort(403, 'Unauthorized');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

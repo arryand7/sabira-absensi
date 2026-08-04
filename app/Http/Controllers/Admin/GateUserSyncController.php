@@ -64,6 +64,7 @@ class GateUserSyncController extends Controller
                         'gate_snapshot' => $item['gate_user'] ?? null,
                         'local_snapshot' => $item['local_user'] ?? null,
                         'field_differences' => $item['differences'] ?? null,
+                        'error_code' => $item['error_code'] ?? null,
                         'error_message' => $item['conflict_reason'] ?? null,
                     ]);
                 }

@@ -89,4 +89,15 @@ class LoginTest extends TestCase
             ->get('/redirect-after-login')
             ->assertViewIs('organisasi.index');
     }
+
+    public function test_gate_student_and_parent_roles_redirect_to_their_profile(): void
+    {
+        foreach (['siswa', 'wali'] as $role) {
+            $user = User::factory()->create(['role' => $role, 'status' => 'aktif']);
+
+            $this->actingAs($user)
+                ->get(route('dashboard'))
+                ->assertRedirect(route('profile.edit'));
+        }
+    }
 }

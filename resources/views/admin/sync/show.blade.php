@@ -150,7 +150,10 @@
                                     @if($item->category === 'conflict')
                                         <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[11px] text-indigo-900 dark:text-indigo-300 font-medium">
                                             <i class="fas fa-exclamation-circle text-indigo-500 mr-1"></i>
-                                            Data ini tidak dapat digabung otomatis. Superadmin harus meninjau dan menghubungkan akun secara manual.
+                                            {{ $item->error_message ?: 'Data ini tidak dapat digabung otomatis. Superadmin harus meninjau dan menghubungkan akun secara manual.' }}
+                                            @if($item->error_code)
+                                                <span class="mt-1 block font-mono text-[10px] opacity-75">{{ $item->error_code }}</span>
+                                            @endif
                                         </div>
                                     @elseif($item->field_differences)
                                         <pre class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-700 dark:text-slate-300 overflow-x-auto max-w-xs">{{ json_encode($item->field_differences, JSON_PRETTY_PRINT) }}</pre>

@@ -13,7 +13,8 @@ use Illuminate\Validation\ValidationException;
 class ApplyGateSyncService
 {
     public function __construct(
-        protected GateProvisioningClient $client
+        protected GateProvisioningClient $client,
+        protected GateUserMapper $mapper,
     ) {}
 
     public function execute(GateSyncRun $run): GateSyncRun
@@ -44,15 +45,7 @@ class ApplyGateSyncService
                     case 'missing_in_application':
                         if ($gu) {
                             $newUser = User::create([
-                                'gate_user_uuid' => $gu['uuid'],
-                                'name' => $gu['name'],
-                                'email' => $gu['email'],
-                                'username' => $gu['username'] ?? null,
-                                'type' => $gu['type'] ?? null,
-                                'role' => $gu['application_access']['role'] ?? ($gu['type'] ?? 'karyawan'),
-                                'application_role' => $gu['application_access']['role'] ?? null,
-                                'status' => 'aktif',
-                                'auth_source' => 'gate',
+                                ...$this->mapper->map($gu),
                                 'password' => Hash::make(Str::random(32)),
                             ]);
 
@@ -73,12 +66,15 @@ class ApplyGateSyncService
 
                     case 'needs_update':
                         if ($gu && $item->local_user_id) {
+                            $mapped = $this->mapper->map($gu);
                             User::where('id', $item->local_user_id)->update([
-                                'name' => $gu['name'],
-                                'email' => $gu['email'],
-                                'username' => $gu['username'] ?? null,
-                                'type' => $gu['type'] ?? null,
-                                'application_role' => $gu['application_access']['role'] ?? null,
+                                'name' => $mapped['name'],
+                                'email' => $mapped['email'],
+                                'username' => $mapped['username'],
+                                'type' => $mapped['type'],
+                                'role' => $mapped['role'],
+                                'application_role' => $mapped['application_role'],
+                                'auth_source' => $mapped['auth_source'],
                             ]);
 
                             $item->update([
@@ -160,19 +156,22 @@ class ApplyGateSyncService
                         break;
 
                     case 'conflict':
+                        $errorCode = $item->error_code ?: 'unlinked_matching_identifier';
+                        $errorMessage = $item->error_message
+                            ?: 'Email atau username cocok tetapi gate_user_uuid belum terhubung.';
                         $item->update([
                             'selected_action' => 'manual_review',
                             'result_status' => 'skipped',
-                            'error_code' => 'unlinked_matching_identifier',
-                            'error_message' => 'Manual review required: Email atau username cocok tetapi gate_user_uuid belum terhubung.',
+                            'error_code' => $errorCode,
+                            'error_message' => $errorMessage,
                         ]);
                         if ($gu && isset($gu['uuid'])) {
                             $syncResultItems[] = [
                                 'gate_user_uuid' => $gu['uuid'],
                                 'status' => 'conflict',
                                 'external_user_id' => null,
-                                'error_code' => 'unlinked_matching_identifier',
-                                'error_message' => 'Email atau username cocok tetapi gate_user_uuid belum terhubung.',
+                                'error_code' => $errorCode,
+                                'error_message' => $errorMessage,
                             ];
                         }
                         break;

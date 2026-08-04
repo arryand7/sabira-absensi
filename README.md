@@ -30,8 +30,12 @@ Sabira Absensi adalah aplikasi operasional sekolah dan pesantren berbasis Larave
 | `guru` | Dashboard guru, jadwal, sesi mengajar, histori/koreksi, dan presensi kerja |
 | `karyawan` | Check-in, checkout, dan histori presensi pribadi |
 | `organisasi` | Absensi sholat, kegiatan, dan histori asrama |
+| `siswa` | Identitas siswa hasil provisioning Gate; akses profil pribadi |
+| `wali` | Identitas orang tua/wali hasil provisioning Gate; akses profil pribadi |
 
 Role disimpan pada database dan authorization diterapkan pada route, request/policy, handler, query kepemilikan, serta export. Self-registration publik dinonaktifkan; akun dibuat oleh superadmin atau Gate Sync.
+
+`users.type`, `users.application_role`, dan `users.role` mempunyai arti berbeda. Tipe canonical Gate (`student`, `teacher`, `parent`, `staff`, `admin`) dipetakan melalui `GateUserMapper` ke role otorisasi lokal; nilai Gate tidak pernah ditulis langsung ke enum `users.role`. Mapping yang belum dikenal ditahan sebagai conflict pada dry-run.
 
 ## Arsitektur Domain
 
@@ -146,7 +150,7 @@ Baseline UI akhir 3 Agustus 2026:
 
 - Laravel 13.22.0 dan PHP 8.4.1.
 - Seluruh migration berstatus `Ran`.
-- 95 test dengan 715 assertion lulus, termasuk canonical shell lintas-role, kebijakan jam dinamis, jadwal lintas-program, signature PDF/Excel, dan authorization export.
+- 98 test dengan 744 assertion lulus, termasuk canonical shell lintas-role, kontrak lima tipe user Gate, kebijakan jam dinamis, jadwal lintas-program, signature PDF/Excel, dan authorization export.
 - Build Vite 8 lulus; audit npm dan Composer tidak menemukan advisory keamanan.
 - Warning non-blocking: metadata doc-comment PHPUnit lama dan skema konfigurasi PHPUnit deprecated.
 

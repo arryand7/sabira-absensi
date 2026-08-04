@@ -38,6 +38,31 @@ Aplikasi Client (Smart / Laptop / SSS / Moodle)
 
 ## 2. Ketentuan Database Aplikasi Client
 
+### Implementasi aktual Sabira Absensi
+
+Sabira Absensi memisahkan atribut identitas berikut:
+
+| Atribut | Domain | Nilai |
+| :--- | :--- | :--- |
+| `type` | Tipe identitas canonical Gate | `student`, `teacher`, `parent`, `staff`, `admin` |
+| `application_role` | Role mentah pada assignment aplikasi Gate | String nullable; bukan sumber enum tanpa mapping |
+| `role` | Otorisasi lokal Sabira Absensi | `super_admin`, `admin`, `guru`, `karyawan`, `organisasi`, `siswa`, `wali` |
+| `status` | Status lokal | `aktif`, `nonaktif`, `active`, `suspended` |
+
+Mapping default berada di `config/gate-sync.php` dan diterapkan oleh `App\Services\GateUserMapper`:
+
+```text
+student → siswa
+teacher → guru
+parent  → wali
+staff   → karyawan
+admin   → admin
+```
+
+Jika `application_access.role` tersedia, nilainya melewati allowlist mapping aplikasi. Jika null, mapper memakai mapping `type`. Nilai yang tidak dikenal menjadi kategori `conflict` dengan `error_code=unsupported_gate_mapping` pada dry-run dan tidak pernah diteruskan ke query insert/update.
+
+> Jangan menggunakan pola `role = application_access.role ?? type`. Pola tersebut menyebabkan `student` ditulis langsung ke enum lokal dan menghasilkan MySQL error `1265 Data truncated for column 'role'`.
+
 Setiap aplikasi client harus menyesuaikan struktur tabel `users` (atau tabel user lokal) dengan menambahkan kolom berikut:
 
 | Kolom | Tipe Data | Sifat | Keterangan |

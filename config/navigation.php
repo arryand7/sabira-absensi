@@ -71,7 +71,7 @@ return [
         'items' => [
             ['label' => 'Profil Aplikasi', 'route' => 'admin.settings.app', 'icon' => 'fas fa-sliders', 'roles' => ['super_admin', 'admin'], 'active' => ['admin.settings.app*']],
             ['label' => 'Lokasi dan Geofence', 'route' => 'admin.lokasi.edit', 'icon' => 'fas fa-location-dot', 'roles' => ['super_admin', 'admin'], 'active' => ['admin.lokasi*']],
-            ['label' => 'Profil Saya', 'route' => 'profile.edit', 'icon' => 'fas fa-circle-user', 'roles' => ['super_admin', 'admin', 'guru', 'karyawan', 'organisasi'], 'active' => ['profile.*']],
+            ['label' => 'Profil Saya', 'route' => 'profile.edit', 'icon' => 'fas fa-circle-user', 'roles' => ['super_admin', 'admin', 'guru', 'karyawan', 'organisasi', 'siswa', 'wali'], 'active' => ['profile.*']],
         ],
     ],
 ];

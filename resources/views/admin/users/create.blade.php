@@ -41,6 +41,8 @@
                             <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                             <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru</option>
                             <option value="organisasi" {{ old('role') == 'organisasi' ? 'selected' : '' }}>Organisasi</option>
+                            <option value="siswa" {{ old('role') == 'siswa' ? 'selected' : '' }}>Siswa</option>
+                            <option value="wali" {{ old('role') == 'wali' ? 'selected' : '' }}>Wali Siswa</option>
                         </select>
                         @error('role') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>

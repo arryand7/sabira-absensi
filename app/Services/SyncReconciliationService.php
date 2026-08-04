@@ -2,8 +2,16 @@
 
 namespace App\Services;
 
+use DomainException;
+
 class SyncReconciliationService
 {
+    public function __construct(
+        protected ?GateUserMapper $mapper = null,
+    ) {
+        $this->mapper ??= new GateUserMapper;
+    }
+
     /**
      * Categorize users into 8 reconciliation categories.
      */
@@ -45,8 +53,30 @@ class SyncReconciliationService
             $email = strtolower($gu['email'] ?? '');
             $username = strtolower($gu['username'] ?? '');
 
+            try {
+                $mappedUser = $this->mapper->map($gu);
+            } catch (DomainException $exception) {
+                $matchingLocal = ($uuid ? ($localByUuid[$uuid] ?? null) : null)
+                    ?: ($email ? ($localByEmail[$email] ?? null) : null)
+                    ?: ($username ? ($localByUsername[$username] ?? null) : null);
+
+                if ($matchingLocal) {
+                    $processedLocalUserIds[] = $matchingLocal['id'];
+                }
+
+                $categories['conflict'][] = [
+                    'gate_user' => $gu,
+                    'local_user' => $matchingLocal,
+                    'error_code' => 'unsupported_gate_mapping',
+                    'conflict_reason' => $exception->getMessage(),
+                    'suggested_action' => 'manual_review',
+                ];
+
+                continue;
+            }
+
             $gateStatus = $gu['status'] ?? 'active';
-            $access = $gu['application_access'] ?? ['has_access' => true, 'role' => 'karyawan'];
+            $access = $gu['application_access'] ?? ['has_access' => true, 'role' => null];
             $hasAccess = $access['has_access'] ?? true;
 
             // Scenario A: Linked via UUID
@@ -77,7 +107,7 @@ class SyncReconciliationService
                     ];
                 } else {
                     // Check field differences
-                    $differences = $this->computeDifferences($gu, $lu);
+                    $differences = $this->computeDifferences($gu, $lu, $mappedUser);
                     if (! empty($differences)) {
                         $categories['needs_update'][] = [
                             'gate_user' => $gu,
@@ -137,7 +167,7 @@ class SyncReconciliationService
         return $categories;
     }
 
-    protected function computeDifferences(array $gu, array $lu): array
+    protected function computeDifferences(array $gu, array $lu, array $mappedUser): array
     {
         $diff = [];
 
@@ -150,10 +180,21 @@ class SyncReconciliationService
         if (($gu['username'] ?? '') !== ($lu['username'] ?? '')) {
             $diff['username'] = ['gate' => $gu['username'] ?? '', 'local' => $lu['username'] ?? ''];
         }
-        $gateRole = $gu['application_access']['role'] ?? ($gu['type'] ?? '');
-        $localRole = $lu['application_role'] ?? ($lu['role'] ?? '');
-        if ($gateRole && $gateRole !== $localRole) {
-            $diff['role'] = ['gate' => $gateRole, 'local' => $localRole];
+        if (array_key_exists('type', $lu) && $mappedUser['type'] !== ($lu['type'] ?? null)) {
+            $diff['type'] = ['gate' => $mappedUser['type'], 'local' => $lu['type'] ?? null];
+        }
+
+        $localRole = $lu['role'] ?? $lu['application_role'] ?? null;
+        if ($mappedUser['role'] !== $localRole) {
+            $diff['role'] = ['gate' => $mappedUser['role'], 'local' => $localRole];
+        }
+
+        if (array_key_exists('application_role', $lu)
+            && $mappedUser['application_role'] !== ($lu['application_role'] ?? null)) {
+            $diff['application_role'] = [
+                'gate' => $mappedUser['application_role'],
+                'local' => $lu['application_role'] ?? null,
+            ];
         }
 
         return $diff;

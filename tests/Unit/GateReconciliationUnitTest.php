@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\SyncReconciliationService;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class GateReconciliationUnitTest extends TestCase
 {
@@ -25,6 +25,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'User Match',
                 'email' => 'match@example.com',
                 'username' => 'matchuser',
+                'type' => 'teacher',
                 'status' => 'active',
                 'application_access' => ['has_access' => true, 'role' => 'guru'],
             ],
@@ -34,6 +35,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'User Update New Name',
                 'email' => 'update@example.com',
                 'username' => 'updateuser',
+                'type' => 'teacher',
                 'status' => 'active',
                 'application_access' => ['has_access' => true, 'role' => 'guru'],
             ],
@@ -43,6 +45,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'New Gate User',
                 'email' => 'new@example.com',
                 'username' => 'newuser',
+                'type' => 'staff',
                 'status' => 'active',
                 'application_access' => ['has_access' => true, 'role' => 'karyawan'],
             ],
@@ -52,6 +55,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'Revoked User',
                 'email' => 'revoked@example.com',
                 'username' => 'revokeduser',
+                'type' => 'staff',
                 'status' => 'active',
                 'application_access' => ['has_access' => false],
             ],
@@ -61,6 +65,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'Inactive Gate User',
                 'email' => 'inactive@example.com',
                 'username' => 'inactiveuser',
+                'type' => 'staff',
                 'status' => 'suspended',
                 'application_access' => ['has_access' => true],
             ],
@@ -70,6 +75,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'Reactivate User',
                 'email' => 'reactivate@example.com',
                 'username' => 'reactivateuser',
+                'type' => 'staff',
                 'status' => 'active',
                 'application_access' => ['has_access' => true],
             ],
@@ -79,6 +85,7 @@ class GateReconciliationUnitTest extends TestCase
                 'name' => 'Conflict User',
                 'email' => 'conflict@example.com',
                 'username' => 'conflictuser',
+                'type' => 'staff',
                 'status' => 'active',
                 'application_access' => ['has_access' => true],
             ],

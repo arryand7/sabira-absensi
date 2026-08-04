@@ -65,7 +65,7 @@ class GateSyncFeatureTest extends TestCase
                         'name' => 'Santri Baru',
                         'email' => 'santri@example.com',
                         'username' => 'santribaru',
-                        'type' => 'santri',
+                        'type' => 'student',
                         'status' => 'active',
                         'application_access' => ['has_access' => true, 'role' => 'karyawan'],
                     ],
@@ -103,7 +103,7 @@ class GateSyncFeatureTest extends TestCase
                         'name' => 'Guru Gate',
                         'email' => 'gurugate@example.com',
                         'username' => 'gurugate',
-                        'type' => 'guru',
+                        'type' => 'teacher',
                         'status' => 'active',
                         'application_access' => ['has_access' => true, 'role' => 'guru'],
                     ],
@@ -141,6 +141,78 @@ class GateSyncFeatureTest extends TestCase
         });
     }
 
+    public function test_all_canonical_gate_user_types_are_mapped_to_supported_local_roles(): void
+    {
+        $gateUsers = [
+            $this->canonicalGateUser('11111111-1111-4111-8111-111111111111', 'student', 'student@example.com'),
+            $this->canonicalGateUser('22222222-2222-4222-8222-222222222222', 'teacher', 'teacher@example.com'),
+            $this->canonicalGateUser('33333333-3333-4333-8333-333333333333', 'parent', null),
+            $this->canonicalGateUser('44444444-4444-4444-8444-444444444444', 'staff', 'staff@example.com'),
+            $this->canonicalGateUser('55555555-5555-4555-8555-555555555555', 'admin', 'gate-admin@example.com'),
+        ];
+
+        Http::fake([
+            'https://gate.sabira-iibs.id/api/provisioning/users' => Http::response(['users' => $gateUsers]),
+            'https://gate.sabira-iibs.id/api/provisioning/sync-results' => Http::response(['success' => true]),
+        ]);
+
+        $this->actingAs($this->adminUser)->post(route('admin.sync.preview'));
+        $run = GateSyncRun::latest()->firstOrFail();
+
+        $this->assertSame(5, $run->items()->where('category', 'missing_in_application')->count());
+        $this->post(route('admin.sync.apply', $run))->assertSessionHas('success');
+
+        foreach ([
+            'student' => 'siswa',
+            'teacher' => 'guru',
+            'parent' => 'wali',
+            'staff' => 'karyawan',
+            'admin' => 'admin',
+        ] as $type => $role) {
+            $this->assertDatabaseHas('users', [
+                'username' => "gate-{$type}",
+                'type' => $type,
+                'role' => $role,
+                'application_role' => null,
+                'status' => 'aktif',
+                'auth_source' => 'gate',
+            ]);
+        }
+    }
+
+    public function test_unknown_gate_application_role_becomes_preview_conflict_and_is_not_inserted(): void
+    {
+        $gateUser = $this->canonicalGateUser(
+            '66666666-6666-4666-8666-666666666666',
+            'staff',
+            'unknown-role@example.com',
+            'finance-approver',
+        );
+
+        Http::fake([
+            'https://gate.sabira-iibs.id/api/provisioning/users' => Http::response(['users' => [$gateUser]]),
+            'https://gate.sabira-iibs.id/api/provisioning/sync-results' => Http::response(['success' => true]),
+        ]);
+
+        $this->actingAs($this->adminUser)->post(route('admin.sync.preview'));
+        $run = GateSyncRun::latest()->firstOrFail();
+
+        $this->assertDatabaseHas('gate_sync_items', [
+            'gate_sync_run_id' => $run->id,
+            'category' => 'conflict',
+            'error_code' => 'unsupported_gate_mapping',
+            'selected_action' => 'manual_review',
+        ]);
+
+        $this->post(route('admin.sync.apply', $run))->assertSessionHas('success');
+        $this->assertDatabaseMissing('users', ['username' => 'gate-staff']);
+        $this->assertDatabaseHas('gate_sync_items', [
+            'gate_sync_run_id' => $run->id,
+            'result_status' => 'skipped',
+            'error_code' => 'unsupported_gate_mapping',
+        ]);
+    }
+
     /** @test */
     public function suspended_user_is_logged_out_and_blocked_by_middleware()
     {
@@ -165,6 +237,7 @@ class GateSyncFeatureTest extends TestCase
                     'uuid' => 'c3d4e5f6-a7b8-9012-cdef-345678901234',
                     'name' => 'Akun Yang Dilewati',
                     'email' => 'skip@example.com',
+                    'type' => 'staff',
                     'status' => 'active',
                     'application_access' => ['has_access' => true, 'role' => 'karyawan'],
                 ]],
@@ -197,6 +270,7 @@ class GateSyncFeatureTest extends TestCase
                     'uuid' => 'd4e5f6a7-b8c9-0123-defa-456789012345',
                     'name' => 'Akun Retry',
                     'email' => 'retry@example.com',
+                    'type' => 'staff',
                     'status' => 'active',
                     'application_access' => ['has_access' => true, 'role' => 'karyawan'],
                 ]],
@@ -217,5 +291,24 @@ class GateSyncFeatureTest extends TestCase
         $this->assertDatabaseHas('gate_sync_runs', ['id' => $run->id, 'status' => 'completed']);
         $this->assertDatabaseCount('users', 3);
         Http::assertSentCount(3);
+    }
+
+    private function canonicalGateUser(string $uuid, string $type, ?string $email, ?string $applicationRole = null): array
+    {
+        return [
+            'uuid' => $uuid,
+            'gate_user_uuid' => $uuid,
+            'name' => 'Gate '.ucfirst($type),
+            'email' => $email,
+            'username' => "gate-{$type}",
+            'type' => $type,
+            'user_type' => $type,
+            'status' => 'active',
+            'application_access' => [
+                'has_access' => true,
+                'status' => 'active',
+                'role' => $applicationRole,
+            ],
+        ];
     }
 }

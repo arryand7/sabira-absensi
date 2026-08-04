@@ -15,6 +15,7 @@ class ApplyGateSyncService
     public function __construct(
         protected GateProvisioningClient $client,
         protected GateUserMapper $mapper,
+        protected GateDomainProfileProvisioner $profileProvisioner,
     ) {}
 
     public function execute(GateSyncRun $run): GateSyncRun
@@ -48,6 +49,7 @@ class ApplyGateSyncService
                                 ...$this->mapper->map($gu),
                                 'password' => Hash::make(Str::random(32)),
                             ]);
+                            $this->profileProvisioner->sync($newUser, $gu);
 
                             $item->update([
                                 'local_user_id' => $newUser->id,
@@ -67,7 +69,8 @@ class ApplyGateSyncService
                     case 'needs_update':
                         if ($gu && $item->local_user_id) {
                             $mapped = $this->mapper->map($gu);
-                            User::where('id', $item->local_user_id)->update([
+                            $localUser = User::query()->findOrFail($item->local_user_id);
+                            $localUser->update([
                                 'name' => $mapped['name'],
                                 'email' => $mapped['email'],
                                 'username' => $mapped['username'],
@@ -76,6 +79,7 @@ class ApplyGateSyncService
                                 'application_role' => $mapped['application_role'],
                                 'auth_source' => $mapped['auth_source'],
                             ]);
+                            $this->profileProvisioner->sync($localUser, $gu);
 
                             $item->update([
                                 'selected_action' => 'update_local',

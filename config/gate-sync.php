@@ -51,4 +51,9 @@ return [
         'siswa',
         'wali',
     ],
+
+    'profile_defaults' => [
+        // Gate does not expose the formal/muadalah teaching program yet.
+        'teacher_kind' => 'formal',
+    ],
 ];

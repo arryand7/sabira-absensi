@@ -150,7 +150,7 @@ Baseline UI akhir 3 Agustus 2026:
 
 - Laravel 13.22.0 dan PHP 8.4.1.
 - Seluruh migration berstatus `Ran`.
-- 98 test dengan 744 assertion lulus, termasuk canonical shell lintas-role, kontrak lima tipe user Gate, kebijakan jam dinamis, jadwal lintas-program, signature PDF/Excel, dan authorization export.
+- 99 test dengan 757 assertion lulus, termasuk canonical shell lintas-role, kontrak lima tipe user Gate, provisioning profil siswa/guru/karyawan, kebijakan jam dinamis, jadwal lintas-program, signature PDF/Excel, dan authorization export.
 - Build Vite 8 lulus; audit npm dan Composer tidak menemukan advisory keamanan.
 - Warning non-blocking: metadata doc-comment PHPUnit lama dan skema konfigurasi PHPUnit deprecated.
 

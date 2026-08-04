@@ -84,6 +84,11 @@ class User extends Authenticatable
         return $this->hasOne(Guru::class);
     }
 
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
     public function isAktif()
     {
         return $this->status === 'aktif';

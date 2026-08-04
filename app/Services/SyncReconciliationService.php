@@ -8,8 +8,10 @@ class SyncReconciliationService
 {
     public function __construct(
         protected ?GateUserMapper $mapper = null,
+        protected ?GateDomainProfileProvisioner $profileProvisioner = null,
     ) {
         $this->mapper ??= new GateUserMapper;
+        $this->profileProvisioner ??= new GateDomainProfileProvisioner;
     }
 
     /**
@@ -52,14 +54,14 @@ class SyncReconciliationService
             $uuid = $gu['uuid'] ?? null;
             $email = strtolower($gu['email'] ?? '');
             $username = strtolower($gu['username'] ?? '');
+            $matchingLocal = ($uuid ? ($localByUuid[$uuid] ?? null) : null)
+                ?: ($email ? ($localByEmail[$email] ?? null) : null)
+                ?: ($username ? ($localByUsername[$username] ?? null) : null);
 
             try {
                 $mappedUser = $this->mapper->map($gu);
+                $this->profileProvisioner->validate($gu, $mappedUser, $matchingLocal['id'] ?? null);
             } catch (DomainException $exception) {
-                $matchingLocal = ($uuid ? ($localByUuid[$uuid] ?? null) : null)
-                    ?: ($email ? ($localByEmail[$email] ?? null) : null)
-                    ?: ($username ? ($localByUsername[$username] ?? null) : null);
-
                 if ($matchingLocal) {
                     $processedLocalUserIds[] = $matchingLocal['id'];
                 }
@@ -108,6 +110,10 @@ class SyncReconciliationService
                 } else {
                     // Check field differences
                     $differences = $this->computeDifferences($gu, $lu, $mappedUser);
+                    $differences = array_merge(
+                        $differences,
+                        $this->profileProvisioner->differences($gu, $mappedUser, $lu['id'] ?? null),
+                    );
                     if (! empty($differences)) {
                         $categories['needs_update'][] = [
                             'gate_user' => $gu,

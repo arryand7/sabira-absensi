@@ -61,6 +61,15 @@ admin   → admin
 
 Jika `application_access.role` tersedia, nilainya melewati allowlist mapping aplikasi. Jika null, mapper memakai mapping `type`. Nilai yang tidak dikenal menjadi kategori `conflict` dengan `error_code=unsupported_gate_mapping` pada dry-run dan tidak pernah diteruskan ke query insert/update.
 
+Apply sync juga menjalankan provisioning profil domain secara atomik:
+
+- role `siswa`: membuat atau menautkan record `students` menggunakan NIS dan `students.user_id`;
+- role `guru`: membuat profil `karyawan` menggunakan NIP dan profil `gurus`;
+- role `karyawan`/`organisasi`: membuat profil `karyawan` menggunakan NIP bila tersedia;
+- role `admin`, `super_admin`, dan `wali`: tidak mempunyai tabel profil domain tambahan.
+
+User yang sudah tersinkron tetapi belum mempunyai profil domain akan muncul sebagai `needs_update` pada dry-run berikutnya. Apply akan memperbaiki profil tersebut tanpa membuat user duplikat. Student tanpa NIS atau NIS/NIP yang sudah terhubung ke user lain ditahan sebagai `conflict`.
+
 > Jangan menggunakan pola `role = application_access.role ?? type`. Pola tersebut menyebabkan `student` ditulis langsung ke enum lokal dan menghasilkan MySQL error `1265 Data truncated for column 'role'`.
 
 Setiap aplikasi client harus menyesuaikan struktur tabel `users` (atau tabel user lokal) dengan menambahkan kolom berikut:

@@ -178,6 +178,19 @@ class GateSyncFeatureTest extends TestCase
                 'auth_source' => 'gate',
             ]);
         }
+
+        $studentUser = User::query()->where('username', 'gate-student')->firstOrFail();
+        $teacherUser = User::query()->where('username', 'gate-teacher')->firstOrFail();
+        $staffUser = User::query()->where('username', 'gate-staff')->firstOrFail();
+
+        $this->assertDatabaseHas('students', [
+            'user_id' => $studentUser->id,
+            'nis' => 'NIS-STUDENT',
+            'nama_lengkap' => 'Gate Student',
+        ]);
+        $this->assertDatabaseHas('karyawan', ['user_id' => $teacherUser->id, 'nip' => 'NIP-TEACHER']);
+        $this->assertDatabaseHas('gurus', ['user_id' => $teacherUser->id, 'jenis' => 'formal']);
+        $this->assertDatabaseHas('karyawan', ['user_id' => $staffUser->id, 'nip' => 'NIP-STAFF']);
     }
 
     public function test_unknown_gate_application_role_becomes_preview_conflict_and_is_not_inserted(): void
@@ -211,6 +224,60 @@ class GateSyncFeatureTest extends TestCase
             'result_status' => 'skipped',
             'error_code' => 'unsupported_gate_mapping',
         ]);
+    }
+
+    public function test_existing_synced_users_with_missing_domain_profiles_are_repaired_on_next_apply(): void
+    {
+        $studentPayload = $this->canonicalGateUser(
+            '77777777-7777-4777-8777-777777777777',
+            'student',
+            'linked-student@example.com',
+        );
+        $teacherPayload = $this->canonicalGateUser(
+            '88888888-8888-4888-8888-888888888888',
+            'teacher',
+            'linked-teacher@example.com',
+        );
+
+        $studentUser = User::factory()->create([
+            'gate_user_uuid' => $studentPayload['uuid'],
+            'name' => $studentPayload['name'],
+            'email' => $studentPayload['email'],
+            'username' => $studentPayload['username'],
+            'type' => 'student',
+            'role' => 'siswa',
+            'application_role' => null,
+            'status' => 'aktif',
+            'auth_source' => 'gate',
+        ]);
+        $teacherUser = User::factory()->create([
+            'gate_user_uuid' => $teacherPayload['uuid'],
+            'name' => $teacherPayload['name'],
+            'email' => $teacherPayload['email'],
+            'username' => $teacherPayload['username'],
+            'type' => 'teacher',
+            'role' => 'guru',
+            'application_role' => null,
+            'status' => 'aktif',
+            'auth_source' => 'gate',
+        ]);
+
+        Http::fake([
+            'https://gate.sabira-iibs.id/api/provisioning/users' => Http::response([
+                'users' => [$studentPayload, $teacherPayload],
+            ]),
+            'https://gate.sabira-iibs.id/api/provisioning/sync-results' => Http::response(['success' => true]),
+        ]);
+
+        $this->actingAs($this->adminUser)->post(route('admin.sync.preview'));
+        $run = GateSyncRun::latest()->firstOrFail();
+
+        $this->assertSame(2, $run->items()->where('category', 'needs_update')->count());
+        $this->post(route('admin.sync.apply', $run))->assertSessionHas('success');
+
+        $this->assertDatabaseHas('students', ['user_id' => $studentUser->id, 'nis' => 'NIS-STUDENT']);
+        $this->assertDatabaseHas('karyawan', ['user_id' => $teacherUser->id, 'nip' => 'NIP-TEACHER']);
+        $this->assertDatabaseHas('gurus', ['user_id' => $teacherUser->id, 'jenis' => 'formal']);
     }
 
     /** @test */
@@ -295,7 +362,7 @@ class GateSyncFeatureTest extends TestCase
 
     private function canonicalGateUser(string $uuid, string $type, ?string $email, ?string $applicationRole = null): array
     {
-        return [
+        $data = [
             'uuid' => $uuid,
             'gate_user_uuid' => $uuid,
             'name' => 'Gate '.ucfirst($type),
@@ -310,5 +377,15 @@ class GateSyncFeatureTest extends TestCase
                 'role' => $applicationRole,
             ],
         ];
+
+        if ($type === 'student') {
+            $data['nis'] = 'NIS-STUDENT';
+        }
+
+        if (in_array($type, ['teacher', 'staff'], true)) {
+            $data['nip'] = 'NIP-'.strtoupper($type);
+        }
+
+        return $data;
     }
 }

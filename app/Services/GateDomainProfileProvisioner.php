@@ -68,10 +68,11 @@ class GateDomainProfileProvisioner
 
             if (! $employee) {
                 $differences['employee_profile'] = ['gate' => 'create_or_link', 'local' => null];
-            } elseif ($nip !== null && $employee->nip !== $nip) {
+            } elseif ($employee->nama_lengkap !== $mappedUser['name']
+                || ($nip !== null && $employee->nip !== $nip)) {
                 $differences['employee_profile'] = [
-                    'gate' => ['nip' => $nip],
-                    'local' => ['nip' => $employee->nip],
+                    'gate' => ['nip' => $nip, 'name' => $mappedUser['name']],
+                    'local' => ['nip' => $employee->nip, 'name' => $employee->nama_lengkap],
                 ];
             }
         }
@@ -128,6 +129,7 @@ class GateDomainProfileProvisioner
 
         $employee ??= new Karyawan;
         $employee->user_id = $user->id;
+        $employee->nama_lengkap = $user->name;
         if ($nip !== null) {
             $employee->nip = $nip;
         }

@@ -188,9 +188,17 @@ class GateSyncFeatureTest extends TestCase
             'nis' => 'NIS-STUDENT',
             'nama_lengkap' => 'Gate Student',
         ]);
-        $this->assertDatabaseHas('karyawan', ['user_id' => $teacherUser->id, 'nip' => 'NIP-TEACHER']);
+        $this->assertDatabaseHas('karyawan', [
+            'user_id' => $teacherUser->id,
+            'nip' => 'NIP-TEACHER',
+            'nama_lengkap' => 'Gate Teacher',
+        ]);
         $this->assertDatabaseHas('gurus', ['user_id' => $teacherUser->id, 'jenis' => 'formal']);
-        $this->assertDatabaseHas('karyawan', ['user_id' => $staffUser->id, 'nip' => 'NIP-STAFF']);
+        $this->assertDatabaseHas('karyawan', [
+            'user_id' => $staffUser->id,
+            'nip' => 'NIP-STAFF',
+            'nama_lengkap' => 'Gate Staff',
+        ]);
     }
 
     public function test_unknown_gate_application_role_becomes_preview_conflict_and_is_not_inserted(): void
@@ -276,7 +284,11 @@ class GateSyncFeatureTest extends TestCase
         $this->post(route('admin.sync.apply', $run))->assertSessionHas('success');
 
         $this->assertDatabaseHas('students', ['user_id' => $studentUser->id, 'nis' => 'NIS-STUDENT']);
-        $this->assertDatabaseHas('karyawan', ['user_id' => $teacherUser->id, 'nip' => 'NIP-TEACHER']);
+        $this->assertDatabaseHas('karyawan', [
+            'user_id' => $teacherUser->id,
+            'nip' => 'NIP-TEACHER',
+            'nama_lengkap' => 'Gate Teacher',
+        ]);
         $this->assertDatabaseHas('gurus', ['user_id' => $teacherUser->id, 'jenis' => 'formal']);
     }
 

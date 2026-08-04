@@ -63,7 +63,7 @@ class UserController extends Controller
 
             Karyawan::create([
                 'user_id' => $user->id,
-                // 'nama_lengkap' => $request->nama_lengkap,
+                'nama_lengkap' => $user->name,
                 'divisi_id' => $request->divisi_id,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,
@@ -138,7 +138,7 @@ class UserController extends Controller
             $divisiId = $request->role === 'karyawan' ? $request->divisi_id : null;
 
             $user->karyawan()->updateOrCreate(['user_id' => $user->id], [
-                // 'nama_lengkap' => $request->nama_lengkap,
+                'nama_lengkap' => $user->name,
                 'divisi_id' => $divisiId,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,

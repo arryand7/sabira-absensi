@@ -15,6 +15,7 @@ class Karyawan extends Model
         'user_id',
         'nip',
         'divisi_id',
+        'nama_lengkap',
         'alamat',
         'no_hp',
         'foto',

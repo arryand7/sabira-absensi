@@ -35,6 +35,8 @@ class KaryawanController extends Controller
             'no_hp' => 'nullable|string|max:30',
         ]);
 
+        $validated['nama_lengkap'] = User::query()->findOrFail($validated['user_id'])->name;
+
         Karyawan::create($validated);
 
         return redirect()->route('karyawan.index')->with('success', 'Data karyawan berhasil ditambahkan.');

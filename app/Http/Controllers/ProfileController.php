@@ -46,6 +46,7 @@ class ProfileController extends Controller
         $noHp = isset($validated['no_hp']) ? trim((string) $validated['no_hp']) : '';
 
         $profileData = [
+            'nama_lengkap' => $user->name,
             'alamat' => $alamat !== '' ? $alamat : null,
             'no_hp' => $noHp !== '' ? $noHp : null,
         ];

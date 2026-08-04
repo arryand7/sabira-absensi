@@ -19,6 +19,7 @@ class KaryawanManagementTest extends TestCase
         $division = Divisi::create(['nama' => 'Kurikulum']);
         $profile = Karyawan::create([
             'user_id' => $employee->id,
+            'nama_lengkap' => $employee->name,
             'divisi_id' => $division->id,
             'no_hp' => '08123456789',
             'alamat' => 'Bandung',

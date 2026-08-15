@@ -32,12 +32,28 @@ return new class extends Migration
             $runStage('expand_status_enum', fn () => DB::statement("ALTER TABLE class_group_student MODIFY status ENUM('active','inactive','completed','transferred','entered_in_error') NOT NULL DEFAULT 'active'"));
         }
 
-        $runStage('add_audit_columns', function () {
+        $runStage('add_invalidated_at', function () {
             Schema::table('class_group_student', function (Blueprint $table) {
                 $table->timestamp('invalidated_at')->nullable()->after('enrollment_source');
-                $table->foreignId('invalidated_by')->nullable()->after('invalidated_at')
-                    ->constrained('users')->nullOnDelete();
+            });
+        });
+        $runStage('add_invalidated_by', function () {
+            Schema::table('class_group_student', function (Blueprint $table) {
+                $table->foreignId('invalidated_by')->nullable()->after('invalidated_at');
+            });
+        });
+        $runStage('add_invalidated_by_foreign_key', function () {
+            Schema::table('class_group_student', function (Blueprint $table) {
+                $table->foreign('invalidated_by')->references('id')->on('users')->nullOnDelete();
+            });
+        });
+        $runStage('add_invalidation_reason', function () {
+            Schema::table('class_group_student', function (Blueprint $table) {
                 $table->text('invalidation_reason')->nullable()->after('invalidated_by');
+            });
+        });
+        $runStage('add_status_class_index', function () {
+            Schema::table('class_group_student', function (Blueprint $table) {
                 $table->index(['status', 'class_group_id'], 'cgs_status_class_index');
             });
         });

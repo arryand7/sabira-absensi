@@ -29,7 +29,8 @@ return new class extends Migration
 
         // Expand the enum before any row can be written with entered_in_error.
         // Keeping this as a separate DDL step also makes the following nullable
-        // audit columns backward-compatible with the currently running release.
+        // audit columns backward-compatible with the currently running release;
+        // the deploy account requires only ALTER/INDEX/REFERENCES for these steps.
         if (DB::getDriverName() === 'mysql') {
             $runStage('expand_status_enum', fn () => DB::statement("ALTER TABLE class_group_student MODIFY status ENUM('active','inactive','completed','transferred','entered_in_error') NOT NULL DEFAULT 'active'"));
         }

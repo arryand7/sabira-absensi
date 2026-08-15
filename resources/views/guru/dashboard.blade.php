@@ -25,6 +25,12 @@
             </div>
         </div>
 
+        <x-work-attendance-card
+            :lokasi="$lokasiKehadiran"
+            :attendance="$kehadiranKerjaHariIni"
+            instance="guru-dashboard"
+        />
+
         <!-- 5.3 Bagian 1: Jadwal Berikutnya (Hero Card) -->
         <div class="rounded-[var(--radius-md)] border border-[var(--sabira-border-soft)] bg-[var(--sabira-surface)] p-6">
             <div class="flex items-center justify-between border-b border-indigo-100 dark:border-slate-800 pb-4 mb-4">

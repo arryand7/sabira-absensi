@@ -19,6 +19,7 @@
         "@alpinejs/focus": "^3.15.12",
         "@fortawesome/fontawesome-free": "^7.3.1",
         "bootstrap-icons": "^1.13.1",
-        "flowbite": "^3.1.2"
+        "flowbite": "^3.1.2",
+        "leaflet": "^1.9.4"
     }
 }

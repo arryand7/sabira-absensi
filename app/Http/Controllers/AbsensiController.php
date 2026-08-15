@@ -13,12 +13,12 @@ class AbsensiController extends Controller
     public function index()
     {
         $lokasi = AbsensiLokasi::latest()->first();
-        $absensis = AbsensiKaryawan::with('user')->latest()->get();
+        $absenHariIni = AbsensiKaryawan::query()
+            ->where('user_id', Auth::id())
+            ->whereDate('waktu_absen', today())
+            ->first();
 
-        return view('karyawan.absen', [
-            'absensis' => $absensis,
-            'lokasi' => $lokasi,
-        ]);
+        return view('karyawan.absen', compact('lokasi', 'absenHariIni'));
     }
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
@@ -41,13 +41,14 @@ class AbsensiController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'device_hash' => 'nullable|string|max:100',
         ]);
 
         $user = Auth::user();
 
         $deviceHash = $request->device_hash;
 
-        $deviceUsed = AbsensiKaryawan::where('device_hash', $deviceHash)
+        $deviceUsed = filled($deviceHash) && AbsensiKaryawan::where('device_hash', $deviceHash)
             ->whereDate('waktu_absen', Carbon::today())
             ->where('user_id', '!=', $user->id)
             ->exists();

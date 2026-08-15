@@ -112,6 +112,13 @@ class NavigationMenuRoleTest extends TestCase
 
         $response = $this->actingAs($guruUser)->get(route('guru.dashboard'));
         $response->assertOk()
+            ->assertSee('Kehadiran Kerja')
+            ->assertSee('guru-dashboard-map', escape: false)
+            ->assertSeeInOrder([
+                'Welcome & User Identity Card',
+                'Kehadiran Kerja',
+                '5.3 Bagian 1: Jadwal Berikutnya',
+            ], escape: false)
             ->assertSee('Matematika Dashboard')
             ->assertSee('X Dashboard')
             ->assertSee(route('guru.schedule.absen', $schedule), escape: false);

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsensiKaryawan;
+use App\Models\AbsensiLokasi;
 use App\Models\Schedule;
 use App\Models\ScheduleSession;
 use Carbon\Carbon;
@@ -57,6 +59,11 @@ class GuruDashboardController extends Controller
         $geofenceComplianceRate = $geofenceChecked->isEmpty()
             ? null
             : round(($geofenceChecked->where('location_validation_status', 'inside_geofence')->count() / $geofenceChecked->count()) * 100, 1);
+        $lokasiKehadiran = AbsensiLokasi::latest()->first();
+        $kehadiranKerjaHariIni = AbsensiKaryawan::query()
+            ->where('user_id', $guruUserId)
+            ->whereDate('waktu_absen', $today)
+            ->first();
 
         return view('guru.dashboard', compact(
             'user',
@@ -66,7 +73,9 @@ class GuruDashboardController extends Controller
             'completedSessionsCount',
             'pendingSessionsCount',
             'completedThisMonth',
-            'geofenceComplianceRate'
+            'geofenceComplianceRate',
+            'lokasiKehadiran',
+            'kehadiranKerjaHariIni'
         ));
     }
 }

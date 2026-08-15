@@ -32,6 +32,18 @@ class AbsensiCheckinTest extends TestCase
     }
 
     /** @test */
+    public function halaman_kehadiran_memuat_peta_dan_kontrol_lokasi(): void
+    {
+        $this->actingAs($this->user)
+            ->get(route('absensi.index'))
+            ->assertOk()
+            ->assertSee('Kehadiran Kerja')
+            ->assertSee('attendance-page-map', escape: false)
+            ->assertSee('Meminta lokasi perangkat')
+            ->assertSee('Check In');
+    }
+
+    /** @test */
     public function user_dapat_check_in_sesuai_radius_dan_waktu()
     {
         Carbon::setTestNow(Carbon::createFromTime(7, 15)); // sebelum 07:30

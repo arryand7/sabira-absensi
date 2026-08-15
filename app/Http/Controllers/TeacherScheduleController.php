@@ -290,6 +290,12 @@ class TeacherScheduleController extends Controller
         $validStudentIds = $schedule->classGroup->students()
             ->wherePivot('academic_year_id', $schedule->academic_year_id)
             ->wherePivot('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('class_group_student.joined_at')->orWhereDate('class_group_student.joined_at', '<=', today());
+            })
+            ->where(function ($query) {
+                $query->whereNull('class_group_student.left_at')->orWhereDate('class_group_student.left_at', '>=', today());
+            })
             ->pluck('students.id')
             ->map(fn ($id) => (string) $id)
             ->all();

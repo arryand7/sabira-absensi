@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Models\User;
 use App\Services\StudentProgressReportService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,7 +31,7 @@ class LaporanMuridController extends Controller
             ->unique();
 
         // Ambil semua murid dengan filter tahun ajaran dan kelas
-        $students = Student::whereHas('classGroups', function ($query) use ($request, $selectedYear) {
+        $students = Student::whereHas('activeClassGroups', function ($query) use ($request, $selectedYear) {
             if ($request->kelas) {
                 $query->where('nama_kelas', $request->kelas);
             }
@@ -39,7 +40,7 @@ class LaporanMuridController extends Controller
                 $query->whereRaw('class_group_student.academic_year_id = ?', [$selectedYear]);
             }
         })
-            ->with(['classGroups' => function ($query) use ($selectedYear) {
+            ->with(['activeClassGroups' => function ($query) use ($selectedYear) {
                 if ($selectedYear) {
                     $query->whereRaw('class_group_student.academic_year_id = ?', [$selectedYear]);
                 }
@@ -48,7 +49,7 @@ class LaporanMuridController extends Controller
             ->paginate(20)
             ->withQueryString()
             ->through(function ($student) use ($selectedYear) {
-                $groups = $student->classGroups;
+                $groups = $student->activeClassGroups;
                 if ($selectedYear) {
                     $groups = $groups->filter(function ($group) use ($selectedYear) {
                         return (int) $group->pivot->academic_year_id === (int) $selectedYear;
@@ -79,6 +80,8 @@ class LaporanMuridController extends Controller
             ->when($selectedYear, fn ($query) => $query->where('class_group_student.academic_year_id', $selectedYear))
             ->with('educationProgram')
             ->get();
+        $invalidators = User::whereIn('id', $memberships->pluck('pivot.invalidated_by')->filter()->unique())
+            ->pluck('name', 'id');
 
         $timeline = Attendance::with(['schedule.subject', 'schedule.classGroup', 'session'])
             ->where('student_id', $student->id)
@@ -91,6 +94,7 @@ class LaporanMuridController extends Controller
             'student',
             'summary',
             'memberships',
+            'invalidators',
             'timeline',
             'academicYears',
             'selectedYear'
@@ -404,7 +408,7 @@ class LaporanMuridController extends Controller
 
         $attendanceByStudent = $absensi->groupBy('student_id');
 
-        $students = Student::whereHas('classGroups', function ($query) use ($classGroup, $tahunAjaranId) {
+        $students = Student::whereHas('activeClassGroups', function ($query) use ($classGroup, $tahunAjaranId) {
             $query->where('class_groups.id', $classGroup->id);
             if ($tahunAjaranId) {
                 $query->whereRaw('class_group_student.academic_year_id = ?', [$tahunAjaranId]);

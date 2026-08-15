@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Imports\StudentsImport;
 use App\Models\AcademicYear;
 use App\Models\ClassGroup;
+use App\Models\ClassGroupStudent;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException as LaravelValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -17,7 +20,7 @@ class StudentController extends Controller
     {
         $activeYearIds = AcademicYear::where('is_active', true)->pluck('id');
 
-        $query = Student::with(['classGroups' => function ($q) use ($activeYearIds) {
+        $query = Student::with(['activeClassGroups' => function ($q) use ($activeYearIds) {
             $q->wherePivotIn('academic_year_id', $activeYearIds);
         }]);
 
@@ -31,15 +34,15 @@ class StudentController extends Controller
             $tambahanClass = true;
 
             if ($request->filled('kelas_formal')) {
-                $formalClass = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id == $request->kelas_formal;
+                $formalClass = $student->activeClassGroups->firstWhere('jenis_kelas', 'formal')?->id == $request->kelas_formal;
             }
 
             if ($request->filled('kelas_muadalah')) {
-                $muadalahClass = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id == $request->kelas_muadalah;
+                $muadalahClass = $student->activeClassGroups->firstWhere('jenis_kelas', 'muadalah')?->id == $request->kelas_muadalah;
             }
 
             if ($request->filled('kelas_tambahan')) {
-                $tambahanClass = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id == $request->kelas_tambahan;
+                $tambahanClass = $student->activeClassGroups->firstWhere('jenis_kelas', 'tambahan')?->id == $request->kelas_tambahan;
             }
 
             return $formalClass && $muadalahClass && $tambahanClass;
@@ -118,7 +121,7 @@ class StudentController extends Controller
 
     public function edit($id)
     {
-        $student = Student::with('classGroups')->findOrFail($id);
+        $student = Student::with('activeClassGroups')->findOrFail($id);
 
         $activeYearIds = AcademicYear::where('is_active', true)->pluck('id');
 
@@ -134,9 +137,9 @@ class StudentController extends Controller
             ->whereIn('academic_year_id', $activeYearIds)
             ->get();
 
-        $kelasFormalId = $student->classGroups->firstWhere('jenis_kelas', 'formal')?->id;
-        $kelasMuadalahId = $student->classGroups->firstWhere('jenis_kelas', 'muadalah')?->id;
-        $kelasTambahanId = $student->classGroups->firstWhere('jenis_kelas', 'tambahan')?->id;
+        $kelasFormalId = $student->activeClassGroups->firstWhere('jenis_kelas', 'formal')?->id;
+        $kelasMuadalahId = $student->activeClassGroups->firstWhere('jenis_kelas', 'muadalah')?->id;
+        $kelasTambahanId = $student->activeClassGroups->firstWhere('jenis_kelas', 'tambahan')?->id;
 
         return view('admin.students.edit', compact(
             'student', 'academicClasses', 'muadalahClasses', 'tambahanClasses', 'kelasFormalId', 'kelasMuadalahId', 'kelasTambahanId'
@@ -174,7 +177,32 @@ class StudentController extends Controller
             $syncData[$classGroup->id] = ['academic_year_id' => $classGroup->academic_year_id];
         }
 
-        $student->classGroups()->sync($syncData);
+        DB::transaction(function () use ($student, $syncData) {
+            $desiredClassIds = array_map('intval', array_keys($syncData));
+
+            ClassGroupStudent::query()->active()
+                ->where('student_id', $student->id)
+                ->when($desiredClassIds !== [], fn ($query) => $query->whereNotIn('class_group_id', $desiredClassIds))
+                ->update(['status' => 'inactive', 'left_at' => now()]);
+
+            foreach ($syncData as $classGroupId => $pivotData) {
+                $membership = ClassGroupStudent::where('student_id', $student->id)
+                    ->where('class_group_id', $classGroupId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($membership?->status === 'entered_in_error') {
+                    throw LaravelValidationException::withMessages([
+                        'kelas' => 'Kelas yang pernah dibatalkan sebagai salah input harus ditambahkan melalui halaman Keanggotaan Siswa agar histori tidak ditimpa.',
+                    ]);
+                }
+
+                ClassGroupStudent::updateOrCreate(
+                    ['student_id' => $student->id, 'class_group_id' => $classGroupId],
+                    $pivotData + ['status' => 'active', 'left_at' => null]
+                );
+            }
+        });
 
         return redirect()->route('admin.students.index')->with('success', 'Data murid berhasil diperbarui.');
     }

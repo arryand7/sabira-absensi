@@ -35,6 +35,25 @@ All search queries and filters are handled server-side through Eloquent query bu
   - Non-regular memberships (e.g. clubs, tahfidz) are preserved and never closed.
   - Target classes of type `non_reguler` reject the `transfer` mode via server validation.
 
+#### Mode C: Batalkan Keanggotaan (`invalidate`)
+- **Use Case**: Correct an administrative class-entry mistake without deleting the pivot row.
+- **Behavior**: Locks and revalidates the selected active membership, then writes `status = 'entered_in_error'`, `left_at`, `invalidated_at`, `invalidated_by`, and `invalidation_reason` in one database transaction.
+- **Isolation**: Only the selected class membership changes. Formal, Muadalah, regular, non-regular, and other-program memberships remain untouched.
+- **Stale/duplicate submit**: A membership that has changed since preview is skipped and explained in the result summary.
+- **Authorization**: Existing `admin,super_admin` route middleware protects bulk and student-detail actions; other roles receive HTTP 403.
+
+### Active and `entered_in_error` semantics
+
+An active membership has `status = active`, a `joined_at` not after the reference date, and a null `left_at` or one not before the reference date. `entered_in_error` is never active. It is excluded from active relationships, rosters, filters, and attendance denominators, while remaining queryable as administrative history. Existing `transferred`, `completed`, and `inactive` meanings are unchanged.
+
+`ClassGroupStudent::active()` is the canonical query scope. `Student::activeClassGroups()` and `ClassGroup::activeStudents()` expose the same status/date contract to UI and reporting consumers.
+
+### Attendance/history safety and audit
+
+Invalidation never deletes or updates `student_attendance`, `schedule_sessions`, schedules, or journals. Preview reports how many selected students have attendance history. That historical attendance remains visible for audit, but the invalid membership no longer makes a student mandatory in future attendance rosters or class report denominators.
+
+The existing structured application log records student, class, membership, previous/new status, reason, actor, timestamp, and related attendance count. It does not record credentials or unrelated sensitive data.
+
 ---
 
 ### 3. Multi-Page Selection State
@@ -73,4 +92,5 @@ students
 - **Authentication & Authorization**: Admin & Superadmin access allowed; unauthorized roles blocked (403).
 - **Filters**: Search by name/NIS, education program, class type, source class, membership status, and hide target checkbox verified.
 - **Action Modes**: Add vs Transfer behavior, old membership closure, non-regular protection, duplicate detection tested.
+- **Invalidation**: Admin/superadmin authorization, no hard delete, audit metadata, history retention, stale/duplicate safety, cross-program isolation, attendance preservation, denominator exclusion, server-side preview, and Mode C rendering tested.
 - **Pagination & Query String**: Query state preservation verified.

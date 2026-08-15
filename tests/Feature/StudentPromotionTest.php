@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\ClassGroupStudent;
 use App\Models\EducationProgram;
+use App\Models\Schedule;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -435,5 +438,119 @@ class StudentPromotionTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_admin_can_invalidate_membership_without_deleting_history(): void
+    {
+        $student = Student::create(['nama_lengkap' => 'Salah Kelas', 'nis' => 'INV001', 'jenis_kelamin' => 'L']);
+        $membership = ClassGroupStudent::create([
+            'student_id' => $student->id,
+            'class_group_id' => $this->formalRegClass1->id,
+            'academic_year_id' => $this->academicYear->id,
+            'joined_at' => now()->subDay(),
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->post('/promote', [
+            'to_class_id' => $this->formalRegClass1->id,
+            'action_mode' => 'invalidate',
+            'student_ids' => [$student->id],
+            'invalidation_reason' => 'Salah input kelas oleh admin.',
+        ]);
+
+        $response->assertRedirect()->assertSessionHas('success');
+        $membership->refresh();
+        $this->assertSame('entered_in_error', $membership->status);
+        $this->assertNotNull($membership->invalidated_at);
+        $this->assertSame($this->adminUser->id, $membership->invalidated_by);
+        $this->assertSame('Salah input kelas oleh admin.', $membership->invalidation_reason);
+        $this->assertSame(1, ClassGroupStudent::whereKey($membership->id)->count());
+        $this->assertFalse($student->activeClassGroups()->whereKey($this->formalRegClass1->id)->exists());
+        $this->assertTrue($student->classGroups()->whereKey($this->formalRegClass1->id)->exists());
+    }
+
+    public function test_superadmin_can_invalidate_and_duplicate_submit_is_safely_skipped(): void
+    {
+        $student = Student::create(['nama_lengkap' => 'Super Admin Test', 'nis' => 'INV002', 'jenis_kelamin' => 'P']);
+        ClassGroupStudent::create([
+            'student_id' => $student->id,
+            'class_group_id' => $this->formalRegClass1->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'active',
+        ]);
+        $payload = [
+            'to_class_id' => $this->formalRegClass1->id,
+            'action_mode' => 'invalidate',
+            'student_ids' => [$student->id],
+            'invalidation_reason' => 'Dibatalkan oleh super admin.',
+        ];
+
+        $this->actingAs($this->superAdminUser)->post('/promote', $payload)->assertSessionHas('success');
+        $this->actingAs($this->superAdminUser)->post('/promote', $payload)->assertSessionHas('warning');
+        $this->assertDatabaseCount('class_group_student', 1);
+        $this->assertDatabaseHas('class_group_student', ['student_id' => $student->id, 'status' => 'entered_in_error']);
+    }
+
+    public function test_invalidation_preserves_other_program_and_non_regular_memberships(): void
+    {
+        $student = Student::create(['nama_lengkap' => 'Multi Membership', 'nis' => 'INV003', 'jenis_kelamin' => 'L']);
+        $muadalah = ClassGroup::create([
+            'nama_kelas' => 'Muadalah 1', 'jenis_kelas' => 'muadalah', 'education_program_id' => $this->muadalahProgram->id,
+            'class_type' => 'reguler', 'academic_year_id' => $this->academicYear->id, 'is_active' => true,
+        ]);
+        foreach ([$this->formalRegClass1, $this->formalRegClass2, $this->formalNonRegClass, $muadalah] as $class) {
+            ClassGroupStudent::create(['student_id' => $student->id, 'class_group_id' => $class->id, 'academic_year_id' => $this->academicYear->id, 'status' => 'active']);
+        }
+
+        $this->actingAs($this->adminUser)->post('/promote', [
+            'to_class_id' => $this->formalRegClass1->id, 'action_mode' => 'invalidate', 'student_ids' => [$student->id],
+            'invalidation_reason' => 'Formal satu salah input.',
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('class_group_student', ['student_id' => $student->id, 'class_group_id' => $this->formalRegClass1->id, 'status' => 'entered_in_error']);
+        foreach ([$this->formalRegClass2, $this->formalNonRegClass, $muadalah] as $class) {
+            $this->assertDatabaseHas('class_group_student', ['student_id' => $student->id, 'class_group_id' => $class->id, 'status' => 'active']);
+        }
+    }
+
+    public function test_invalidation_preserves_attendance_and_schedule_and_excludes_denominator(): void
+    {
+        $student = Student::create(['nama_lengkap' => 'Attendance History', 'nis' => 'INV004', 'jenis_kelamin' => 'L']);
+        ClassGroupStudent::create(['student_id' => $student->id, 'class_group_id' => $this->formalRegClass1->id, 'academic_year_id' => $this->academicYear->id, 'status' => 'active']);
+        $teacher = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $subject = Subject::create(['nama_mapel' => 'Audit', 'kode_mapel' => 'AUD', 'jenis_mapel' => 'formal']);
+        $schedule = Schedule::create([
+            'user_id' => $teacher->id, 'class_group_id' => $this->formalRegClass1->id, 'subject_id' => $subject->id,
+            'hari' => 'Senin', 'jam_mulai' => '07:00', 'jam_selesai' => '08:00', 'academic_year_id' => $this->academicYear->id,
+        ]);
+        $attendance = Attendance::create([
+            'schedule_id' => $schedule->id, 'tanggal' => today(), 'pertemuan' => 1, 'jam_mulai' => '07:00',
+            'jam_selesai' => '08:00', 'student_id' => $student->id, 'status' => 'hadir',
+        ]);
+
+        $this->actingAs($this->adminUser)->post('/promote', [
+            'to_class_id' => $this->formalRegClass1->id, 'action_mode' => 'invalidate', 'student_ids' => [$student->id],
+            'invalidation_reason' => 'Membership salah tetapi attendance historis valid.',
+        ])->assertSessionHas('success', fn ($message) => str_contains($message, 'Memiliki histori attendance: 1'));
+
+        $this->assertTrue(Attendance::whereKey($attendance->id)->exists());
+        $this->assertTrue(Schedule::whereKey($schedule->id)->exists());
+        $this->assertFalse($this->formalRegClass1->activeStudents()->whereKey($student->id)->exists());
+    }
+
+    public function test_invalidation_authorization_validation_preview_and_mode_c(): void
+    {
+        $student = Student::create(['nama_lengkap' => 'Mode C Student', 'nis' => 'INV005', 'jenis_kelamin' => 'P']);
+        ClassGroupStudent::create(['student_id' => $student->id, 'class_group_id' => $this->formalRegClass1->id, 'academic_year_id' => $this->academicYear->id, 'status' => 'active']);
+        $payload = ['to_class_id' => $this->formalRegClass1->id, 'action_mode' => 'invalidate', 'student_ids' => [$student->id], 'invalidation_reason' => 'no'];
+
+        $this->actingAs($this->regularUser)->post('/promote', $payload)->assertForbidden();
+        $this->actingAs($this->adminUser)->post('/promote', $payload)->assertSessionHasErrors('invalidation_reason');
+        $this->actingAs($this->adminUser)->get('/promotion?action_mode=invalidate&to_class_id='.$this->formalRegClass1->id)
+            ->assertOk()->assertSee('Batalkan Keanggotaan')->assertSee('Mode C Student');
+        $this->actingAs($this->adminUser)->postJson('/promotion/preview', array_merge($payload, ['invalidation_reason' => 'Alasan preview valid.']))
+            ->assertOk()->assertJson(['selected' => 1, 'valid' => 1, 'stale' => 0]);
+        $this->actingAs($this->regularUser)->get('/admin/laporan/murid/'.$student->id)->assertForbidden();
+        $this->actingAs($this->adminUser)->get('/admin/laporan/murid/'.$student->id)->assertOk()->assertSee('Batalkan Keanggotaan');
     }
 }

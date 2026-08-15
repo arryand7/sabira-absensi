@@ -4,6 +4,9 @@
         toClassId: '{{ $filters['to_class_id'] }}',
         targetClassType: '{{ $selectedTargetClass?->class_type ?? '' }}',
         targetClassName: '{{ $selectedTargetClass?->nama_kelas ?? '' }}',
+        actionMode: '{{ $filters['action_mode'] }}',
+        previewUrl: '{{ route('promotion.preview') }}',
+        csrfToken: '{{ csrf_token() }}',
         studentsData: {{ json_encode($students->items()) }}
     })" class="space-y-6">
 
@@ -30,7 +33,7 @@
                         <span>Keanggotaan & Migrasi Siswa</span>
                     </h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Pilih kelas tujuan, saring daftar siswa, dan sesuaikan mode keanggotaan (Tambah / Pindah).
+                        Pilih kelas, saring daftar siswa, lalu Tambah, Pindah, atau Batalkan keanggotaan yang salah input.
                     </p>
                 </div>
 
@@ -59,12 +62,12 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
                 <div class="md:col-span-6 lg:col-span-5">
                     <label for="to_class_id_select" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                        1. Pilih Kelas Tujuan <span class="text-rose-500">*</span>
+                        <span x-text="actionMode === 'invalidate' ? '1. Kelas yang Akan Dibatalkan' : '1. Pilih Kelas Tujuan'"></span> <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                         <select id="to_class_id_select" x-model="toClassId" @change="onTargetClassChange($event)"
                                 class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-[var(--sabira-primary)] focus:border-transparent">
-                            <option value="">-- Pilih Kelas Tujuan --</option>
+                            <option value="" x-text="actionMode === 'invalidate' ? '-- Pilih Kelas yang Akan Dibatalkan --' : '-- Pilih Kelas Tujuan --'"></option>
                             @foreach($toClasses as $class)
                                 <option value="{{ $class->id }}"
                                         data-[class-type]="{{ $class->class_type }}"
@@ -85,7 +88,7 @@
                     </label>
                     <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full sm:w-auto">
                         <label class="flex-1 sm:flex-initial cursor-pointer">
-                            <input type="radio" name="action_mode_radio" value="add" x-model="actionMode" class="sr-only">
+                            <input type="radio" name="action_mode_radio" value="add" x-model="actionMode" @change="onActionModeChange" class="sr-only">
                             <span :class="actionMode === 'add' ? 'bg-white dark:bg-slate-800 text-[var(--sabira-primary)] shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
                                   class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs transition">
                                 <i class="fas fa-plus-circle text-xs"></i>
@@ -93,15 +96,29 @@
                             </span>
                         </label>
                         <label class="flex-1 sm:flex-initial cursor-pointer" :class="targetClassType === 'non_reguler' ? 'opacity-50 cursor-not-allowed' : ''">
-                            <input type="radio" name="action_mode_radio" value="transfer" x-model="actionMode" :disabled="targetClassType === 'non_reguler'" class="sr-only">
+                            <input type="radio" name="action_mode_radio" value="transfer" x-model="actionMode" @change="onActionModeChange" :disabled="targetClassType === 'non_reguler'" class="sr-only">
                             <span :class="actionMode === 'transfer' ? 'bg-white dark:bg-slate-800 text-[var(--sabira-primary)] shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
                                   class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs transition">
                                 <i class="fas fa-exchange-alt text-xs"></i>
                                 <span>Pindahkan Kelas Reguler</span>
                             </span>
                         </label>
+                        <label class="flex-1 sm:flex-initial cursor-pointer">
+                            <input type="radio" name="action_mode_radio" value="invalidate" x-model="actionMode" @change="onActionModeChange" class="sr-only">
+                            <span :class="actionMode === 'invalidate' ? 'bg-white dark:bg-slate-800 text-rose-700 dark:text-rose-300 shadow-sm font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
+                                  class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs transition">
+                                <i class="fas fa-ban text-xs"></i>
+                                <span>Batalkan Keanggotaan</span>
+                            </span>
+                        </label>
                     </div>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1" x-text="actionModeDescription"></p>
+                </div>
+                <div x-show="actionMode === 'invalidate'" class="md:col-span-12">
+                    <label for="invalidation_reason" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alasan Pembatalan <span class="text-rose-500">*</span></label>
+                    <textarea id="invalidation_reason" x-model="invalidationReason" minlength="5" maxlength="1000" rows="3"
+                              placeholder="Jelaskan kesalahan input keanggotaan (minimal 5 karakter)."
+                              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></textarea>
                 </div>
             </div>
 
@@ -126,6 +143,7 @@
         <div class="bg-[var(--sabira-surface)] border border-[var(--sabira-neutral-subtle,#e2e8f0)] dark:border-slate-800 rounded-2xl p-5 shadow-sm">
             <form id="filter-form" method="GET" action="{{ route('promotion.index') }}">
                 <input type="hidden" name="to_class_id" :value="toClassId">
+                <input type="hidden" name="action_mode" :value="actionMode">
 
                 {{-- Header Filter & Toggle Mobile --}}
                 <div class="flex items-center justify-between gap-4 mb-4">
@@ -516,27 +534,31 @@
 
                 <div class="space-y-3 text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                        <span class="text-slate-500">Kelas Tujuan:</span>
+                        <span class="text-slate-500" x-text="actionMode === 'invalidate' ? 'Kelas:' : 'Kelas Tujuan:'"></span>
                         <strong class="text-slate-900 dark:text-white font-bold" x-text="targetClassName"></strong>
                     </div>
                     <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                         <span class="text-slate-500">Mode Tindakan:</span>
                         <span class="font-semibold px-2 py-0.5 rounded text-[11px]"
-                              :class="actionMode === 'transfer' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'"
-                              x-text="actionMode === 'transfer' ? 'Pindahkan Kelas Reguler' : 'Tambahkan ke Kelas'"></span>
+                              :class="actionMode === 'invalidate' ? 'bg-rose-100 text-rose-800' : (actionMode === 'transfer' ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800')"
+                              x-text="actionMode === 'invalidate' ? 'Batalkan Keanggotaan' : (actionMode === 'transfer' ? 'Pindahkan Kelas Reguler' : 'Tambahkan ke Kelas')"></span>
                     </div>
                     <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                         <span class="text-slate-500">Total Siswa Dipilih:</span>
                         <strong class="text-slate-900 dark:text-white" x-text="selectedIds.length + ' siswa'"></strong>
                     </div>
                     <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                        <span>Dilewati (Sudah di Kelas Tujuan):</span>
-                        <span class="font-medium text-amber-600 dark:text-amber-400" x-text="countAlreadyInTarget + ' siswa'"></span>
+                        <span x-text="actionMode === 'invalidate' ? 'Membership sudah berubah/tidak aktif:' : 'Dilewati (Sudah di Kelas Tujuan):'"></span>
+                        <span class="font-medium text-amber-600 dark:text-amber-400" x-text="actionMode === 'invalidate' ? previewStats.stale + ' siswa' : countAlreadyInTarget + ' siswa'"></span>
                     </div>
                     <div class="flex justify-between text-slate-600 dark:text-slate-400">
                         <span>Akan Diproses:</span>
-                        <strong class="text-emerald-600 dark:text-emerald-400 font-bold" x-text="countEligibleToProcess + ' siswa'"></strong>
+                        <strong class="text-emerald-600 dark:text-emerald-400 font-bold" x-text="actionMode === 'invalidate' ? previewStats.valid + ' siswa' : countEligibleToProcess + ' siswa'"></strong>
                     </div>
+                    <div x-show="actionMode === 'invalidate'" class="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Memiliki histori attendance:</span><strong class="text-amber-600" x-text="previewStats.attendance_history + ' siswa'"></strong>
+                    </div>
+                    <div x-show="actionMode === 'invalidate'" class="pt-2 border-t border-slate-200"><span class="text-slate-500">Alasan:</span> <span x-text="invalidationReason"></span></div>
                 </div>
 
                 <div x-show="actionMode === 'transfer'" class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-[11px] text-amber-800 dark:text-amber-300">
@@ -548,6 +570,7 @@
                     @csrf
                     <input type="hidden" name="to_class_id" :value="toClassId">
                     <input type="hidden" name="action_mode" :value="actionMode">
+                    <input type="hidden" name="invalidation_reason" :value="invalidationReason">
 
                     <template x-for="id in selectedIds" :key="id">
                         <input type="hidden" name="student_ids[]" :value="id">
@@ -580,7 +603,11 @@
                 toClassId: config.toClassId || '',
                 targetClassType: config.targetClassType || 'reguler',
                 targetClassName: config.targetClassName || '',
-                actionMode: 'add',
+                actionMode: config.actionMode || 'add',
+                invalidationReason: '',
+                previewUrl: config.previewUrl,
+                csrfToken: config.csrfToken,
+                previewStats: {selected: 0, valid: 0, stale: 0, attendance_history: 0},
                 selectedIds: [],
                 mobileFiltersOpen: false,
                 previewModalOpen: false,
@@ -618,14 +645,21 @@
                         this.targetClassType = 'reguler';
                         this.targetClassName = '';
                     }
+                    document.getElementById('filter-form')?.requestSubmit();
+                },
+
+                onActionModeChange() {
+                    this.clearSelections();
+                    document.getElementById('filter-form')?.requestSubmit();
                 },
 
                 get actionModeDescription() {
                     if (this.actionMode === 'add') {
                         return 'Menambahkan siswa sebagai anggota kelas tanpa menutup keanggotaan kelas reguler/nonreguler yang sudah ada.';
-                    } else {
+                    } else if (this.actionMode === 'transfer') {
                         return 'Memindahkan siswa kelas reguler dengan menutup keanggotaan reguler lama pada program dan TA yang sama.';
                     }
+                    return 'Menandai membership salah input sebagai Entered in Error tanpa menghapus histori membership maupun attendance.';
                 },
 
                 isSelected(id) {
@@ -682,10 +716,13 @@
                     if (this.actionMode === 'transfer') {
                         return `Pindahkan ${count} Siswa`;
                     }
+                    if (this.actionMode === 'invalidate') {
+                        return `Batalkan Keanggotaan ${count} Siswa`;
+                    }
                     return `Tambahkan ${count} Siswa`;
                 },
 
-                openPreviewModal() {
+                async openPreviewModal() {
                     if (!this.toClassId) {
                         alert('Silakan pilih Kelas Tujuan terlebih dahulu.');
                         return;
@@ -694,10 +731,27 @@
                         alert('Silakan pilih minimal 1 siswa.');
                         return;
                     }
+                    if (this.actionMode === 'invalidate') {
+                        if (this.invalidationReason.trim().length < 5) {
+                            alert('Alasan Pembatalan wajib diisi minimal 5 karakter.');
+                            return;
+                        }
+                        const body = new FormData();
+                        body.append('_token', this.csrfToken);
+                        body.append('to_class_id', this.toClassId);
+                        body.append('action_mode', 'invalidate');
+                        body.append('invalidation_reason', this.invalidationReason);
+                        this.selectedIds.forEach(id => body.append('student_ids[]', id));
+                        const response = await fetch(this.previewUrl, {method: 'POST', body, headers: {'Accept': 'application/json'}});
+                        if (!response.ok) {
+                            alert('Preview tidak dapat dihitung ulang. Periksa pilihan dan alasan.');
+                            return;
+                        }
+                        this.previewStats = await response.json();
+                    }
                     this.previewModalOpen = true;
                 }
             }));
         });
     </script>
 </x-app-shell>
-

@@ -6,6 +6,7 @@ use App\Models\ClassGroup;
 use App\Models\ClassGroupStudent;
 use App\Models\EducationProgram;
 use App\Models\Student;
+use App\Services\StudentMembershipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,12 +22,17 @@ class StudentPromotionController extends Controller
         $gradeLevel = $request->input('grade_level');
         $membershipStatus = $request->input('membership_status', 'all');
         $toClassId = $request->input('to_class_id');
+        $actionMode = $request->input('action_mode', 'add');
         $perPage = in_array((int) $request->input('per_page'), [25, 50, 100], true) ? (int) $request->input('per_page') : 25;
 
         // Default hide_target_members is true if to_class_id is present and hide_target_members is not explicitly passed, or if hide_target_members == '1'
         $hideTargetMembers = $request->has('hide_target_members')
             ? $request->boolean('hide_target_members')
             : ($request->filled('to_class_id') ? true : false);
+
+        if ($actionMode === 'invalidate') {
+            $hideTargetMembers = false;
+        }
 
         $query = Student::query()
             ->with([
@@ -93,6 +99,12 @@ class StudentPromotionController extends Controller
             });
         }
 
+        if ($actionMode === 'invalidate' && $toClassId) {
+            $query->whereHas('activeClassGroups', function ($q) use ($toClassId) {
+                $q->where('class_groups.id', $toClassId);
+            });
+        }
+
         $students = $query->orderBy('nama_lengkap')->paginate($perPage)->withQueryString();
 
         $toClasses = ClassGroup::with(['educationProgram', 'academicYear'])
@@ -123,17 +135,32 @@ class StudentPromotionController extends Controller
                 'hide_target_members' => $hideTargetMembers,
                 'to_class_id' => $toClassId,
                 'per_page' => $perPage,
+                'action_mode' => $actionMode,
             ],
         ]);
     }
 
-    public function promote(Request $request)
+    public function preview(Request $request, StudentMembershipService $memberships)
+    {
+        $validated = $request->validate([
+            'to_class_id' => 'required|exists:class_groups,id',
+            'action_mode' => 'required|in:invalidate',
+            'student_ids' => 'required|array|min:1',
+            'student_ids.*' => 'integer|exists:students,id',
+            'invalidation_reason' => 'required|string|min:5|max:1000',
+        ]);
+
+        return response()->json($memberships->preview($validated['student_ids'], (int) $validated['to_class_id']));
+    }
+
+    public function promote(Request $request, StudentMembershipService $memberships)
     {
         $request->validate([
             'to_class_id' => 'required|exists:class_groups,id',
-            'action_mode' => 'required|in:add,transfer',
+            'action_mode' => 'required|in:add,transfer,invalidate',
             'student_ids' => 'required|array|min:1',
             'student_ids.*' => 'exists:students,id',
+            'invalidation_reason' => 'required_if:action_mode,invalidate|nullable|string|min:5|max:1000',
         ]);
 
         $targetClass = ClassGroup::with(['academicYear', 'educationProgram'])->findOrFail($request->to_class_id);
@@ -146,6 +173,23 @@ class StudentPromotionController extends Controller
 
         $studentIds = array_unique(array_map('intval', $request->student_ids));
         $actionMode = $request->action_mode;
+
+        if ($actionMode === 'invalidate') {
+            $summary = $memberships->invalidate(
+                $studentIds,
+                $targetClass->id,
+                trim((string) $request->invalidation_reason),
+                $request->user()
+            );
+
+            $message = "Berhasil dibatalkan: {$summary['invalidated']} | Dilewati: {$summary['skipped']} | Memiliki histori attendance: {$summary['attendance_history']} | Gagal: {$summary['failed']}";
+            session()->flash($summary['invalidated'] > 0 ? 'success' : 'warning', $message);
+            if ($summary['skip_reasons'] !== []) {
+                session()->flash('warning', $message.'<br>'.implode('<br>', $summary['skip_reasons']));
+            }
+
+            return back();
+        }
 
         $addedCount = 0;
         $transferredCount = 0;

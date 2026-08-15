@@ -22,7 +22,33 @@
 
         <div class="rounded-xl border bg-white p-5 shadow-sm">
             <h3 class="font-semibold">Keanggotaan Kelas</h3>
-            <div class="mt-3 flex flex-wrap gap-2">@forelse($memberships as $class)<span class="rounded-full bg-slate-100 px-3 py-1 text-sm">{{ $class->nama_kelas }} · {{ ucfirst($class->jenis_kelas) }} · {{ str_replace('_', ' ', $class->class_type ?? 'reguler') }} · {{ $class->pivot->status }}</span>@empty<span class="text-sm text-gray-500">Tidak ada keanggotaan pada tahun ini.</span>@endforelse</div>
+            <div class="mt-3 space-y-3">
+                @forelse($memberships as $class)
+                    <div class="rounded-xl border p-3 text-sm {{ $class->pivot->status === 'entered_in_error' ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-slate-50' }}">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <strong>{{ $class->nama_kelas }}</strong> · {{ ucfirst($class->jenis_kelas) }} · {{ str_replace('_', ' ', $class->class_type ?? 'reguler') }}
+                                <div class="mt-1 text-xs text-slate-600">Status: {{ $class->pivot->status === 'entered_in_error' ? 'Salah Input / Entered in Error' : ucfirst($class->pivot->status) }}</div>
+                                @if($class->pivot->status === 'entered_in_error')
+                                    <div class="mt-1 text-xs text-rose-700">Dibatalkan oleh: {{ $invalidators[$class->pivot->invalidated_by] ?? 'User tidak tersedia' }} · Tanggal: {{ $class->pivot->invalidated_at }} · Alasan: {{ $class->pivot->invalidation_reason }}</div>
+                                @endif
+                            </div>
+                            @if($class->pivot->status === 'active')
+                                <form method="POST" action="{{ route('promotion.promote') }}" onsubmit="return confirm('Batalkan keanggotaan ini sebagai salah input? Histori attendance tidak akan dihapus.')" class="flex items-end gap-2">
+                                    @csrf
+                                    <input type="hidden" name="to_class_id" value="{{ $class->id }}">
+                                    <input type="hidden" name="action_mode" value="invalidate">
+                                    <input type="hidden" name="student_ids[]" value="{{ $student->id }}">
+                                    <label class="text-xs">Alasan<input required minlength="5" maxlength="1000" name="invalidation_reason" class="ml-2 rounded-md border-slate-300 text-xs" placeholder="Alasan pembatalan"></label>
+                                    <button class="rounded-md bg-rose-700 px-3 py-2 text-xs font-semibold text-white">Batalkan Keanggotaan</button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <span class="text-sm text-gray-500">Tidak ada keanggotaan pada tahun ini.</span>
+                @endforelse
+            </div>
         </div>
 
         <div class="overflow-x-auto rounded-xl bg-white shadow-sm">

@@ -187,6 +187,7 @@ Route::middleware(['auth', 'checkRole:admin,super_admin'])->group(function () {
 
     Route::get('/promote', fn () => redirect()->route('promotion.index'));
     Route::post('/promote', [StudentPromotionController::class, 'promote'])->name('promotion.promote');
+    Route::post('/promotion/preview', [StudentPromotionController::class, 'preview'])->name('promotion.preview');
     Route::get('/promotion', [StudentPromotionController::class, 'index'])->name('promotion.index');
 
     Route::resource('/divisis', DivisiController::class)->except(['show']);

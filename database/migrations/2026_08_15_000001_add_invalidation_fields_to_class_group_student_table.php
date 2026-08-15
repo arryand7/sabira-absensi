@@ -10,6 +10,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Stage names are intentionally stable so deployment audit output can
+        // identify the exact DDL boundary without exposing connection details.
         $runStage = function (string $stage, callable $operation): void {
             try {
                 $operation();

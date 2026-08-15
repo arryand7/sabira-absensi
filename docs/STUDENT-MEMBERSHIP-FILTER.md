@@ -54,6 +54,10 @@ Invalidation never deletes or updates `student_attendance`, `schedule_sessions`,
 
 The existing structured application log records student, class, membership, previous/new status, reason, actor, timestamp, and related attendance count. It does not record credentials or unrelated sensitive data.
 
+### Deployment compatibility
+
+The invalidation migration is additive and backward-compatible. Production deployment requires the migration account to have `ALTER`, `INDEX`, and `REFERENCES` on the application schema; it does not require broad `DROP` or `CREATE` privileges. Older application releases safely ignore the added nullable columns during an interrupted rollout.
+
 ---
 
 ### 3. Multi-Page Selection State

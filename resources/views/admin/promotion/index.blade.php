@@ -6,7 +6,6 @@
         targetClassName: '{{ $selectedTargetClass?->nama_kelas ?? '' }}',
         actionMode: '{{ $filters['action_mode'] }}',
         previewUrl: '{{ route('promotion.preview') }}',
-        csrfToken: '{{ csrf_token() }}',
         studentsData: {{ json_encode($students->items()) }}
     })" class="space-y-6">
 
@@ -606,7 +605,6 @@
                 actionMode: config.actionMode || 'add',
                 invalidationReason: '',
                 previewUrl: config.previewUrl,
-                csrfToken: config.csrfToken,
                 previewStats: {selected: 0, valid: 0, stale: 0, attendance_history: 0},
                 selectedIds: [],
                 mobileFiltersOpen: false,
@@ -737,7 +735,8 @@
                             return;
                         }
                         const body = new FormData();
-                        body.append('_token', this.csrfToken);
+                        const proof = document.querySelector('input[name="_token"]')?.value || '';
+                        body.append('_token', proof);
                         body.append('to_class_id', this.toClassId);
                         body.append('action_mode', 'invalidate');
                         body.append('invalidation_reason', this.invalidationReason);
